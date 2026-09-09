@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Automation Testing — Hour 1 | Introduction to Automation Testing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0E14;
+    --panel:#131720;
+    --panel-alt:#171C27;
+    --border:#232938;
+    --border-soft:#1B2130;
+    --text:#E7EAF0;
+    --text-dim:#8B93A7;
+    --text-faint:#5B6478;
+    --pass:#35D0A0;
+    --pass-dim:#1D5B49;
+    --fail:#FF6B7A;
+    --fail-dim:#5C2530;
+    --info:#6C8CFF;
+    --info-dim:#26305C;
+    --warn:#FFB454;
+    --warn-dim:#5C4520;
+    --radius-s:6px;
+    --radius-m:10px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    font-size:16px;
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:600;
+    color:#F4F6FA;
+    line-height:1.25;
+    margin:0;
+  }
+  code, .mono{font-family:'JetBrains Mono',monospace;}
+  a{color:inherit;}
+  ::selection{background:var(--info-dim); color:#fff;}
+
+  /* ---------- Layout shell ---------- */
+  .shell{
+    display:grid;
+    grid-template-columns:250px minmax(0,1fr);
+    max-width:1280px;
+    margin:0 auto;
+  }
+  .sidebar{
+    position:sticky;
+    top:0;
+    height:100vh;
+    padding:32px 20px 32px 32px;
+    border-right:1px solid var(--border-soft);
+    display:flex;
+    flex-direction:column;
+    gap:28px;
+  }
+  .brand{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+  }
+  .brand .tag{
+    font-size:12px;
+    color:var(--info);
+    font-weight:600;
+    letter-spacing:.02em;
+  }
+  .brand h1{font-size:19px;}
+  .brand .sub{font-size:13px;color:var(--text-dim);}
+
+  .navlist{
+    list-style:none;
+    margin:0;padding:0;
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+    font-size:14px;
+  }
+  .navlist a{
+    display:flex;
+    gap:10px;
+    align-items:baseline;
+    text-decoration:none;
+    color:var(--text-dim);
+    padding:7px 10px;
+    border-radius:var(--radius-s);
+    border-left:2px solid transparent;
+    transition:color .15s ease, background .15s ease, border-color .15s ease;
+  }
+  .navlist a .n{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    color:var(--text-faint);
+    min-width:26px;
+  }
+  .navlist a:hover{color:var(--text); background:var(--panel);}
+  .navlist a.active{
+    color:#fff;
+    background:var(--panel);
+    border-left-color:var(--info);
+  }
+  .navlist a.active .n{color:var(--info);}
+
+  .sidebar-foot{
+    margin-top:auto;
+    font-size:12px;
+    color:var(--text-faint);
+    border-top:1px solid var(--border-soft);
+    padding-top:16px;
+  }
+
+  main{padding:56px 48px 120px 48px; min-width:0;}
+  .hero{
+    padding-bottom:44px;
+    margin-bottom:44px;
+    border-bottom:1px solid var(--border-soft);
+  }
+  .hero .kicker{
+    color:var(--info);
+    font-weight:600;
+    font-size:13px;
+    margin-bottom:14px;
+    display:block;
+  }
+  .hero h1{font-size:40px; letter-spacing:-0.01em; max-width:640px;}
+  .hero p.lead{
+    margin-top:16px;
+    max-width:600px;
+    color:var(--text-dim);
+    font-size:16px;
+  }
+  .hero-stats{
+    display:flex;
+    gap:32px;
+    margin-top:32px;
+    flex-wrap:wrap;
+  }
+  .hero-stats div{display:flex; flex-direction:column; gap:2px;}
+  .hero-stats .num{font-family:'Space Grotesk',sans-serif; font-size:24px; font-weight:700; color:#fff;}
+  .hero-stats .lbl{font-size:12.5px; color:var(--text-faint);}
+
+  section{
+    margin-bottom:72px;
+    scroll-margin-top:24px;
+  }
+  section .sec-head{
+    display:flex;
+    align-items:baseline;
+    gap:14px;
+    margin-bottom:18px;
+  }
+  section .sec-head .idx{
+    font-family:'JetBrains Mono',monospace;
+    color:var(--info);
+    font-size:15px;
+    font-weight:600;
+  }
+  section .sec-head h2{font-size:25px;}
+  section > p{color:var(--text-dim); max-width:680px;}
+  section > p + p{margin-top:14px;}
+
+  .callout{
+    background:var(--panel);
+    border:1px solid var(--border-soft);
+    border-radius:var(--radius-m);
+    padding:22px 24px;
+    margin-top:20px;
+  }
+  .callout h4{font-size:15px; margin-bottom:12px; color:#fff;}
+  .callout p{color:var(--text-dim); font-size:14.5px;}
+
+  /* ---------- Browser mock (1.1) ---------- */
+  .browser-mock{
+    margin-top:22px;
+    border-radius:var(--radius-m);
+    overflow:hidden;
+    border:1px solid var(--border-soft);
+    max-width:420px;
+    background:#0E1219;
+  }
+  .browser-mock .chrome{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:10px 14px;
+    background:var(--panel-alt);
+    border-bottom:1px solid var(--border-soft);
+  }
+  .browser-mock .dot{width:9px;height:9px;border-radius:50%;}
+  .browser-mock .dot.r{background:#FF6B6B;}
+  .browser-mock .dot.y{background:#FFC85B;}
+  .browser-mock .dot.g{background:#3DD68C;}
+  .browser-mock .urlbar{
+    margin-left:8px;
+    font-size:11.5px;
+    color:var(--text-faint);
+    background:var(--bg);
+    padding:4px 10px;
+    border-radius:5px;
+    flex:1;
+  }
+  .browser-mock .body{padding:26px 22px 24px;}
+  .browser-mock .field{margin-bottom:14px;}
+  .browser-mock .field label{
+    display:block;
+    font-size:11.5px;
+    color:var(--text-faint);
+    margin-bottom:5px;
+  }
+  .browser-mock .field .val{
+    font-family:'JetBrains Mono',monospace;
+    font-size:13px;
+    background:var(--panel-alt);
+    border:1px solid var(--border-soft);
+    border-radius:5px;
+    padding:8px 10px;
+    color:var(--text);
+  }
+  .browser-mock .btn{
+    margin-top:6px;
+    display:inline-block;
+    background:var(--info);
+    color:#0B0E14;
+    font-weight:600;
+    font-size:13px;
+    padding:8px 18px;
+    border-radius:6px;
+  }
+  .browser-mock .expect{
+    margin-top:18px;
+    padding-top:16px;
+    border-top:1px dashed var(--border-soft);
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+    font-size:13px;
+    color:var(--pass);
+  }
+
+  /* ---------- Pipeline / flow diagrams ---------- */
+  .pipeline{
+    margin-top:24px;
+    display:flex;
+    flex-direction:column;
+  }
+  .pipeline.horizontal{flex-direction:row; flex-wrap:wrap; align-items:stretch;}
+  .p-node{
+    background:var(--panel);
+    border:1px solid var(--border-soft);
+    border-radius:var(--radius-m);
+    padding:14px 18px;
+    font-size:14px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    color:var(--text);
+  }
+  .pipeline:not(.horizontal) .p-node{align-self:flex-start; min-width:260px;}
+  .p-node .step-no{
+    font-family:'JetBrains Mono',monospace;
+    color:var(--text-faint);
+    font-size:12px;
+  }
+  .p-connector{
+    align-self:flex-start;
+    margin-left:29px;
+    width:1px;
+    height:26px;
+    background:var(--border);
+    position:relative;
+  }
+  .p-connector::after{
+    content:"";
+    position:absolute;
+    bottom:-1px; left:50%;
+    transform:translateX(-50%);
+    border-left:4px solid transparent;
+    border-right:4px solid transparent;
+    border-top:5px solid var(--border);
+  }
+  .pipeline.horizontal .p-connector{
+    align-self:center;
+    width:28px; height:1px;
+    margin:0 2px;
+  }
+  .pipeline.horizontal .p-connector::after{
+    right:-1px; left:auto; bottom:50%;
+    transform:translateY(50%);
+    border-top:4px solid transparent;
+    border-bottom:4px solid transparent;
+    border-left:5px solid var(--border);
+  }
+
+  /* human vs automation split */
+  .split{
+    margin-top:26px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:22px;
+  }
+  .split .col-head{
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--text-faint);
+    margin-bottom:12px;
+  }
+  .split .col-head.a{color:var(--info);}
+
+  /* ---------- Code window ---------- */
+  .code-window{
+    margin-top:22px;
+    background:#0E1219;
+    border:1px solid var(--border-soft);
+    border-radius:var(--radius-m);
+    overflow:hidden;
+  }
+  .code-window .cw-head{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:10px 14px;
+    background:var(--panel-alt);
+    border-bottom:1px solid var(--border-soft);
+    font-size:12.5px;
+    color:var(--text-faint);
+  }
+  .code-window .cw-head .dot{width:8px;height:8px;border-radius:50%;}
+  .code-window .cw-head .fname{margin-left:6px; font-family:'JetBrains Mono',monospace;}
+  .code-window pre{
+    margin:0;
+    padding:20px 22px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:13px;
+    line-height:1.8;
+    overflow-x:auto;
+  }
+  .code-window .c-kw{color:#8AB4FF;}
+  .code-window .c-fn{color:#7EE0C8;}
+  .code-window .c-str{color:#FFC98B;}
+  .code-window .c-cm{color:var(--text-faint); font-style:italic;}
+  .code-window .c-num{color:#D19FFF;}
+
+  .step-map{
+    margin-top:14px;
+    font-size:13px;
+    color:var(--text-dim);
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .step-map span{
+    background:var(--panel);
+    border:1px solid var(--border-soft);
+    border-radius:20px;
+    padding:5px 12px;
+  }
+  .step-map span b{color:var(--pass); font-weight:600;}
+
+  /* ---------- advantages ---------- */
+  .adv-grid{
+    margin-top:24px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:2px;
+    background:var(--border-soft);
+    border:1px solid var(--border-soft);
+    border-radius:var(--radius-m);
+    overflow:hidden;
+  }
+  .adv-item{
+    background:var(--panel);
+    padding:22px 24px;
+    display:flex;
+    gap:16px;
+  }
+  .adv-item svg{flex-shrink:0; margin-top:2px;}
+  .adv-item h4{font-size:15px; margin-bottom:6px;}
+  .adv-item p{font-size:13.5px; color:var(--text-dim); margin:0;}
+
+  /* ---------- limitations ---------- */
+  .limit-panel{
+    margin-top:22px;
+    background:linear-gradient(180deg, rgba(255,180,84,0.06), transparent);
+    border:1px solid var(--warn-dim);
+    border-radius:var(--radius-m);
+    padding:24px 26px;
+  }
+  .limit-panel h4{font-size:14.5px; color:var(--warn); margin-bottom:14px;}
+  .chip-row{display:flex; flex-wrap:wrap; gap:10px;}
+  .chip{
+    font-size:13px;
+    color:var(--text);
+    background:var(--panel-alt);
+    border:1px solid var(--border-soft);
+    padding:7px 14px;
+    border-radius:20px;
+  }
+
+  /* ---------- comparison table ---------- */
+  table.compare{
+    margin-top:22px;
+    width:100%;
+    border-collapse:collapse;
+    font-size:14px;
+  }
+  table.compare thead th{
+    text-align:left;
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:600;
+    font-size:14px;
+    padding:12px 18px;
+    border-bottom:2px solid var(--border);
+    color:#fff;
+  }
+  table.compare thead th:first-child{color:var(--text-dim);}
+  table.compare thead th:nth-child(2){color:var(--info);}
+  table.compare tbody td{
+    padding:13px 18px;
+    border-bottom:1px solid var(--border-soft);
+    color:var(--text-dim);
+  }
+  table.compare tbody td:nth-child(2){color:var(--text);}
+  table.compare tbody tr:last-child td{border-bottom:none;}
+
+  /* ---------- CI/CD interactive ---------- */
+  .cicd-wrap{margin-top:26px;}
+  .cicd-controls{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin-bottom:22px;
+    font-size:13.5px;
+    color:var(--text-dim);
+  }
+  .cicd-btn{
+    background:var(--info);
+    color:#0B0E14;
+    border:none;
+    font-weight:600;
+    font-size:13.5px;
+    padding:9px 18px;
+    border-radius:7px;
+    cursor:pointer;
+    font-family:'Inter',sans-serif;
+  }
+  .cicd-flow{
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:0;
+  }
+  .cicd-node{
+    background:var(--panel);
+    border:1px solid var(--border-soft);
+    border-radius:var(--radius-m);
+    padding:13px 16px;
+    font-size:13px;
+    text-align:center;
+    min-width:110px;
+    transition:border-color .3s ease, color .3s ease, background .3s ease;
+  }
+  .cicd-arrow{
+    width:24px; height:1px; background:var(--border);
+    position:relative; margin:0 4px;
+  }
+  .cicd-arrow::after{
+    content:""; position:absolute; right:-1px; top:50%; transform:translateY(-50%);
+    border-top:4px solid transparent; border-bottom:4px solid transparent; border-left:5px solid var(--border);
+  }
+  .cicd-node.result{font-weight:700; font-family:'JetBrains Mono',monospace;}
+  .cicd-node.result.pass{border-color:var(--pass); color:var(--pass); background:rgba(53,208,160,0.08);}
+  .cicd-node.result.fail{border-color:var(--fail); color:var(--fail); background:rgba(255,107,122,0.08);}
+  .cicd-branch-note{
+    font-size:12.5px;
+    color:var(--text-faint);
+    margin-top:10px;
+  }
+
+  /* ---------- activity ---------- */
+  .activity-box{
+    margin-top:22px;
+    background:var(--panel);
+    border:1px solid var(--border-soft);
+    border-radius:var(--radius-m);
+    padding:26px 28px;
+  }
+  .activity-box .q{
+    font-size:15.5px;
+    color:#fff;
+    font-family:'Space Grotesk',sans-serif;
+    margin-bottom:6px;
+  }
+  .activity-box .q-context{font-size:13.5px; color:var(--text-dim); margin-bottom:18px;}
+  .reveal-btn{
+    background:transparent;
+    border:1px solid var(--info);
+    color:var(--info);
+    font-weight:600;
+    font-size:13.5px;
+    padding:9px 16px;
+    border-radius:7px;
+    cursor:pointer;
+    font-family:'Inter',sans-serif;
+  }
+  .answer-list{
+    margin-top:18px;
+    display:none;
+    flex-wrap:wrap;
+    gap:9px;
+  }
+  .answer-list.show{display:flex;}
+  .answer-list span{
+    background:var(--pass-dim);
+    color:var(--pass);
+    border:1px solid rgba(53,208,160,0.3);
+    padding:6px 13px;
+    border-radius:20px;
+    font-size:13px;
+  }
+
+  footer{
+    padding:36px 48px 60px;
+    color:var(--text-faint);
+    font-size:12.5px;
+    border-top:1px solid var(--border-soft);
+  }
+
+  @media (max-width: 880px){
+    .shell{grid-template-columns:1fr;}
+    .sidebar{
+      position:relative;
+      height:auto;
+      border-right:none;
+      border-bottom:1px solid var(--border-soft);
+      padding:24px;
+    }
+    .navlist{flex-direction:row; overflow-x:auto; gap:4px;}
+    .navlist a{white-space:nowrap;}
+    main{padding:36px 22px 90px;}
+    .adv-grid{grid-template-columns:1fr;}
+    .split{grid-template-columns:1fr;}
+    .hero h1{font-size:30px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="tag">QA / SDET TRACK · HOUR 1</span>
+      <h1>Automation Testing</h1>
+      <span class="sub">Introduction module</span>
+    </div>
+
+    <ul class="navlist" id="navlist">
+      <li><a href="#s11"><span class="n">1.1</span> What is Software Testing?</a></li>
+      <li><a href="#s12"><span class="n">1.2</span> Manual Testing</a></li>
+      <li><a href="#s13"><span class="n">1.3</span> Automation Testing</a></li>
+      <li><a href="#s14"><span class="n">1.4</span> Advantages</a></li>
+      <li><a href="#s15"><span class="n">1.5</span> Limitations</a></li>
+      <li><a href="#s16"><span class="n">1.6</span> Manual vs Automation</a></li>
+      <li><a href="#activity"><span class="n">▸</span> Practical Activity</a></li>
+    </ul>
+
+    <div class="sidebar-foot">
+      Trainer companion page · designed for classroom walkthrough
+    </div>
+  </aside>
+
+  <main>
+
+    <div class="hero">
+      <span class="kicker">Module 1 · Foundations</span>
+      <h1>Introduction to Automation Testing</h1>
+      <p class="lead">Before writing a single line of test automation, every SDET needs a clear mental model of what testing actually is, where manual effort breaks down at scale, and what automation genuinely solves — and doesn't.</p>
+      <div class="hero-stats">
+        <div><span class="num">6</span><span class="lbl">Core concepts</span></div>
+        <div><span class="num">500+</span><span class="lbl">Typical regression suite size</span></div>
+        <div><span class="num">1</span><span class="lbl">Hour session</span></div>
+      </div>
+    </div>
+
+    <!-- 1.1 -->
+    <section id="s11">
+      <div class="sec-head"><span class="idx">1.1</span><h2>What is Software Testing?</h2></div>
+      <p>Software testing is the process of evaluating software to determine whether it behaves according to expected requirements. Every test starts from the same question: given a specific input, does the application produce the expected outcome?</p>
+
+      <div class="browser-mock">
+        <div class="chrome">
+          <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+          <span class="urlbar">amazon.com/login</span>
+        </div>
+        <div class="body">
+          <div class="field">
+            <label>Username</label>
+            <div class="val">student@gmail.com</div>
+          </div>
+          <div class="field">
+            <label>Password</label>
+            <div class="val">••••••••••••</div>
+          </div>
+          <span class="btn">Login</span>
+          <div class="expect">
+            <span>✓</span>
+            <span><strong style="color:#fff;">Expected result:</strong> user reaches the dashboard. A tester's job is to verify this actually happens.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 1.2 -->
+    <section id="s12">
+      <div class="sec-head"><span class="idx">1.2</span><h2>What is Manual Testing?</h2></div>
+      <p>In manual testing, a human tester performs every action by hand — clicking, typing, and visually verifying the result. Here's the Amazon login example carried out manually:</p>
+
+      <div class="pipeline">
+        <div class="p-node"><span class="step-no">01</span> Open browser</div>
+        <div class="p-connector"></div>
+        <div class="p-node"><span class="step-no">02</span> Open application</div>
+        <div class="p-connector"></div>
+        <div class="p-node"><span class="step-no">03</span> Enter username</div>
+        <div class="p-connector"></div>
+        <div class="p-node"><span class="step-no">04</span> Enter password</div>
+        <div class="p-connector"></div>
+        <div class="p-node"><span class="step-no">05</span> Click Login</div>
+        <div class="p-connector"></div>
+        <div class="p-node"><span class="step-no">06</span> Verify dashboard</div>
+        <div class="p-connector"></div>
+        <div class="p-node"><span class="step-no">07</span> Logout</div>
+      </div>
+
+      <div class="callout">
+        <h4>The scaling problem</h4>
+        <p>If this test needs to be executed 100 times — across builds, browsers, or environments — the tester repeats all seven steps by hand, every single time. Nothing here changes; only the effort multiplies.</p>
+      </div>
+    </section>
+
+    <!-- 1.3 -->
+    <section id="s13">
+      <div class="sec-head"><span class="idx">1.3</span><h2>What is Automation Testing?</h2></div>
+      <p>Automation testing replaces repeated human action with software that executes predefined test cases on its own. The manual chain of "Human → Browser → Click → Verify" becomes a scripted pipeline:</p>
+
+      <div class="pipeline">
+        <div class="p-node">Automation Script</div>
+        <div class="p-connector"></div>
+        <div class="p-node">Automation Tool</div>
+        <div class="p-connector"></div>
+        <div class="p-node">Browser</div>
+        <div class="p-connector"></div>
+        <div class="p-node">Application</div>
+        <div class="p-connector"></div>
+        <div class="p-node" style="border-color:var(--pass); color:var(--pass);">Result</div>
+      </div>
+
+      <div class="callout" style="margin-top:28px;">
+        <h4>Real-life example — a banking application</h4>
+        <p>Every time developers release a new version, QA must re-verify login, logout, balance, fund transfer, account statement, and password reset — across roughly <strong style="color:#fff;">500 regression test cases</strong>. Done manually, that verification can take several days. Automation can execute the same suite repeatedly with minimal human intervention.</p>
+      </div>
+
+      <h4 style="margin-top:32px; font-size:15px; color:#fff;">Implementing it: automating the login test</h4>
+      <p style="margin-top:8px;">Here's how the same seven-step manual login test from 1.2 gets expressed as an automation script. Each line maps directly to one manual step — this is the core idea students should hold onto: automation doesn't invent new steps, it scripts the ones a human already performs.</p>
+
+      <div class="code-window">
+        <div class="cw-head">
+          <span class="dot" style="background:#FF6B6B;"></span>
+          <span class="dot" style="background:#FFC85B;"></span>
+          <span class="dot" style="background:#3DD68C;"></span>
+          <span class="fname">login.test.js</span>
+        </div>
+        <pre><span class="c-kw">const</span> { <span class="c-fn">Builder</span>, <span class="c-fn">By</span>, <span class="c-fn">until</span> } = <span class="c-fn">require</span>(<span class="c-str">'selenium-webdriver'</span>);
+
+<span class="c-cm">// Step 1–2: open browser, open application</span>
+<span class="c-kw">const</span> driver = <span class="c-kw">await new</span> <span class="c-fn">Builder</span>().<span class="c-fn">forBrowser</span>(<span class="c-str">'chrome'</span>).<span class="c-fn">build</span>();
+<span class="c-kw">await</span> driver.<span class="c-fn">get</span>(<span class="c-str">'https://amazon.com/login'</span>);
+
+<span class="c-cm">// Step 3–4: enter username and password</span>
+<span class="c-kw">await</span> driver.<span class="c-fn">findElement</span>(<span class="c-fn">By</span>.<span class="c-fn">id</span>(<span class="c-str">'username'</span>)).<span class="c-fn">sendKeys</span>(<span class="c-str">'student@gmail.com'</span>);
+<span class="c-kw">await</span> driver.<span class="c-fn">findElement</span>(<span class="c-fn">By</span>.<span class="c-fn">id</span>(<span class="c-str">'password'</span>)).<span class="c-fn">sendKeys</span>(<span class="c-str">'Password123'</span>);
+
+<span class="c-cm">// Step 5: click Login</span>
+<span class="c-kw">await</span> driver.<span class="c-fn">findElement</span>(<span class="c-fn">By</span>.<span class="c-fn">id</span>(<span class="c-str">'loginBtn'</span>)).<span class="c-fn">click</span>();
+
+<span class="c-cm">// Step 6: verify dashboard — this replaces the human eye</span>
+<span class="c-kw">await</span> driver.<span class="c-fn">wait</span>(<span class="c-fn">until</span>.<span class="c-fn">urlContains</span>(<span class="c-str">'dashboard'</span>), <span class="c-num">5000</span>);
+<span class="c-fn">console</span>.<span class="c-fn">log</span>(<span class="c-str">'PASS: dashboard reached'</span>);
+
+<span class="c-cm">// Step 7: logout, close browser</span>
+<span class="c-kw">await</span> driver.<span class="c-fn">findElement</span>(<span class="c-fn">By</span>.<span class="c-fn">id</span>(<span class="c-str">'logout'</span>)).<span class="c-fn">click</span>();
+<span class="c-kw">await</span> driver.<span class="c-fn">quit</span>();</pre>
+      </div>
+
+      <div class="step-map">
+        <span><b>01–02</b> Builder + get()</span>
+        <span><b>03–04</b> sendKeys()</span>
+        <span><b>05</b> click()</span>
+        <span><b>06</b> wait + urlContains()</span>
+        <span><b>07</b> click(logout) + quit()</span>
+      </div>
+    </section>
+
+    <!-- 1.4 -->
+    <section id="s14">
+      <div class="sec-head"><span class="idx">1.4</span><h2>Advantages of Automation Testing</h2></div>
+      <p>None of these benefits come from automation being "smarter" than a human tester — they come from removing repetition from the equation.</p>
+
+      <div class="adv-grid">
+        <div class="adv-item">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#6C8CFF" stroke-width="1.8"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z" stroke-linejoin="round"/></svg>
+          <div><h4>Faster execution</h4><p>100 tests can potentially execute much faster than the same tests run manually.</p></div>
+        </div>
+        <div class="adv-item">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#6C8CFF" stroke-width="1.8"><path d="M17 2v4M17 6a8 8 0 1 0 3 6.2M21 2v6h-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div><h4>Repeatability</h4><p>The exact same test can be executed again and again without drift in how it's performed.</p></div>
+        </div>
+        <div class="adv-item">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#6C8CFF" stroke-width="1.8"><path d="m9 12 2 2 4-4M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7l8-4Z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div><h4>Accuracy</h4><p>Reduces human errors such as a wrong username, a missed click, or a skipped validation.</p></div>
+        </div>
+        <div class="adv-item">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#6C8CFF" stroke-width="1.8"><rect x="3" y="4" width="18" height="4.5" rx="1"/><rect x="3" y="10.75" width="18" height="4.5" rx="1"/><rect x="3" y="17.5" width="18" height="4.5" rx="1"/></svg>
+          <div><h4>Regression testing</h4><p>Automation is especially valuable for regression suites that must be re-run every release.</p></div>
+        </div>
+        <div class="adv-item">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#6C8CFF" stroke-width="1.8"><rect x="3" y="3" width="5.5" height="18" rx="1"/><rect x="9.5" y="3" width="5.5" height="18" rx="1"/><rect x="16" y="3" width="5.5" height="18" rx="1"/></svg>
+          <div><h4>Parallel execution</h4><p>Tests can run across multiple browsers or machines at the same time.</p></div>
+        </div>
+        <div class="adv-item">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#6C8CFF" stroke-width="1.8"><circle cx="6" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="12" r="2.5"/><path d="M6 8.5v7M8.5 12H15.5M8.2 7.2 15.8 10.8" stroke-linecap="round"/></svg>
+          <div><h4>CI/CD integration</h4><p>Automated tests can run automatically the moment developers commit new code.</p></div>
+        </div>
+      </div>
+
+      <h4 style="margin-top:36px; font-size:15px; color:#fff;">The CI/CD flow, live</h4>
+      <p style="margin-top:8px;">Click the button to simulate a build. Watch how the same pipeline routes to two different destinations depending on the test result.</p>
+
+      <div class="cicd-wrap">
+        <div class="cicd-controls">
+          <button class="cicd-btn" id="simBtn">Simulate build</button>
+          <span id="simStatus">Awaiting first run…</span>
+        </div>
+        <div class="cicd-flow" id="cicdFlow">
+          <div class="cicd-node">Developer commits</div>
+          <div class="cicd-arrow"></div>
+          <div class="cicd-node">GitHub</div>
+          <div class="cicd-arrow"></div>
+          <div class="cicd-node">Build</div>
+          <div class="cicd-arrow"></div>
+          <div class="cicd-node">Automated Tests</div>
+          <div class="cicd-arrow"></div>
+          <div class="cicd-node result" id="resultNode">PASS / FAIL</div>
+          <div class="cicd-arrow"></div>
+          <div class="cicd-node" id="finalNode">Deployment</div>
+        </div>
+        <div class="cicd-branch-note" id="branchNote">A failing suite blocks deployment and routes straight back to the developer — nothing broken ships automatically.</div>
+      </div>
+    </section>
+
+    <!-- 1.5 -->
+    <section id="s15">
+      <div class="sec-head"><span class="idx">1.5</span><h2>Limitations of Automation Testing</h2></div>
+      <p>Automation does <strong style="color:#fff;">not</strong> replace manual testing. It's a tool for repeatable, well-defined checks — not for judgment calls.</p>
+
+      <div class="limit-panel">
+        <h4>Automation is not ideal for:</h4>
+        <div class="chip-row">
+          <span class="chip">Exploratory testing</span>
+          <span class="chip">Usability testing</span>
+          <span class="chip">Visual judgement</span>
+          <span class="chip">Ad-hoc testing</span>
+          <span class="chip">Tests that change constantly</span>
+          <span class="chip">One-time tests</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 1.6 -->
+    <section id="s16">
+      <div class="sec-head"><span class="idx">1.6</span><h2>Manual vs Automation</h2></div>
+      <p>A quick side-by-side to anchor the distinction before moving into hands-on tooling.</p>
+
+      <table class="compare">
+        <thead>
+          <tr><th>Manual</th><th>Automation</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Human executes test</td><td>Script executes test</td></tr>
+          <tr><td>Slower for repetition</td><td>Faster for repetition</td></tr>
+          <tr><td>Good for exploratory testing</td><td>Good for regression</td></tr>
+          <tr><td>No programming required</td><td>Programming usually required</td></tr>
+          <tr><td>Higher repetitive effort</td><td>Lower repetitive effort</td></tr>
+          <tr><td>Human-dependent</td><td>Machine-executable</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Practical Activity -->
+    <section id="activity">
+      <div class="sec-head"><span class="idx">▸</span><h2>Practical Activity — Hour 1</h2></div>
+      <div class="activity-box">
+        <div class="q">"You have an e-commerce application with 1,000 test cases. Which tests would you automate?"</div>
+        <div class="q-context">Ask students to answer first, in their own words, before revealing the expected list below.</div>
+        <button class="reveal-btn" id="revealBtn">Reveal expected answers</button>
+        <div class="answer-list" id="answerList">
+          <span>Login</span><span>Logout</span><span>Search</span><span>Add to cart</span>
+          <span>Checkout</span><span>Payment validation</span><span>Order creation</span>
+          <span>Order cancellation</span><span>Regression scenarios</span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer>
+  Automation Testing · Hour 1 companion page — built for classroom delivery and self-paced review.
+</footer>
+
+<script>
+  // Scrollspy
+  const links = Array.from(document.querySelectorAll('#navlist a'));
+  const sections = links.map(a => document.querySelector(a.getAttribute('href')));
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const id = '#' + entry.target.id;
+      const link = links.find(a => a.getAttribute('href') === id);
+      if (!link) return;
+      if (entry.isIntersecting) {
+        links.forEach(a => a.classList.remove('active'));
+        link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(s => s && io.observe(s));
+
+  // Practical activity reveal
+  document.getElementById('revealBtn').addEventListener('click', function(){
+    const list = document.getElementById('answerList');
+    const showing = list.classList.toggle('show');
+    this.textContent = showing ? 'Hide expected answers' : 'Reveal expected answers';
+  });
+
+  // CI/CD simulate
+  const simBtn = document.getElementById('simBtn');
+  const resultNode = document.getElementById('resultNode');
+  const finalNode = document.getElementById('finalNode');
+  const simStatus = document.getElementById('simStatus');
+  const branchNote = document.getElementById('branchNote');
+
+  simBtn.addEventListener('click', () => {
+    const pass = Math.random() > 0.35;
+    resultNode.classList.remove('pass','fail');
+    if (pass) {
+      resultNode.classList.add('pass');
+      resultNode.textContent = 'PASS';
+      finalNode.textContent = 'Deployment';
+      finalNode.style.borderColor = 'var(--pass)';
+      finalNode.style.color = 'var(--pass)';
+      simStatus.textContent = 'Tests passed — shipped to production.';
+      branchNote.textContent = 'All checks passed, so the pipeline proceeded straight to deployment automatically.';
+    } else {
+      resultNode.classList.add('fail');
+      resultNode.textContent = 'FAIL';
+      finalNode.textContent = 'Back to Developer';
+      finalNode.style.borderColor = 'var(--fail)';
+      finalNode.style.color = 'var(--fail)';
+      simStatus.textContent = 'Tests failed — deployment blocked.';
+      branchNote.textContent = 'A failing suite blocks deployment and routes back to the developer for a fix — nothing broken ships automatically.';
+    }
+  });
+</script>
+
+</body>
+</html>

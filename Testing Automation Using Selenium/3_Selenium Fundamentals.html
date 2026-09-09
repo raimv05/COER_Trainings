@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Automation Testing — Hour 3 | Selenium WebDriver Fundamentals</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0E14;
+    --panel:#131720;
+    --panel-alt:#171C27;
+    --border:#232938;
+    --border-soft:#1B2130;
+    --text:#E7EAF0;
+    --text-dim:#8B93A7;
+    --text-faint:#5B6478;
+    --pass:#35D0A0;
+    --pass-dim:#1D5B49;
+    --fail:#FF6B7A;
+    --fail-dim:#5C2530;
+    --info:#6C8CFF;
+    --info-dim:#26305C;
+    --warn:#FFB454;
+    --warn-dim:#5C4520;
+    --radius-s:6px;
+    --radius-m:10px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:'Inter',sans-serif; font-size:16px; line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{font-family:'Space Grotesk',sans-serif; font-weight:600; color:#F4F6FA; line-height:1.25; margin:0;}
+  code, .mono{font-family:'JetBrains Mono',monospace;}
+  a{color:inherit;}
+  ::selection{background:var(--info-dim); color:#fff;}
+
+  .shell{display:grid; grid-template-columns:250px minmax(0,1fr); max-width:1280px; margin:0 auto;}
+  .sidebar{
+    position:sticky; top:0; height:100vh; padding:32px 20px 32px 32px;
+    border-right:1px solid var(--border-soft); display:flex; flex-direction:column; gap:28px;
+  }
+  .brand{display:flex; flex-direction:column; gap:4px;}
+  .brand .tag{font-size:12px; color:var(--info); font-weight:600; letter-spacing:.02em;}
+  .brand h1{font-size:19px;}
+  .brand .sub{font-size:13px;color:var(--text-dim);}
+
+  .navlist{list-style:none; margin:0;padding:0; display:flex; flex-direction:column; gap:2px; font-size:14px;}
+  .navlist a{
+    display:flex; gap:10px; align-items:baseline; text-decoration:none;
+    color:var(--text-dim); padding:7px 10px; border-radius:var(--radius-s);
+    border-left:2px solid transparent; transition:color .15s ease, background .15s ease, border-color .15s ease;
+  }
+  .navlist a .n{font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-faint); min-width:26px;}
+  .navlist a:hover{color:var(--text); background:var(--panel);}
+  .navlist a.active{color:#fff; background:var(--panel); border-left-color:var(--info);}
+  .navlist a.active .n{color:var(--info);}
+
+  .sidebar-foot{margin-top:auto; font-size:12px; color:var(--text-faint); border-top:1px solid var(--border-soft); padding-top:16px;}
+
+  main{padding:56px 48px 120px 48px; min-width:0;}
+  .hero{padding-bottom:44px; margin-bottom:44px; border-bottom:1px solid var(--border-soft);}
+  .hero .kicker{color:var(--info); font-weight:600; font-size:13px; margin-bottom:14px; display:block;}
+  .hero h1{font-size:40px; letter-spacing:-0.01em; max-width:640px;}
+  .hero p.lead{margin-top:16px; max-width:600px; color:var(--text-dim); font-size:16px;}
+  .hero-stats{display:flex; gap:32px; margin-top:32px; flex-wrap:wrap;}
+  .hero-stats div{display:flex; flex-direction:column; gap:2px;}
+  .hero-stats .num{font-family:'Space Grotesk',sans-serif; font-size:24px; font-weight:700; color:#fff;}
+  .hero-stats .lbl{font-size:12.5px; color:var(--text-faint);}
+
+  section{margin-bottom:72px; scroll-margin-top:24px;}
+  section .sec-head{display:flex; align-items:baseline; gap:14px; margin-bottom:18px;}
+  section .sec-head .idx{font-family:'JetBrains Mono',monospace; color:var(--info); font-size:15px; font-weight:600;}
+  section .sec-head h2{font-size:25px;}
+  section > p{color:var(--text-dim); max-width:680px;}
+  section > p + p{margin-top:14px;}
+
+  h3.sub-head{font-size:16px; color:#fff; margin-top:36px; margin-bottom:6px;}
+  h3.sub-head .step-tag{
+    font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--info);
+    background:var(--info-dim); padding:3px 9px; border-radius:20px; margin-right:10px; vertical-align:middle;
+  }
+  p.sub-lead{color:var(--text-dim); font-size:14.5px; margin-top:6px; max-width:640px;}
+
+  .callout{background:var(--panel); border:1px solid var(--border-soft); border-radius:var(--radius-m); padding:22px 24px; margin-top:20px;}
+  .callout h4{font-size:15px; margin-bottom:12px; color:#fff;}
+  .callout p{color:var(--text-dim); font-size:14.5px;}
+  .callout.info{border-color:var(--info-dim); background:linear-gradient(180deg, rgba(108,140,255,0.06), transparent);}
+  .callout.info h4{color:var(--info);}
+  .callout.warn{border-color:var(--warn-dim); background:linear-gradient(180deg, rgba(255,180,84,0.06), transparent);}
+  .callout.warn h4{color:var(--warn);}
+
+  /* ---------- Pipeline / flow diagrams ---------- */
+  .pipeline{margin-top:24px; display:flex; flex-direction:column;}
+  .pipeline.horizontal{flex-direction:row; flex-wrap:wrap; align-items:stretch;}
+  .p-node{
+    background:var(--panel); border:1px solid var(--border-soft); border-radius:var(--radius-m);
+    padding:14px 18px; font-size:14px; display:flex; align-items:center; gap:10px; color:var(--text);
+  }
+  .pipeline:not(.horizontal) .p-node{align-self:flex-start; min-width:290px;}
+  .p-node .step-no{font-family:'JetBrains Mono',monospace; color:var(--text-faint); font-size:12px;}
+  .p-node .sub-label{font-size:12px; color:var(--text-faint); margin-left:2px;}
+  .p-connector{align-self:flex-start; margin-left:29px; width:1px; height:26px; background:var(--border); position:relative;}
+  .p-connector::after{
+    content:""; position:absolute; bottom:-1px; left:50%; transform:translateX(-50%);
+    border-left:4px solid transparent; border-right:4px solid transparent; border-top:5px solid var(--border);
+  }
+  .pipeline.horizontal .p-connector{align-self:center; width:28px; height:1px; margin:0 2px;}
+  .pipeline.horizontal .p-connector::after{
+    right:-1px; left:auto; bottom:50%; transform:translateY(50%);
+    border-top:4px solid transparent; border-bottom:4px solid transparent; border-left:5px solid var(--border);
+  }
+  .p-node.tone-pass{border-color:var(--pass); color:var(--pass);}
+  .p-node.tone-info{border-color:var(--info); color:var(--info);}
+
+  /* ---------- Code window ---------- */
+  .code-window{margin-top:22px; background:#0E1219; border:1px solid var(--border-soft); border-radius:var(--radius-m); overflow:hidden;}
+  .code-window .cw-head{
+    display:flex; align-items:center; gap:8px; padding:10px 14px; background:var(--panel-alt);
+    border-bottom:1px solid var(--border-soft); font-size:12.5px; color:var(--text-faint);
+  }
+  .code-window .cw-head .dot{width:8px;height:8px;border-radius:50%;}
+  .code-window .cw-head .fname{margin-left:6px; font-family:'JetBrains Mono',monospace;}
+  .code-window pre{margin:0; padding:20px 22px; font-family:'JetBrains Mono',monospace; font-size:13px; line-height:1.8; overflow-x:auto;}
+  .code-window .c-kw{color:#8AB4FF;}
+  .code-window .c-fn{color:#7EE0C8;}
+  .code-window .c-str{color:#FFC98B;}
+  .code-window .c-cm{color:var(--text-faint); font-style:italic;}
+  .code-window .c-num{color:#D19FFF;}
+  .code-window .c-cls{color:#FFD479;}
+  .code-window .c-tag{color:#8AB4FF;}
+  .code-window .c-attr{color:#7EE0C8;}
+
+  .code-window.compact pre{font-size:12.5px; padding:16px 18px; line-height:1.9;}
+  .cmd-desc{
+    display:block; color:var(--text-faint); font-style:italic; font-size:11.5px; margin-left:0;
+  }
+
+  /* ---------- terminal ---------- */
+  .terminal{
+    margin-top:18px; background:#0E1219; border:1px solid var(--border-soft); border-radius:var(--radius-m);
+    padding:16px 20px; font-family:'JetBrains Mono',monospace; font-size:13px; max-width:420px;
+  }
+  .terminal .prompt{color:var(--pass);}
+  .terminal .out{color:var(--text-dim); margin-top:6px;}
+
+  /* ---------- file tree ---------- */
+  .file-tree{
+    margin-top:18px; background:var(--panel); border:1px solid var(--border-soft); border-radius:var(--radius-m);
+    padding:18px 22px; font-family:'JetBrains Mono',monospace; font-size:13px; max-width:400px; color:var(--text-dim);
+  }
+  .file-tree .row{padding:3px 0;}
+  .file-tree .depth-1{padding-left:20px;}
+  .file-tree .depth-2{padding-left:40px;}
+  .file-tree .depth-3{padding-left:60px; color:var(--info);}
+
+  /* ---------- 3-step process nodes (install steps) ---------- */
+  .process-row{display:flex; align-items:stretch; gap:0; margin-top:22px; flex-wrap:wrap;}
+  .process-row .p-node{min-width:0;}
+
+  /* ---------- implementation stepper ---------- */
+  .stepper{margin-top:24px; display:flex; flex-direction:column; gap:0;}
+  .stepper .step{display:flex; gap:18px; padding:18px 0; border-bottom:1px solid var(--border-soft);}
+  .stepper .step:last-child{border-bottom:none;}
+  .stepper .step .num{
+    font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--info);
+    background:var(--info-dim); width:30px; height:30px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .stepper .step .content{flex:1;}
+  .stepper .step .content h4{font-size:14.5px; color:#fff; margin-bottom:6px;}
+  .stepper .step .content p{font-size:13.5px; color:var(--text-dim); margin:0;}
+  .stepper .step .content code.inline{
+    display:inline-block; margin-top:8px; background:#0E1219; border:1px solid var(--border-soft);
+    border-radius:6px; padding:6px 12px; font-family:'JetBrains Mono',monospace; font-size:12.5px; color:var(--pass);
+  }
+
+  /* ---------- command reference table ---------- */
+  table.cmdref{margin-top:22px; width:100%; border-collapse:collapse; font-size:13.5px;}
+  table.cmdref thead th{
+    text-align:left; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13.5px;
+    padding:11px 16px; border-bottom:2px solid var(--border); color:#fff;
+  }
+  table.cmdref tbody td{padding:11px 16px; border-bottom:1px solid var(--border-soft); color:var(--text-dim); vertical-align:top;}
+  table.cmdref tbody td:first-child{
+    font-family:'JetBrains Mono',monospace; font-size:12.5px; color:var(--pass); white-space:nowrap;
+  }
+  table.cmdref tbody tr:last-child td{border-bottom:none;}
+
+  footer{padding:36px 48px 60px; color:var(--text-faint); font-size:12.5px; border-top:1px solid var(--border-soft);}
+
+  @media (max-width: 880px){
+    .shell{grid-template-columns:1fr;}
+    .sidebar{position:relative; height:auto; border-right:none; border-bottom:1px solid var(--border-soft); padding:24px;}
+    .navlist{flex-direction:row; overflow-x:auto; gap:4px;}
+    .navlist a{white-space:nowrap;}
+    main{padding:36px 22px 90px;}
+    .hero h1{font-size:30px;}
+    table.cmdref{font-size:12.5px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="tag">QA / SDET TRACK · HOUR 3</span>
+      <h1>Selenium WebDriver</h1>
+      <span class="sub">Fundamentals module</span>
+    </div>
+
+    <ul class="navlist" id="navlist">
+      <li><a href="#s31"><span class="n">3.1</span> What is Selenium?</a></li>
+      <li><a href="#s32"><span class="n">3.2</span> Architecture</a></li>
+      <li><a href="#s33"><span class="n">3.3</span> First Project Setup</a></li>
+      <li><a href="#s34"><span class="n">3.4</span> First Program</a></li>
+      <li><a href="#s35"><span class="n">3.5</span> Browser Commands</a></li>
+    </ul>
+
+    <div class="sidebar-foot">
+      Trainer companion page · designed for classroom walkthrough
+    </div>
+  </aside>
+
+  <main>
+
+    <div class="hero">
+      <span class="kicker">Module 3 · Tooling</span>
+      <h1>Selenium WebDriver Fundamentals</h1>
+      <p class="lead">This is where automation stops being a diagram and becomes a running browser. Students go from installing Java to executing their first real WebDriver command against a live site.</p>
+      <div class="hero-stats">
+        <div><span class="num">5</span><span class="lbl">Architecture layers</span></div>
+        <div><span class="num">7</span><span class="lbl">Setup steps to first run</span></div>
+        <div><span class="num">6</span><span class="lbl">Core browser commands</span></div>
+      </div>
+    </div>
+
+    <!-- 3.1 -->
+    <section id="s31">
+      <div class="sec-head"><span class="idx">3.1</span><h2>What is Selenium?</h2></div>
+      <p>Selenium is an open-source browser automation ecosystem — not a single tool, but a family of them. The component beginners should learn first is <strong style="color:#fff;">Selenium WebDriver</strong>.</p>
+      <div class="callout info">
+        <h4>Selenium WebDriver</h4>
+        <p>WebDriver drives browsers natively and exposes an API for interacting with web applications — clicking elements, typing into fields, reading page state — the same actions a human tester performs by hand.</p>
+      </div>
+    </section>
+
+    <!-- 3.2 -->
+    <section id="s32">
+      <div class="sec-head"><span class="idx">3.2</span><h2>Selenium Architecture</h2></div>
+      <p>A single WebDriver command travels through several layers before a browser actually does anything:</p>
+
+      <div class="pipeline">
+        <div class="p-node">Java Test Code</div>
+        <div class="p-connector"></div>
+        <div class="p-node">Selenium WebDriver</div>
+        <div class="p-connector"></div>
+        <div class="p-node">Browser Driver <span class="sub-label">(WebDriver implementation)</span></div>
+        <div class="p-connector"></div>
+        <div class="p-node">Chrome / Firefox / Edge</div>
+        <div class="p-connector"></div>
+        <div class="p-node tone-pass">Web Application</div>
+      </div>
+
+      <div class="callout">
+        <h4>Beyond one-way commands: WebDriver BiDi</h4>
+        <p>Modern Selenium also includes WebDriver BiDi capabilities, extending automation toward bidirectional communication — letting scripts listen for things like network events and console errors rather than only sending commands downward.</p>
+      </div>
+    </section>
+
+    <!-- 3.3 -->
+    <section id="s33">
+      <div class="sec-head"><span class="idx">3.3</span><h2>Create First Selenium Project</h2></div>
+      <p>Three steps stand between an empty machine and a project ready to run WebDriver code.</p>
+
+      <h3 class="sub-head"><span class="step-tag">STEP 1</span>Install Java</h3>
+      <p class="sub-lead">Use Java 17 or newer.</p>
+      <div class="terminal">
+        <div><span class="prompt">$</span> java -version</div>
+        <div class="out">openjdk version "17.0.x" ...</div>
+      </div>
+
+      <h3 class="sub-head"><span class="step-tag">STEP 2</span>Install IntelliJ IDEA</h3>
+      <p class="sub-lead">Create a new project through this path:</p>
+      <div class="pipeline">
+        <div class="p-node">New Project</div>
+        <div class="p-connector"></div>
+        <div class="p-node">Java</div>
+        <div class="p-connector"></div>
+        <div class="p-node tone-pass">Maven</div>
+      </div>
+
+      <h3 class="sub-head"><span class="step-tag">STEP 3</span>Create pom.xml</h3>
+      <p class="sub-lead">This file tells Maven which libraries the project depends on.</p>
+
+      <div class="code-window">
+        <div class="cw-head">
+          <span class="dot" style="background:#FF6B6B;"></span>
+          <span class="dot" style="background:#FFC85B;"></span>
+          <span class="dot" style="background:#3DD68C;"></span>
+          <span class="fname">pom.xml</span>
+        </div>
+        <pre>&lt;<span class="c-tag">project</span> <span class="c-attr">xmlns</span>=<span class="c-str">"http://maven.apache.org/POM/4.0.0"</span>
+         <span class="c-attr">xmlns:xsi</span>=<span class="c-str">"http://www.w3.org/2001/XMLSchema-instance"</span>
+         <span class="c-attr">xsi:schemaLocation</span>=<span class="c-str">"
+         http://maven.apache.org/POM/4.0.0
+         https://maven.apache.org/xsd/maven-4.0.0.xsd"</span>&gt;
+
+    &lt;<span class="c-tag">modelVersion</span>&gt;4.0.0&lt;/<span class="c-tag">modelVersion</span>&gt;
+
+    &lt;<span class="c-tag">groupId</span>&gt;automation.training&lt;/<span class="c-tag">groupId</span>&gt;
+    &lt;<span class="c-tag">artifactId</span>&gt;selenium-training&lt;/<span class="c-tag">artifactId</span>&gt;
+    &lt;<span class="c-tag">version</span>&gt;1.0-SNAPSHOT&lt;/<span class="c-tag">version</span>&gt;
+
+    &lt;<span class="c-tag">properties</span>&gt;
+        &lt;<span class="c-tag">maven.compiler.source</span>&gt;17&lt;/<span class="c-tag">maven.compiler.source</span>&gt;
+        &lt;<span class="c-tag">maven.compiler.target</span>&gt;17&lt;/<span class="c-tag">maven.compiler.target</span>&gt;
+    &lt;/<span class="c-tag">properties</span>&gt;
+
+    &lt;<span class="c-tag">dependencies</span>&gt;
+
+        &lt;<span class="c-tag">dependency</span>&gt;
+            &lt;<span class="c-tag">groupId</span>&gt;org.seleniumhq.selenium&lt;/<span class="c-tag">groupId</span>&gt;
+            &lt;<span class="c-tag">artifactId</span>&gt;selenium-java&lt;/<span class="c-tag">artifactId</span>&gt;
+            &lt;<span class="c-tag">version</span>&gt;4.48.0&lt;/<span class="c-tag">version</span>&gt;
+        &lt;/<span class="c-tag">dependency</span>&gt;
+
+        &lt;<span class="c-tag">dependency</span>&gt;
+            &lt;<span class="c-tag">groupId</span>&gt;org.testng&lt;/<span class="c-tag">groupId</span>&gt;
+            &lt;<span class="c-tag">artifactId</span>&gt;testng&lt;/<span class="c-tag">artifactId</span>&gt;
+            &lt;<span class="c-tag">version</span>&gt;7.12.0&lt;/<span class="c-tag">version</span>&gt;
+            &lt;<span class="c-tag">scope</span>&gt;test&lt;/<span class="c-tag">scope</span>&gt;
+        &lt;/<span class="c-tag">dependency</span>&gt;
+
+    &lt;/<span class="c-tag">dependencies</span>&gt;
+
+&lt;/<span class="c-tag">project</span>&gt;</pre>
+      </div>
+
+      <div class="callout warn">
+        <h4>Trainer note</h4>
+        <p>4.48.0 and 7.12.0 were the current stable Maven Central releases for selenium-java and testng as of late August 2026. Both libraries ship frequently — have students check Maven Central for the current stable version at delivery time rather than copying these numbers as permanent truth.</p>
+      </div>
+    </section>
+
+    <!-- 3.4 -->
+    <section id="s34">
+      <div class="sec-head"><span class="idx">3.4</span><h2>First Selenium Program</h2></div>
+      <p>Create the test file inside the standard Maven source layout:</p>
+
+      <div class="file-tree">
+        <div class="row">src</div>
+        <div class="row depth-1">└── test</div>
+        <div class="row depth-2">└── java</div>
+        <div class="row depth-3">└── FirstSeleniumTest.java</div>
+      </div>
+
+      <div class="code-window">
+        <div class="cw-head">
+          <span class="dot" style="background:#FF6B6B;"></span>
+          <span class="dot" style="background:#FFC85B;"></span>
+          <span class="dot" style="background:#3DD68C;"></span>
+          <span class="fname">FirstSeleniumTest.java</span>
+        </div>
+        <pre><span class="c-kw">import</span> org.openqa.selenium.WebDriver;
+<span class="c-kw">import</span> org.openqa.selenium.chrome.ChromeDriver;
+
+<span class="c-kw">public class</span> <span class="c-cls">FirstSeleniumTest</span> {
+
+    <span class="c-kw">public static void</span> <span class="c-fn">main</span>(<span class="c-cls">String</span>[] args) {
+
+        <span class="c-cls">WebDriver</span> driver = <span class="c-kw">new</span> <span class="c-fn">ChromeDriver</span>();
+
+        driver.<span class="c-fn">get</span>(<span class="c-str">"https://www.google.com"</span>);
+
+        <span class="c-fn">System</span>.out.<span class="c-fn">println</span>(<span class="c-str">"Title: "</span> + driver.<span class="c-fn">getTitle</span>());
+
+        driver.<span class="c-fn">quit</span>();
+    }
+}</pre>
+      </div>
+
+      <div class="callout">
+        <h4>This is the standard pattern, not a shortcut</h4>
+        <p>Selenium's own first-script documentation follows this same basic shape: create a browser session, interact with the browser, then close the session. Every WebDriver script — however complex — is built on that same three-part skeleton.</p>
+      </div>
+
+      <h3 class="sub-head" style="margin-top:40px;">Implementation Steps</h3>
+      <p class="sub-lead">The same program, broken into the seven decisions a beginner actually makes.</p>
+
+      <div class="stepper">
+        <div class="step">
+          <div class="num">1</div>
+          <div class="content"><h4>Create Maven project</h4><p>Set up the project skeleton IntelliJ generates from New Project → Java → Maven.</p></div>
+        </div>
+        <div class="step">
+          <div class="num">2</div>
+          <div class="content"><h4>Add Selenium dependency</h4><p>Declare selenium-java inside pom.xml so Maven downloads the WebDriver libraries.</p></div>
+        </div>
+        <div class="step">
+          <div class="num">3</div>
+          <div class="content"><h4>Create Java class</h4><p>Add FirstSeleniumTest.java under src/test/java.</p></div>
+        </div>
+        <div class="step">
+          <div class="num">4</div>
+          <div class="content"><h4>Create WebDriver</h4><p>Instantiate a browser session.</p><code class="inline">WebDriver driver = new ChromeDriver();</code></div>
+        </div>
+        <div class="step">
+          <div class="num">5</div>
+          <div class="content"><h4>Open website</h4><p>Navigate the browser to a URL.</p><code class="inline">driver.get("https://www.google.com");</code></div>
+        </div>
+        <div class="step">
+          <div class="num">6</div>
+          <div class="content"><h4>Print title</h4><p>Read back page state to confirm the browser actually loaded the page.</p><code class="inline">System.out.println(driver.getTitle());</code></div>
+        </div>
+        <div class="step">
+          <div class="num">7</div>
+          <div class="content"><h4>Close</h4><p>Always end a session — an open browser process left behind is a common beginner mistake.</p><code class="inline">driver.quit();</code></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3.5 -->
+    <section id="s35">
+      <div class="sec-head"><span class="idx">3.5</span><h2>Browser Commands</h2></div>
+      <p>A small set of WebDriver commands covers most day-to-day navigation and inspection needs.</p>
+
+      <div class="code-window">
+        <div class="cw-head">
+          <span class="dot" style="background:#FF6B6B;"></span>
+          <span class="dot" style="background:#FFC85B;"></span>
+          <span class="dot" style="background:#3DD68C;"></span>
+          <span class="fname">BrowserCommands.java</span>
+        </div>
+        <pre>driver.<span class="c-fn">get</span>(<span class="c-str">"https://example.com"</span>);
+
+driver.<span class="c-fn">getTitle</span>();
+
+driver.<span class="c-fn">getCurrentUrl</span>();
+
+driver.<span class="c-fn">navigate</span>().<span class="c-fn">back</span>();
+
+driver.<span class="c-fn">navigate</span>().<span class="c-fn">forward</span>();
+
+driver.<span class="c-fn">navigate</span>().<span class="c-fn">refresh</span>();
+
+driver.<span class="c-fn">quit</span>();</pre>
+      </div>
+
+      <table class="cmdref">
+        <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td>driver.get(url)</td><td>Loads the given URL in the current browser window.</td></tr>
+          <tr><td>driver.getTitle()</td><td>Returns the current page's title — useful for quick assertions.</td></tr>
+          <tr><td>driver.getCurrentUrl()</td><td>Returns the URL currently loaded in the browser.</td></tr>
+          <tr><td>driver.navigate().back()</td><td>Goes back one step in browser history, like the back button.</td></tr>
+          <tr><td>driver.navigate().forward()</td><td>Goes forward one step in browser history.</td></tr>
+          <tr><td>driver.navigate().refresh()</td><td>Reloads the current page.</td></tr>
+          <tr><td>driver.quit()</td><td>Closes every window the driver opened and ends the session.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+  </main>
+</div>
+
+<footer>
+  Automation Testing · Hour 3 companion page — built for classroom delivery and self-paced review.
+</footer>
+
+<script>
+  const links = Array.from(document.querySelectorAll('#navlist a'));
+  const sections = links.map(a => document.querySelector(a.getAttribute('href')));
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const id = '#' + entry.target.id;
+      const link = links.find(a => a.getAttribute('href') === id);
+      if (!link) return;
+      if (entry.isIntersecting) {
+        links.forEach(a => a.classList.remove('active'));
+        link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(s => s && io.observe(s));
+</script>
+
+</body>
+</html>

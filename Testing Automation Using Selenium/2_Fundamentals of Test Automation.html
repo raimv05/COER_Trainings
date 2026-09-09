@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Automation Testing — Hour 2 | Fundamentals of Test Automation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0E14;
+    --panel:#131720;
+    --panel-alt:#171C27;
+    --border:#232938;
+    --border-soft:#1B2130;
+    --text:#E7EAF0;
+    --text-dim:#8B93A7;
+    --text-faint:#5B6478;
+    --pass:#35D0A0;
+    --pass-dim:#1D5B49;
+    --fail:#FF6B7A;
+    --fail-dim:#5C2530;
+    --info:#6C8CFF;
+    --info-dim:#26305C;
+    --warn:#FFB454;
+    --warn-dim:#5C4520;
+    --radius-s:6px;
+    --radius-m:10px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    font-size:16px;
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:600;
+    color:#F4F6FA;
+    line-height:1.25;
+    margin:0;
+  }
+  code, .mono{font-family:'JetBrains Mono',monospace;}
+  a{color:inherit;}
+  ::selection{background:var(--info-dim); color:#fff;}
+
+  /* ---------- Layout shell ---------- */
+  .shell{
+    display:grid;
+    grid-template-columns:250px minmax(0,1fr);
+    max-width:1280px;
+    margin:0 auto;
+  }
+  .sidebar{
+    position:sticky;
+    top:0;
+    height:100vh;
+    padding:32px 20px 32px 32px;
+    border-right:1px solid var(--border-soft);
+    display:flex;
+    flex-direction:column;
+    gap:28px;
+  }
+  .brand{display:flex; flex-direction:column; gap:4px;}
+  .brand .tag{font-size:12px; color:var(--info); font-weight:600; letter-spacing:.02em;}
+  .brand h1{font-size:19px;}
+  .brand .sub{font-size:13px;color:var(--text-dim);}
+
+  .navlist{list-style:none; margin:0;padding:0; display:flex; flex-direction:column; gap:2px; font-size:14px;}
+  .navlist a{
+    display:flex; gap:10px; align-items:baseline; text-decoration:none;
+    color:var(--text-dim); padding:7px 10px; border-radius:var(--radius-s);
+    border-left:2px solid transparent; transition:color .15s ease, background .15s ease, border-color .15s ease;
+  }
+  .navlist a .n{font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-faint); min-width:26px;}
+  .navlist a:hover{color:var(--text); background:var(--panel);}
+  .navlist a.active{color:#fff; background:var(--panel); border-left-color:var(--info);}
+  .navlist a.active .n{color:var(--info);}
+
+  .sidebar-foot{margin-top:auto; font-size:12px; color:var(--text-faint); border-top:1px solid var(--border-soft); padding-top:16px;}
+
+  main{padding:56px 48px 120px 48px; min-width:0;}
+  .hero{padding-bottom:44px; margin-bottom:44px; border-bottom:1px solid var(--border-soft);}
+  .hero .kicker{color:var(--info); font-weight:600; font-size:13px; margin-bottom:14px; display:block;}
+  .hero h1{font-size:40px; letter-spacing:-0.01em; max-width:640px;}
+  .hero p.lead{margin-top:16px; max-width:600px; color:var(--text-dim); font-size:16px;}
+  .hero-stats{display:flex; gap:32px; margin-top:32px; flex-wrap:wrap;}
+  .hero-stats div{display:flex; flex-direction:column; gap:2px;}
+  .hero-stats .num{font-family:'Space Grotesk',sans-serif; font-size:24px; font-weight:700; color:#fff;}
+  .hero-stats .lbl{font-size:12.5px; color:var(--text-faint);}
+
+  section{margin-bottom:72px; scroll-margin-top:24px;}
+  section .sec-head{display:flex; align-items:baseline; gap:14px; margin-bottom:18px;}
+  section .sec-head .idx{font-family:'JetBrains Mono',monospace; color:var(--info); font-size:15px; font-weight:600;}
+  section .sec-head h2{font-size:25px;}
+  section > p{color:var(--text-dim); max-width:680px;}
+  section > p + p{margin-top:14px;}
+
+  .callout{background:var(--panel); border:1px solid var(--border-soft); border-radius:var(--radius-m); padding:22px 24px; margin-top:20px;}
+  .callout h4{font-size:15px; margin-bottom:12px; color:#fff;}
+  .callout p{color:var(--text-dim); font-size:14.5px;}
+
+  /* ---------- Pipeline / flow diagrams ---------- */
+  .pipeline{margin-top:24px; display:flex; flex-direction:column;}
+  .pipeline.horizontal{flex-direction:row; flex-wrap:wrap; align-items:stretch;}
+  .p-node{
+    background:var(--panel); border:1px solid var(--border-soft); border-radius:var(--radius-m);
+    padding:14px 18px; font-size:14px; display:flex; align-items:center; gap:10px; color:var(--text);
+  }
+  .pipeline:not(.horizontal) .p-node{align-self:flex-start; min-width:280px;}
+  .p-node .step-no{font-family:'JetBrains Mono',monospace; color:var(--text-faint); font-size:12px;}
+  .p-connector{align-self:flex-start; margin-left:29px; width:1px; height:26px; background:var(--border); position:relative;}
+  .p-connector::after{
+    content:""; position:absolute; bottom:-1px; left:50%; transform:translateX(-50%);
+    border-left:4px solid transparent; border-right:4px solid transparent; border-top:5px solid var(--border);
+  }
+  .pipeline.horizontal .p-connector{align-self:center; width:28px; height:1px; margin:0 2px;}
+  .pipeline.horizontal .p-connector::after{
+    right:-1px; left:auto; bottom:50%; transform:translateY(50%);
+    border-top:4px solid transparent; border-bottom:4px solid transparent; border-left:5px solid var(--border);
+  }
+  .p-node.tone-info{border-color:var(--info); color:var(--info);}
+  .p-node.tone-warn{border-color:var(--warn); color:var(--warn);}
+  .p-node.tone-pass{border-color:var(--pass); color:var(--pass);}
+  .p-node .tag-small{
+    margin-left:auto; font-family:'JetBrains Mono',monospace; font-size:10.5px;
+    color:var(--text-faint); text-transform:uppercase; letter-spacing:.04em;
+  }
+
+  /* ---------- Code window ---------- */
+  .code-window{margin-top:22px; background:#0E1219; border:1px solid var(--border-soft); border-radius:var(--radius-m); overflow:hidden;}
+  .code-window .cw-head{
+    display:flex; align-items:center; gap:8px; padding:10px 14px; background:var(--panel-alt);
+    border-bottom:1px solid var(--border-soft); font-size:12.5px; color:var(--text-faint);
+  }
+  .code-window .cw-head .dot{width:8px;height:8px;border-radius:50%;}
+  .code-window .cw-head .fname{margin-left:6px; font-family:'JetBrains Mono',monospace;}
+  .code-window pre{margin:0; padding:20px 22px; font-family:'JetBrains Mono',monospace; font-size:13px; line-height:1.8; overflow-x:auto;}
+  .code-window .c-kw{color:#8AB4FF;}
+  .code-window .c-fn{color:#7EE0C8;}
+  .code-window .c-str{color:#FFC98B;}
+  .code-window .c-cm{color:var(--text-faint); font-style:italic;}
+  .code-window .c-num{color:#D19FFF;}
+  .code-window .c-cls{color:#FFD479;}
+
+  .step-map{margin-top:14px; font-size:13px; color:var(--text-dim); display:flex; flex-wrap:wrap; gap:8px;}
+  .step-map span{background:var(--panel); border:1px solid var(--border-soft); border-radius:20px; padding:5px 12px;}
+  .step-map span b{color:var(--pass); font-weight:600;}
+
+  /* ---------- limitations / chip panels ---------- */
+  .limit-panel{
+    margin-top:22px; border-radius:var(--radius-m); padding:24px 26px;
+  }
+  .limit-panel.warn{background:linear-gradient(180deg, rgba(255,180,84,0.06), transparent); border:1px solid var(--warn-dim);}
+  .limit-panel.pass{background:linear-gradient(180deg, rgba(53,208,160,0.06), transparent); border:1px solid var(--pass-dim);}
+  .limit-panel h4{font-size:14.5px; margin-bottom:14px;}
+  .limit-panel.warn h4{color:var(--warn);}
+  .limit-panel.pass h4{color:var(--pass);}
+  .chip-row{display:flex; flex-wrap:wrap; gap:10px;}
+  .chip{font-size:13px; color:var(--text); background:var(--panel-alt); border:1px solid var(--border-soft); padding:7px 14px; border-radius:20px;}
+
+  /* ---------- decision model ---------- */
+  .decision-eq{display:flex; align-items:center; flex-wrap:wrap; gap:12px; margin-top:26px;}
+  .decision-crit{
+    background:var(--panel); border:1px solid var(--border-soft); border-radius:var(--radius-m);
+    padding:13px 18px; font-size:13.5px; color:var(--text);
+  }
+  .decision-plus{color:var(--text-faint); font-family:'JetBrains Mono',monospace; font-size:16px;}
+  .decision-eq-arrow{width:26px; height:1px; background:var(--border); position:relative; margin:0 2px;}
+  .decision-eq-arrow::after{
+    content:""; position:absolute; right:-1px; top:50%; transform:translateY(-50%);
+    border-top:4px solid transparent; border-bottom:4px solid transparent; border-left:5px solid var(--border);
+  }
+  .decision-outcome{
+    background:rgba(53,208,160,0.08); border:1px solid var(--pass); color:var(--pass);
+    border-radius:var(--radius-m); padding:13px 20px; font-weight:600; font-family:'Space Grotesk',sans-serif; font-size:14px;
+  }
+  .decision-example{
+    margin-top:16px; display:inline-flex; align-items:center; gap:8px; font-size:13px;
+    background:var(--pass-dim); color:var(--pass); border:1px solid rgba(53,208,160,0.3);
+    padding:7px 14px; border-radius:20px;
+  }
+
+  /* ---------- test case card ---------- */
+  .tc-card{background:var(--panel); border:1px solid var(--border-soft); border-radius:var(--radius-m); overflow:hidden; margin-top:22px;}
+  .tc-head{display:flex; align-items:center; gap:14px; padding:16px 22px; border-bottom:1px solid var(--border-soft); background:var(--panel-alt); flex-wrap:wrap;}
+  .tc-id{font-family:'JetBrains Mono',monospace; font-size:11.5px; background:var(--info-dim); color:var(--info); padding:4px 11px; border-radius:20px; font-weight:600;}
+  .tc-title{font-family:'Space Grotesk',sans-serif; font-size:15px; color:#fff;}
+  .tc-body{padding:22px;}
+  .tc-row{display:flex; gap:10px; font-size:13.5px; margin-bottom:16px;}
+  .tc-row .lbl{color:var(--text-faint); min-width:110px; flex-shrink:0;}
+  .tc-row .val{color:var(--text-dim);}
+  .tc-steps-list{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:9px;}
+  .tc-steps-list li{display:flex; gap:12px; font-size:13.5px; color:var(--text); align-items:baseline;}
+  .tc-steps-list li .no{font-family:'JetBrains Mono',monospace; color:var(--info); font-size:12px; min-width:16px;}
+  .tc-expected{
+    margin-top:18px; padding:14px 16px; background:rgba(53,208,160,0.06);
+    border-left:3px solid var(--pass); border-radius:6px; font-size:13.5px; color:var(--pass);
+  }
+  .tc-arrow-note{
+    display:flex; align-items:center; gap:10px; margin-top:20px; padding-top:18px;
+    border-top:1px dashed var(--border-soft); font-size:13px; color:var(--text-faint);
+  }
+
+  footer{padding:36px 48px 60px; color:var(--text-faint); font-size:12.5px; border-top:1px solid var(--border-soft);}
+
+  @media (max-width: 880px){
+    .shell{grid-template-columns:1fr;}
+    .sidebar{position:relative; height:auto; border-right:none; border-bottom:1px solid var(--border-soft); padding:24px;}
+    .navlist{flex-direction:row; overflow-x:auto; gap:4px;}
+    .navlist a{white-space:nowrap;}
+    main{padding:36px 22px 90px;}
+    .hero h1{font-size:30px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="tag">QA / SDET TRACK · HOUR 2</span>
+      <h1>Test Automation</h1>
+      <span class="sub">Fundamentals module</span>
+    </div>
+
+    <ul class="navlist" id="navlist">
+      <li><a href="#s21"><span class="n">2.1</span> Automation Lifecycle</a></li>
+      <li><a href="#s22"><span class="n">2.2</span> What to Automate</a></li>
+      <li><a href="#s23"><span class="n">2.3</span> Test Case Example</a></li>
+      <li><a href="#s24"><span class="n">2.4</span> Arrange–Act–Assert</a></li>
+      <li><a href="#s25"><span class="n">2.5</span> Logic Without Selenium</a></li>
+    </ul>
+
+    <div class="sidebar-foot">
+      Trainer companion page · designed for classroom walkthrough
+    </div>
+  </aside>
+
+  <main>
+
+    <div class="hero">
+      <span class="kicker">Module 2 · Fundamentals</span>
+      <h1>Fundamentals of Test Automation</h1>
+      <p class="lead">Automation isn't just "writing scripts." It's a disciplined lifecycle, a filter for deciding what deserves to be automated, and a structure — Arrange, Act, Assert — that holds regardless of tool or language.</p>
+      <div class="hero-stats">
+        <div><span class="num">9</span><span class="lbl">Lifecycle stages</span></div>
+        <div><span class="num">3</span><span class="lbl">AAA structure steps</span></div>
+        <div><span class="num">4</span><span class="lbl">Good-candidate criteria</span></div>
+      </div>
+    </div>
+
+    <!-- 2.1 -->
+    <section id="s21">
+      <div class="sec-head"><span class="idx">2.1</span><h2>Automation Testing Lifecycle</h2></div>
+      <p>Automation isn't just "open a tool and start scripting." It follows a repeatable lifecycle — skip a stage and the suite you build tends to become fragile or unmaintainable within a few releases.</p>
+
+      <div class="pipeline">
+        <div class="p-node"><span class="step-no">01</span> Requirement Analysis</div>
+        <div class="p-connector"></div>
+        <div class="p-node"><span class="step-no">02</span> Test Case Identification</div>
+        <div class="p-connector"></div>
+        <div class="p-node"><span class="step-no">03</span> Automation Feasibility</div>
+        <div class="p-connector"></div>
+        <div class="p-node"><span class="step-no">04</span> Tool Selection</div>
+        <div class="p-connector"></div>
+        <div class="p-node"><span class="step-no">05</span> Framework Design</div>
+        <div class="p-connector"></div>
+        <div class="p-node"><span class="step-no">06</span> Script Development</div>
+        <div class="p-connector"></div>
+        <div class="p-node"><span class="step-no">07</span> Execution</div>
+        <div class="p-connector"></div>
+        <div class="p-node"><span class="step-no">08</span> Reporting</div>
+        <div class="p-connector"></div>
+        <div class="p-node"><span class="step-no">09</span> Maintenance</div>
+      </div>
+
+      <div class="callout">
+        <h4>Why "Maintenance" is stage nine, not an afterthought</h4>
+        <p>Applications change. Locators break, flows shift, new fields appear. A lifecycle that ends at "Execution" produces a suite that quietly rots — treating maintenance as a defined stage is what keeps a regression suite trustworthy release after release.</p>
+      </div>
+    </section>
+
+    <!-- 2.2 -->
+    <section id="s22">
+      <div class="sec-head"><span class="idx">2.2</span><h2>What Should We Automate?</h2></div>
+      <p>Not every test case deserves automation. Before writing a script, run the candidate through a simple decision model.</p>
+
+      <div class="decision-eq">
+        <div class="decision-crit">Frequently executed</div>
+        <div class="decision-plus">+</div>
+        <div class="decision-crit">Stable functionality</div>
+        <div class="decision-plus">+</div>
+        <div class="decision-crit">Predictable result</div>
+        <div class="decision-plus">+</div>
+        <div class="decision-crit">High business importance</div>
+        <div class="decision-eq-arrow"></div>
+        <div class="decision-outcome">Good candidate</div>
+      </div>
+      <div class="decision-example">✓ Example: Login regression test</div>
+
+      <div class="limit-panel warn" style="margin-top:32px;">
+        <h4>Poor candidates — leave these to manual/exploratory testing</h4>
+        <div class="chip-row">
+          <span class="chip">One-time test</span>
+          <span class="chip">Highly changing UI</span>
+          <span class="chip">Exploratory test</span>
+          <span class="chip">Subjective visual test</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2.3 -->
+    <section id="s23">
+      <div class="sec-head"><span class="idx">2.3</span><h2>Automation Test Case Example</h2></div>
+      <p>Before any script is written, a manual test case is documented in plain, structured language. Automation then converts each of these actions into code — nothing more, nothing less.</p>
+
+      <div class="tc-card">
+        <div class="tc-head">
+          <span class="tc-id">TC_LOGIN_001</span>
+          <span class="tc-title">Verify valid user login</span>
+        </div>
+        <div class="tc-body">
+          <div class="tc-row"><span class="lbl">Precondition</span><span class="val">User account exists.</span></div>
+          <div class="tc-row" style="margin-bottom:8px;"><span class="lbl">Steps</span></div>
+          <ul class="tc-steps-list">
+            <li><span class="no">1</span> Open application</li>
+            <li><span class="no">2</span> Enter username</li>
+            <li><span class="no">3</span> Enter password</li>
+            <li><span class="no">4</span> Click Login</li>
+          </ul>
+          <div class="tc-expected"><strong>Expected:</strong> Dashboard should appear.</div>
+          <div class="tc-arrow-note">↳ In section 2.4, these four steps become three lines of Arrange–Act–Assert code.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2.4 -->
+    <section id="s24">
+      <div class="sec-head"><span class="idx">2.4</span><h2>Basic Automation Structure</h2></div>
+      <p>Almost every automated test — regardless of language or tool — follows the same three-part shape: set the stage, perform the action, check the outcome.</p>
+
+      <div class="pipeline">
+        <div class="p-node tone-info">Arrange <span class="tag-small">Set up</span></div>
+        <div class="p-connector"></div>
+        <div class="p-node tone-warn">Act <span class="tag-small">Perform</span></div>
+        <div class="p-connector"></div>
+        <div class="p-node tone-pass">Assert <span class="tag-small">Verify</span></div>
+      </div>
+
+      <div class="code-window">
+        <div class="cw-head">
+          <span class="dot" style="background:#FF6B6B;"></span>
+          <span class="dot" style="background:#FFC85B;"></span>
+          <span class="dot" style="background:#3DD68C;"></span>
+          <span class="fname">LoginTest.java</span>
+        </div>
+        <pre><span class="c-cm">// Arrange</span>
+driver.<span class="c-fn">get</span>(<span class="c-str">"https://example.com"</span>);
+
+<span class="c-cm">// Act</span>
+driver.<span class="c-fn">findElement</span>(<span class="c-fn">By</span>.<span class="c-fn">id</span>(<span class="c-str">"username"</span>)).<span class="c-fn">sendKeys</span>(<span class="c-str">"student"</span>);
+
+<span class="c-cm">// Assert</span>
+<span class="c-fn">Assert</span>.<span class="c-fn">assertTrue</span>(driver.<span class="c-fn">getTitle</span>().<span class="c-fn">contains</span>(<span class="c-str">"Example"</span>));</pre>
+      </div>
+
+      <div class="callout">
+        <h4>Not a Selenium-only idea</h4>
+        <p>This Arrange–Act–Assert shape shows up well beyond Selenium. Modern frameworks like Cypress structure their own examples the same way — a setup step, an action, then an assertion — because the pattern reflects how verification logically has to work, not a quirk of one tool.</p>
+      </div>
+    </section>
+
+    <!-- 2.5 -->
+    <section id="s25">
+      <div class="sec-head"><span class="idx">2.5</span><h2>First Automation Logic Without Selenium</h2></div>
+      <p>Before introducing Selenium, it helps to strip automation down to its bare logic — no browser, no driver, just plain Java deciding pass or fail.</p>
+
+      <div class="code-window">
+        <div class="cw-head">
+          <span class="dot" style="background:#FF6B6B;"></span>
+          <span class="dot" style="background:#FFC85B;"></span>
+          <span class="dot" style="background:#3DD68C;"></span>
+          <span class="fname">LoginTest.java</span>
+        </div>
+        <pre><span class="c-kw">public class</span> <span class="c-cls">LoginTest</span> {
+
+    <span class="c-kw">public static void</span> <span class="c-fn">main</span>(<span class="c-cls">String</span>[] args) {
+
+        <span class="c-cls">String</span> username = <span class="c-str">"student"</span>;
+        <span class="c-cls">String</span> password = <span class="c-str">"Password123"</span>;
+
+        <span class="c-kw">if</span> (username.<span class="c-fn">equals</span>(<span class="c-str">"student"</span>)
+                &amp;&amp; password.<span class="c-fn">equals</span>(<span class="c-str">"Password123"</span>)) {
+
+            <span class="c-fn">System</span>.out.<span class="c-fn">println</span>(<span class="c-str">"Login Successful"</span>);
+
+        } <span class="c-kw">else</span> {
+
+            <span class="c-fn">System</span>.out.<span class="c-fn">println</span>(<span class="c-str">"Login Failed"</span>);
+        }
+    }
+}</pre>
+      </div>
+
+      <h4 style="margin-top:32px; font-size:15px; color:#fff;">What this demonstrates</h4>
+      <div class="pipeline horizontal">
+        <div class="p-node">Input</div>
+        <div class="p-connector"></div>
+        <div class="p-node">Action</div>
+        <div class="p-connector"></div>
+        <div class="p-node">Validation</div>
+        <div class="p-connector"></div>
+        <div class="p-node tone-pass">Result</div>
+      </div>
+
+      <div class="callout" style="margin-top:28px;">
+        <h4>The idea scales up unchanged</h4>
+        <p>Automation testing follows this exact same idea — input, action, validation, result — except the "action" happens against a real, running application through a browser or API instead of two hard-coded strings.</p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer>
+  Automation Testing · Hour 2 companion page — built for classroom delivery and self-paced review.
+</footer>
+
+<script>
+  const links = Array.from(document.querySelectorAll('#navlist a'));
+  const sections = links.map(a => document.querySelector(a.getAttribute('href')));
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const id = '#' + entry.target.id;
+      const link = links.find(a => a.getAttribute('href') === id);
+      if (!link) return;
+      if (entry.isIntersecting) {
+        links.forEach(a => a.classList.remove('active'));
+        link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(s => s && io.observe(s));
+</script>
+
+</body>
+</html>

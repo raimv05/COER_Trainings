@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Automation Testing — Hour 4 | Automation ROI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0E14;
+    --panel:#131720;
+    --panel-alt:#171C27;
+    --border:#232938;
+    --border-soft:#1B2130;
+    --text:#E7EAF0;
+    --text-dim:#8B93A7;
+    --text-faint:#5B6478;
+    --pass:#35D0A0;
+    --pass-dim:#1D5B49;
+    --fail:#FF6B7A;
+    --fail-dim:#5C2530;
+    --info:#6C8CFF;
+    --info-dim:#26305C;
+    --warn:#FFB454;
+    --warn-dim:#5C4520;
+    --radius-s:6px;
+    --radius-m:10px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:'Inter',sans-serif; font-size:16px; line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{font-family:'Space Grotesk',sans-serif; font-weight:600; color:#F4F6FA; line-height:1.25; margin:0;}
+  code, .mono{font-family:'JetBrains Mono',monospace;}
+  a{color:inherit;}
+  ::selection{background:var(--info-dim); color:#fff;}
+
+  .shell{display:grid; grid-template-columns:250px minmax(0,1fr); max-width:1280px; margin:0 auto;}
+  .sidebar{
+    position:sticky; top:0; height:100vh; padding:32px 20px 32px 32px;
+    border-right:1px solid var(--border-soft); display:flex; flex-direction:column; gap:28px;
+  }
+  .brand{display:flex; flex-direction:column; gap:4px;}
+  .brand .tag{font-size:12px; color:var(--info); font-weight:600; letter-spacing:.02em;}
+  .brand h1{font-size:19px;}
+  .brand .sub{font-size:13px;color:var(--text-dim);}
+
+  .navlist{list-style:none; margin:0;padding:0; display:flex; flex-direction:column; gap:2px; font-size:14px;}
+  .navlist a{
+    display:flex; gap:10px; align-items:baseline; text-decoration:none;
+    color:var(--text-dim); padding:7px 10px; border-radius:var(--radius-s);
+    border-left:2px solid transparent; transition:color .15s ease, background .15s ease, border-color .15s ease;
+  }
+  .navlist a .n{font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-faint); min-width:26px;}
+  .navlist a:hover{color:var(--text); background:var(--panel);}
+  .navlist a.active{color:#fff; background:var(--panel); border-left-color:var(--info);}
+  .navlist a.active .n{color:var(--info);}
+
+  .sidebar-foot{margin-top:auto; font-size:12px; color:var(--text-faint); border-top:1px solid var(--border-soft); padding-top:16px;}
+
+  main{padding:56px 48px 120px 48px; min-width:0;}
+  .hero{padding-bottom:44px; margin-bottom:44px; border-bottom:1px solid var(--border-soft);}
+  .hero .kicker{color:var(--info); font-weight:600; font-size:13px; margin-bottom:14px; display:block;}
+  .hero h1{font-size:40px; letter-spacing:-0.01em; max-width:640px;}
+  .hero p.lead{margin-top:16px; max-width:600px; color:var(--text-dim); font-size:16px;}
+  .hero-stats{display:flex; gap:32px; margin-top:32px; flex-wrap:wrap;}
+  .hero-stats div{display:flex; flex-direction:column; gap:2px;}
+  .hero-stats .num{font-family:'Space Grotesk',sans-serif; font-size:24px; font-weight:700; color:#fff;}
+  .hero-stats .lbl{font-size:12.5px; color:var(--text-faint);}
+
+  section{margin-bottom:72px; scroll-margin-top:24px;}
+  section .sec-head{display:flex; align-items:baseline; gap:14px; margin-bottom:18px;}
+  section .sec-head .idx{font-family:'JetBrains Mono',monospace; color:var(--info); font-size:15px; font-weight:600;}
+  section .sec-head h2{font-size:25px;}
+  section > p{color:var(--text-dim); max-width:680px;}
+  section > p + p{margin-top:14px;}
+
+  h3.sub-head{font-size:16px; color:#fff; margin-top:36px; margin-bottom:6px;}
+  p.sub-lead{color:var(--text-dim); font-size:14.5px; margin-top:6px; max-width:640px;}
+
+  .callout{background:var(--panel); border:1px solid var(--border-soft); border-radius:var(--radius-m); padding:22px 24px; margin-top:20px;}
+  .callout h4{font-size:15px; margin-bottom:12px; color:#fff;}
+  .callout p{color:var(--text-dim); font-size:14.5px;}
+  .callout.info{border-color:var(--info-dim); background:linear-gradient(180deg, rgba(108,140,255,0.06), transparent);}
+  .callout.info h4{color:var(--info);}
+
+  /* ---------- ledger / calc cards ---------- */
+  .split{margin-top:24px; display:grid; grid-template-columns:1fr 1fr; gap:20px;}
+  .calc-card{background:var(--panel); border:1px solid var(--border-soft); border-radius:var(--radius-m); overflow:hidden;}
+  .calc-card .cc-head{
+    padding:13px 20px; background:var(--panel-alt); border-bottom:1px solid var(--border-soft);
+    font-family:'Space Grotesk',sans-serif; font-size:14px; color:#fff;
+  }
+  .calc-card .cc-head.tone-info{color:var(--info);}
+  .calc-card .cc-head.tone-pass{color:var(--pass);}
+  .calc-row{display:flex; justify-content:space-between; gap:10px; padding:10px 20px; font-size:13.5px; color:var(--text-dim); border-bottom:1px dashed var(--border-soft);}
+  .calc-row:last-child{border-bottom:none;}
+  .calc-row .val{color:var(--text); font-family:'JetBrains Mono',monospace; font-size:13px;}
+  .calc-row.total{border-top:1px solid var(--border); padding-top:12px; font-weight:600;}
+  .calc-row.total .lbl{color:#fff;}
+  .calc-row.total .val{color:#fff; font-size:14px;}
+
+  .saving-banner{
+    margin-top:20px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;
+    background:rgba(53,208,160,0.08); border:1px solid var(--pass); border-radius:var(--radius-m);
+    padding:16px 22px;
+  }
+  .saving-banner .lbl{font-size:13.5px; color:var(--pass);}
+  .saving-banner .num{font-family:'Space Grotesk',sans-serif; font-size:22px; font-weight:700; color:var(--pass);}
+
+  /* ---------- formula ---------- */
+  .formula-row{display:flex; align-items:center; gap:18px; margin-top:24px; flex-wrap:wrap;}
+  .frac{display:inline-flex; flex-direction:column; align-items:center; font-family:'JetBrains Mono',monospace; font-size:14px;}
+  .frac .top{padding-bottom:8px; border-bottom:2px solid var(--text); color:var(--text);}
+  .frac .bottom{padding-top:8px; color:var(--text-dim);}
+  .formula-times{font-family:'JetBrains Mono',monospace; font-size:16px; color:var(--text-faint);}
+  .formula-eq{font-family:'JetBrains Mono',monospace; font-size:16px; color:var(--text-faint);}
+
+  .roi-result{
+    margin-top:26px; display:inline-flex; align-items:baseline; gap:12px;
+    background:rgba(53,208,160,0.08); border:1px solid var(--pass); border-radius:var(--radius-m);
+    padding:18px 26px;
+  }
+  .roi-result .big{font-family:'Space Grotesk',sans-serif; font-size:36px; font-weight:700; color:var(--pass);}
+  .roi-result .lbl{font-size:13px; color:var(--text-dim);}
+
+  /* ---------- chip panel ---------- */
+  .chip-panel{margin-top:22px; border-radius:var(--radius-m); padding:24px 26px; border:1px solid var(--warn-dim); background:linear-gradient(180deg, rgba(255,180,84,0.06), transparent);}
+  .chip-panel h4{font-size:14.5px; color:var(--warn); margin-bottom:14px;}
+  .chip-row{display:flex; flex-wrap:wrap; gap:10px;}
+  .chip{font-size:13px; color:var(--text); background:var(--panel-alt); border:1px solid var(--border-soft); padding:7px 14px; border-radius:20px;}
+
+  /* ---------- matrix table ---------- */
+  table.matrix{margin-top:22px; width:100%; border-collapse:collapse; font-size:13.5px;}
+  table.matrix thead th{
+    text-align:left; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13.5px;
+    padding:11px 16px; border-bottom:2px solid var(--border); color:#fff;
+  }
+  table.matrix tbody td{padding:12px 16px; border-bottom:1px solid var(--border-soft); color:var(--text-dim);}
+  table.matrix tbody td:first-child{color:var(--text); font-weight:500;}
+  table.matrix tbody tr:last-child td{border-bottom:none;}
+  .badge{display:inline-block; font-size:12px; font-weight:600; padding:4px 12px; border-radius:20px;}
+  .badge.yes{background:rgba(53,208,160,0.12); color:var(--pass); border:1px solid rgba(53,208,160,0.35);}
+  .badge.no{background:rgba(255,107,122,0.12); color:var(--fail); border:1px solid rgba(255,107,122,0.35);}
+  .badge.maybe{background:rgba(255,180,84,0.12); color:var(--warn); border:1px solid rgba(255,180,84,0.35);}
+
+  /* ---------- ROI calculator (interactive) ---------- */
+  .roi-calc{margin-top:24px; background:var(--panel); border:1px solid var(--border-soft); border-radius:var(--radius-m); overflow:hidden;}
+  .roi-calc-inputs{display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--border-soft);}
+  .roi-field{background:var(--panel); padding:16px 20px;}
+  .roi-field label{display:block; font-size:12px; color:var(--text-faint); margin-bottom:8px;}
+  .roi-field .input-row{display:flex; align-items:center; gap:8px;}
+  .roi-field input{
+    background:#0E1219; border:1px solid var(--border-soft); border-radius:6px; color:var(--text);
+    font-family:'JetBrains Mono',monospace; font-size:14px; padding:8px 10px; width:100px;
+  }
+  .roi-field input:focus{outline:none; border-color:var(--info);}
+  .roi-field .unit{font-size:12.5px; color:var(--text-faint);}
+  .roi-calc-footer{padding:20px 22px; border-top:1px solid var(--border-soft); background:var(--panel-alt);}
+  .roi-calc-btn{
+    background:var(--info); color:#0B0E14; border:none; font-weight:600; font-size:13.5px;
+    padding:10px 20px; border-radius:7px; cursor:pointer; font-family:'Inter',sans-serif;
+  }
+  .roi-calc-out{margin-top:18px; display:none;}
+  .roi-calc-out.show{display:block;}
+  .roi-out-row{display:flex; justify-content:space-between; font-size:13.5px; color:var(--text-dim); padding:7px 0; border-bottom:1px dashed var(--border-soft);}
+  .roi-out-row .val{color:var(--text); font-family:'JetBrains Mono',monospace;}
+  .roi-verdict{
+    margin-top:16px; padding:14px 18px; border-radius:8px; font-size:14px; font-weight:600;
+  }
+  .roi-verdict.good{background:rgba(53,208,160,0.1); border:1px solid var(--pass); color:var(--pass);}
+  .roi-verdict.bad{background:rgba(255,107,122,0.1); border:1px solid var(--fail); color:var(--fail);}
+
+  footer{padding:36px 48px 60px; color:var(--text-faint); font-size:12.5px; border-top:1px solid var(--border-soft);}
+
+  @media (max-width: 880px){
+    .shell{grid-template-columns:1fr;}
+    .sidebar{position:relative; height:auto; border-right:none; border-bottom:1px solid var(--border-soft); padding:24px;}
+    .navlist{flex-direction:row; overflow-x:auto; gap:4px;}
+    .navlist a{white-space:nowrap;}
+    main{padding:36px 22px 90px;}
+    .hero h1{font-size:30px;}
+    .split{grid-template-columns:1fr;}
+    .roi-calc-inputs{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="tag">QA / SDET TRACK · HOUR 4</span>
+      <h1>Automation ROI</h1>
+      <span class="sub">Industry-level module</span>
+    </div>
+
+    <ul class="navlist" id="navlist">
+      <li><a href="#s41"><span class="n">4.1</span> What is ROI?</a></li>
+      <li><a href="#s42"><span class="n">4.2</span> Simple Example</a></li>
+      <li><a href="#s43"><span class="n">4.3</span> ROI Formula</a></li>
+      <li><a href="#s44"><span class="n">4.4</span> Candidate Matrix</a></li>
+      <li><a href="#activity"><span class="n">▸</span> ROI Exercise</a></li>
+    </ul>
+
+    <div class="sidebar-foot">
+      Trainer companion page · designed for classroom walkthrough
+    </div>
+  </aside>
+
+  <main>
+
+    <div class="hero">
+      <span class="kicker">Module 4 · Industry perspective</span>
+      <h1>Automation ROI</h1>
+      <p class="lead">Freshers love writing scripts. What they frequently overlook is the question every manager actually asks first: does this automation pay for itself? This module reframes automation as a cost-benefit decision, not just a technical one.</p>
+      <div class="hero-stats">
+        <div><span class="num">600</span><span class="lbl">Minutes saved, 4.2 example</span></div>
+        <div><span class="num">150%</span><span class="lbl">ROI, 4.3 example</span></div>
+        <div><span class="num">9</span><span class="lbl">Hidden real-world cost factors</span></div>
+      </div>
+    </div>
+
+    <!-- 4.1 -->
+    <section id="s41">
+      <div class="sec-head"><span class="idx">4.1</span><h2>What is ROI?</h2></div>
+      <p><strong style="color:#fff;">ROI</strong> stands for Return on Investment. In automation, the question it answers is simple to state and easy to skip:</p>
+      <div class="callout info">
+        <h4>The question that matters</h4>
+        <p>Does the investment in creating and maintaining automation save enough time or cost to justify itself? If the answer is no, automating a test isn't a technical win — it's wasted engineering time.</p>
+      </div>
+    </section>
+
+    <!-- 4.2 -->
+    <section id="s42">
+      <div class="sec-head"><span class="idx">4.2</span><h2>Simple Example</h2></div>
+      <p>A manual test takes 10 minutes and needs to run 100 times. Here's how manual effort compares to automation effort over that same 100 runs.</p>
+
+      <div class="split">
+        <div class="calc-card">
+          <div class="cc-head">Manual</div>
+          <div class="calc-row"><span class="lbl">Execution time</span><span class="val">10 min</span></div>
+          <div class="calc-row"><span class="lbl">Number of executions</span><span class="val">100</span></div>
+          <div class="calc-row total"><span class="lbl">Manual effort</span><span class="val">10 × 100 = 1,000 min</span></div>
+        </div>
+        <div class="calc-card">
+          <div class="cc-head tone-info">Automation</div>
+          <div class="calc-row"><span class="lbl">Development (one-time)</span><span class="val">300 min</span></div>
+          <div class="calc-row"><span class="lbl">Execution (100 runs)</span><span class="val">1 × 100 = 100 min</span></div>
+          <div class="calc-row total"><span class="lbl">Total automation effort</span><span class="val">300 + 100 = 400 min</span></div>
+        </div>
+      </div>
+
+      <div class="saving-banner">
+        <span class="lbl">Saving over 100 executions</span>
+        <span class="num">1,000 − 400 = 600 minutes</span>
+      </div>
+    </section>
+
+    <!-- 4.3 -->
+    <section id="s43">
+      <div class="sec-head"><span class="idx">4.3</span><h2>Simple ROI Formula</h2></div>
+      <p>For training purposes, ROI can be expressed with a straightforward formula:</p>
+
+      <div class="formula-row">
+        <div class="frac">
+          <span class="top">Benefits − Automation Cost</span>
+          <span class="bottom">Automation Cost</span>
+        </div>
+        <span class="formula-times">× 100</span>
+        <span class="formula-eq">= ROI %</span>
+      </div>
+
+      <h3 class="sub-head">Worked example</h3>
+      <div class="split" style="grid-template-columns:1fr 1fr; max-width:420px;">
+        <div class="calc-card">
+          <div class="calc-row"><span class="lbl">Benefit</span><span class="val">₹100,000</span></div>
+          <div class="calc-row"><span class="lbl">Cost</span><span class="val">₹40,000</span></div>
+        </div>
+      </div>
+
+      <div class="roi-result">
+        <span class="big">150%</span>
+        <span class="lbl">(100,000 − 40,000) / 40,000 × 100</span>
+      </div>
+
+      <div class="chip-panel" style="margin-top:32px;">
+        <h4>Real enterprise ROI accounts for more than this</h4>
+        <div class="chip-row">
+          <span class="chip">Framework development</span>
+          <span class="chip">Maintenance</span>
+          <span class="chip">Infrastructure</span>
+          <span class="chip">Test data</span>
+          <span class="chip">Licenses</span>
+          <span class="chip">CI/CD infrastructure</span>
+          <span class="chip">Debugging</span>
+          <span class="chip">Flaky tests</span>
+          <span class="chip">Engineer time</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4.4 -->
+    <section id="s44">
+      <div class="sec-head"><span class="idx">4.4</span><h2>Automation Candidate Matrix</h2></div>
+      <p>Build this table with students, live — it turns the decision model from Hour 2 into something they can apply test by test.</p>
+
+      <table class="matrix">
+        <thead>
+          <tr><th>Test</th><th>Frequency</th><th>Stability</th><th>Automation?</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Login</td><td>High</td><td>High</td><td><span class="badge yes">Yes</span></td></tr>
+          <tr><td>Search</td><td>High</td><td>High</td><td><span class="badge yes">Yes</span></td></tr>
+          <tr><td>One-time migration</td><td>Low</td><td>Low</td><td><span class="badge no">No</span></td></tr>
+          <tr><td>Exploratory UI</td><td>Low</td><td>Low</td><td><span class="badge no">No</span></td></tr>
+          <tr><td>Regression</td><td>High</td><td>High</td><td><span class="badge yes">Yes</span></td></tr>
+          <tr><td>CAPTCHA</td><td>High</td><td>Low</td><td><span class="badge maybe">Usually No</span></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Practical ROI Exercise -->
+    <section id="activity">
+      <div class="sec-head"><span class="idx">▸</span><h2>Practical ROI Exercise</h2></div>
+      <p>Give students these numbers and ask: <strong style="color:#fff;">should this test be automated?</strong> The fields below are pre-filled with the exercise values — change them to explore other scenarios live in class.</p>
+
+      <div class="roi-calc">
+        <div class="roi-calc-inputs">
+          <div class="roi-field">
+            <label>Manual execution time</label>
+            <div class="input-row"><input type="number" id="manualTime" value="15" min="0" step="0.5"><span class="unit">minutes</span></div>
+          </div>
+          <div class="roi-field">
+            <label>Automation development</label>
+            <div class="input-row"><input type="number" id="devTime" value="240" min="0" step="10"><span class="unit">minutes</span></div>
+          </div>
+          <div class="roi-field">
+            <label>Automation execution time</label>
+            <div class="input-row"><input type="number" id="autoTime" value="2" min="0" step="0.5"><span class="unit">minutes</span></div>
+          </div>
+          <div class="roi-field">
+            <label>Executions per month</label>
+            <div class="input-row"><input type="number" id="execCount" value="50" min="1" step="1"><span class="unit">runs</span></div>
+          </div>
+        </div>
+        <div class="roi-calc-footer">
+          <button class="roi-calc-btn" id="calcBtn">Calculate</button>
+          <div class="roi-calc-out" id="calcOut">
+            <div class="roi-out-row"><span>Manual effort</span><span class="val" id="outManual"></span></div>
+            <div class="roi-out-row"><span>Automation effort</span><span class="val" id="outAuto"></span></div>
+            <div class="roi-out-row"><span>Saving per month</span><span class="val" id="outSaving"></span></div>
+            <div class="roi-verdict" id="outVerdict"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer>
+  Automation Testing · Hour 4 companion page — built for classroom delivery and self-paced review.
+</footer>
+
+<script>
+  const links = Array.from(document.querySelectorAll('#navlist a'));
+  const sections = links.map(a => document.querySelector(a.getAttribute('href')));
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const id = '#' + entry.target.id;
+      const link = links.find(a => a.getAttribute('href') === id);
+      if (!link) return;
+      if (entry.isIntersecting) {
+        links.forEach(a => a.classList.remove('active'));
+        link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(s => s && io.observe(s));
+
+  document.getElementById('calcBtn').addEventListener('click', () => {
+    const manualTime = parseFloat(document.getElementById('manualTime').value) || 0;
+    const devTime = parseFloat(document.getElementById('devTime').value) || 0;
+    const autoTime = parseFloat(document.getElementById('autoTime').value) || 0;
+    const execCount = parseFloat(document.getElementById('execCount').value) || 0;
+
+    const manualEffort = manualTime * execCount;
+    const autoEffort = devTime + (autoTime * execCount);
+    const saving = manualEffort - autoEffort;
+
+    document.getElementById('outManual').textContent = `${manualTime} × ${execCount} = ${manualEffort} min`;
+    document.getElementById('outAuto').textContent = `${devTime} + (${autoTime} × ${execCount}) = ${autoEffort} min`;
+    document.getElementById('outSaving').textContent = `${manualEffort} − ${autoEffort} = ${saving} min`;
+
+    const verdict = document.getElementById('outVerdict');
+    if (saving > 0) {
+      verdict.className = 'roi-verdict good';
+      verdict.textContent = `Automate it — saves ${saving} minutes/month, and the saving compounds with every future run.`;
+    } else {
+      verdict.className = 'roi-verdict bad';
+      verdict.textContent = `Not worth it yet — automation costs ${Math.abs(saving)} more minutes/month than staying manual at this volume.`;
+    }
+    document.getElementById('calcOut').classList.add('show');
+  });
+</script>
+
+</body>
+</html>

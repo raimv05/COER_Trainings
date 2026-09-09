@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hour 5 — Fundamental Models</title>
+<style>
+  :root{
+    --bg:#282a36;
+    --bg-alt:#21222c;
+    --panel:#2f3140;
+    --line:#44475a;
+    --fg:#f8f8f2;
+    --muted:#a9adc7;
+    --comment:#6272a4;
+    --cyan:#8be9fd;
+    --green:#50fa7b;
+    --amber:#ffb86c;
+    --pink:#ff79c6;
+    --purple:#bd93f9;
+    --red:#ff5555;
+    --yellow:#f1fa8c;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    background:radial-gradient(circle at 15% 10%, #31334a 0%, var(--bg) 45%) fixed;
+    color:var(--fg);
+    font-family:'Segoe UI', Roboto, -apple-system, sans-serif;
+    overflow:hidden;
+  }
+  .deck{position:relative;width:100vw;height:100vh;}
+  .slide{
+    position:absolute;inset:0;
+    display:none;
+    flex-direction:column;
+    padding:56px 80px 90px;
+    animation:fadeIn .45s ease;
+  }
+  .slide.active{display:flex;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+  .kicker{color:var(--amber);font-size:14px;letter-spacing:2px;font-weight:600;margin-bottom:6px;}
+  h1{font-size:40px;margin:0 0 6px;color:var(--fg);}
+  h2{font-size:30px;margin:0 0 18px;color:var(--fg);}
+  h3{font-size:20px;margin:0 0 10px;color:var(--cyan);}
+  p{line-height:1.6;color:var(--muted);font-size:16px;}
+  .lead{font-size:19px;color:var(--fg);max-width:760px;}
+
+  .topbar{position:fixed;top:0;left:0;right:0;height:6px;background:var(--line);z-index:50;}
+  .topbar-fill{height:100%;background:linear-gradient(90deg,var(--amber),var(--pink));transition:width .3s ease;}
+  .navbar{
+    position:fixed;bottom:0;left:0;right:0;height:64px;
+    background:rgba(33,34,44,.92);border-top:1px solid var(--line);
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 32px;backdrop-filter:blur(6px);z-index:50;
+  }
+  .navbar .brand{font-size:13px;color:var(--comment);}
+  .navbar .brand b{color:var(--amber);}
+  .nav-controls{display:flex;align-items:center;gap:14px;}
+  .nav-btn{
+    background:var(--panel);border:1px solid var(--line);color:var(--fg);
+    padding:8px 18px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;transition:.2s;
+  }
+  .nav-btn:hover{border-color:var(--amber);color:var(--amber);}
+  .nav-btn:disabled{opacity:.35;cursor:not-allowed;}
+  .slide-counter{color:var(--muted);font-size:13px;min-width:60px;text-align:center;}
+  .dots{display:flex;gap:6px;}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--line);cursor:pointer;transition:.2s;}
+  .dot.active{background:var(--amber);width:20px;border-radius:4px;}
+
+  .grid{display:grid;gap:16px;}
+  .grid-4{grid-template-columns:repeat(4,1fr);}
+  .grid-3{grid-template-columns:repeat(3,1fr);}
+  .grid-2{grid-template-columns:repeat(2,1fr);}
+  .content{flex:1;overflow-y:auto;padding-right:8px;}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;}
+  .badge{
+    display:inline-block;background:rgba(189,147,249,.15);color:var(--purple);
+    border:1px solid rgba(189,147,249,.4);padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;
+    margin-bottom:14px;letter-spacing:.5px;
+  }
+  .tag-warn{
+    display:inline-block;background:rgba(255,85,85,.12);color:var(--red);
+    border:1px solid rgba(255,85,85,.4);padding:4px 12px;border-radius:20px;
+    font-size:12px;font-weight:700;letter-spacing:1px;margin-bottom:10px;
+  }
+  .tag-good{
+    display:inline-block;background:rgba(80,250,123,.12);color:var(--green);
+    border:1px solid rgba(80,250,123,.4);padding:4px 12px;border-radius:20px;
+    font-size:12px;font-weight:700;letter-spacing:1px;margin-bottom:10px;
+  }
+  .tag-info{
+    display:inline-block;background:rgba(139,233,253,.12);color:var(--cyan);
+    border:1px solid rgba(139,233,253,.4);padding:4px 12px;border-radius:20px;
+    font-size:12px;font-weight:700;letter-spacing:1px;margin-bottom:10px;
+  }
+
+  /* Model number circle cards */
+  .model-card{
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:22px;position:relative;
+  }
+  .model-num{
+    width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-weight:700;font-size:16px;margin-bottom:12px;
+  }
+  .model-card.m1 .model-num{background:rgba(139,233,253,.15);color:var(--cyan);border:1px solid var(--cyan);}
+  .model-card.m2 .model-num{background:rgba(255,85,85,.15);color:var(--red);border:1px solid var(--red);}
+  .model-card.m3 .model-num{background:rgba(189,147,249,.15);color:var(--purple);border:1px solid var(--purple);}
+  .q-list, .ex-list{list-style:none;margin:8px 0 0;padding:0;}
+  .q-list li, .ex-list li{
+    padding:8px 0 8px 22px;position:relative;font-size:14.5px;color:var(--muted);
+    border-bottom:1px dashed var(--line);
+  }
+  .q-list li:last-child, .ex-list li:last-child{border-bottom:none;}
+  .q-list li::before{content:'?';position:absolute;left:0;color:var(--cyan);font-weight:700;}
+  .ex-list li::before{content:'▸';position:absolute;left:0;color:var(--amber);}
+
+  /* CODE */
+  .code-wrap{background:var(--bg-alt);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;}
+  .code-head{display:flex;align-items:center;gap:8px;padding:10px 14px;background:#1c1d27;border-bottom:1px solid var(--line);}
+  .code-head .dotc{width:11px;height:11px;border-radius:50%;}
+  .code-head .filename{margin-left:8px;color:var(--comment);font-size:12px;font-family:'Consolas','Courier New',monospace;}
+  pre{margin:0;padding:16px 20px;overflow-x:auto;font-family:'Consolas','Courier New',monospace;font-size:13.5px;line-height:1.65;}
+  code{color:var(--fg);}
+  .tok-kw{color:var(--pink);}
+  .tok-type{color:var(--cyan);}
+  .tok-str{color:var(--yellow);}
+  .tok-cm{color:var(--comment);font-style:italic;}
+  .tok-fn{color:var(--green);}
+  .tok-num{color:var(--purple);}
+  .tok-an{color:var(--amber);}
+
+  .line-explainer{display:flex;gap:12px;padding:10px 0;border-bottom:1px dashed var(--line);align-items:flex-start;}
+  .line-explainer:last-child{border-bottom:none;}
+  .line-explainer .ln{
+    background:var(--bg-alt);color:var(--amber);font-family:'Consolas',monospace;font-size:12px;
+    padding:3px 8px;border-radius:5px;white-space:nowrap;border:1px solid var(--line);
+  }
+  .line-explainer .desc{font-size:14px;color:var(--muted);line-height:1.5;}
+  .line-explainer .desc b{color:var(--fg);}
+
+  /* Sync / Async diagrams */
+  .chain{display:flex;flex-direction:column;align-items:center;gap:0;padding:16px 0;}
+  .chain-node{
+    background:var(--panel);border:1px solid var(--line);border-radius:8px;
+    padding:14px 30px;font-weight:600;font-size:15px;color:var(--fg);min-width:170px;text-align:center;
+  }
+  .chain-node.c1{border-color:var(--purple);color:var(--purple);}
+  .chain-node.c2{border-color:var(--cyan);color:var(--cyan);}
+  .chain-node.c3{border-color:var(--amber);color:var(--amber);}
+  .chain-node.c4{border-color:var(--pink);color:var(--pink);}
+  .chain-node.c5{border-color:var(--green);color:var(--green);}
+  .chain-node.c6{border-color:var(--red);color:var(--red);}
+  .chain-arrow{color:var(--comment);font-size:20px;line-height:1;padding:4px 0;}
+  .wait-badge{
+    background:rgba(255,85,85,.1);border:1px dashed var(--red);color:var(--red);
+    font-size:12px;font-weight:700;letter-spacing:1px;padding:6px 16px;border-radius:20px;margin:2px 0;
+  }
+
+  /* Thread live sim */
+  .demo-btn{
+    background:linear-gradient(135deg,var(--amber),#ff9d4d);color:#282a36;border:none;
+    padding:10px 22px;border-radius:8px;font-weight:700;cursor:pointer;font-size:14px;transition:.2s;
+  }
+  .demo-btn:hover{filter:brightness(1.1);transform:translateY(-1px);}
+  .demo-btn:disabled{opacity:.45;cursor:not-allowed;}
+  .demo-btn.secondary{background:var(--line);color:var(--fg);}
+  .thread-row{display:flex;gap:20px;justify-content:center;margin:20px 0;flex-wrap:wrap;}
+  .thread-box{
+    width:150px;background:var(--bg-alt);border:2px solid var(--line);border-radius:10px;
+    padding:16px 10px;text-align:center;transition:.3s;
+  }
+  .thread-box .icon{font-size:24px;}
+  .thread-box .name{font-size:13px;font-weight:700;margin-top:6px;color:var(--fg);}
+  .thread-box .status{font-size:11.5px;margin-top:6px;color:var(--comment);font-family:'Consolas',monospace;}
+  .thread-box.running{border-color:var(--amber);box-shadow:0 0 16px rgba(255,184,108,.3);}
+  .thread-box.done{border-color:var(--green);box-shadow:0 0 16px rgba(80,250,123,.3);}
+  .thread-log{
+    background:var(--bg-alt);border:1px solid var(--line);border-radius:8px;padding:12px 16px;
+    font-family:'Consolas',monospace;font-size:12.5px;height:130px;overflow-y:auto;color:var(--muted);
+  }
+  .thread-log .entry.main{color:var(--cyan);}
+  .thread-log .entry.done{color:var(--green);}
+
+  /* Quiz */
+  .quiz-q{margin-bottom:22px;}
+  .quiz-q .q-title{font-size:16px;color:var(--fg);font-weight:600;margin-bottom:10px;}
+  .opt{
+    display:block;width:100%;text-align:left;background:var(--panel);border:1px solid var(--line);
+    color:var(--fg);padding:10px 14px;border-radius:8px;margin-bottom:8px;cursor:pointer;font-size:14px;transition:.15s;
+  }
+  .opt:hover{border-color:var(--cyan);}
+  .opt.correct{border-color:var(--green);background:rgba(80,250,123,.12);color:var(--green);}
+  .opt.incorrect{border-color:var(--red);background:rgba(255,85,85,.12);color:var(--red);}
+  .opt.disabled{pointer-events:none;}
+  .quiz-score{color:var(--amber);font-weight:700;font-size:16px;}
+
+  ::-webkit-scrollbar{width:8px;height:8px;}
+  ::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+
+  @media (max-width:900px){
+    .slide{padding:36px 24px 90px;}
+    .grid-4{grid-template-columns:repeat(2,1fr);}
+    .grid-3{grid-template-columns:repeat(2,1fr);}
+    .grid-2{grid-template-columns:1fr;}
+    h1{font-size:28px;}
+    h2{font-size:22px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar"><div class="topbar-fill" id="progressFill"></div></div>
+
+<div class="deck" id="deck">
+
+  <!-- SLIDE 1: TITLE -->
+  <section class="slide active">
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;">
+      <div class="kicker">MERN STACK BOOTCAMP · DISTRIBUTED SYSTEMS FOUNDATIONS</div>
+      <h1 style="font-size:52px;">Hour 5</h1>
+      <h2 style="color:var(--amber);font-size:34px;">Fundamental Models</h2>
+      <p class="lead">This hour introduces the theoretical foundation every distributed system is reasoned about with — how processes talk, what can fail, and what an attacker can do.</p>
+      <div style="margin-top:28px;display:flex;gap:12px;flex-wrap:wrap;">
+        <div class="card" style="padding:10px 18px;">🔄 Interaction Model</div>
+        <div class="card" style="padding:10px 18px;">💥 Failure Model</div>
+        <div class="card" style="padding:10px 18px;">🔐 Security Model</div>
+        <div class="card" style="padding:10px 18px;">🧵 Java Threads Demo</div>
+      </div>
+    </div>
+    <p style="color:var(--comment);font-size:13px;">Instructor: Manish Rai</p>
+  </section>
+
+  <!-- SLIDE 2: AGENDA -->
+  <section class="slide">
+    <div class="kicker">SESSION MAP</div>
+    <h2>What we'll cover this hour</h2>
+    <div class="content">
+      <div class="grid grid-2" style="gap:16px;">
+        <div class="card"><h3>Three Major Models</h3><p>The theoretical lens every distributed system is analyzed through: interaction, failure, and security.</p></div>
+        <div class="card"><h3>5.1 Synchronous vs Asynchronous</h3><p>Does the client wait for a response, or hand off the work and move on?</p></div>
+        <div class="card" style="grid-column:1/-1;"><h3>5.2 Java Thread Simulation</h3><p>A working demo of independent threads completing in unpredictable order — the essence of asynchronous execution.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 3: THREE MAJOR MODELS INTRO -->
+  <section class="slide">
+    <div class="badge">FOUNDATIONS</div>
+    <h2>Three major models</h2>
+    <div class="content">
+      <p class="lead">Every distributed system — no matter the architecture — can be reasoned about through the same three lenses. Before we can talk about clocks, ordering, or failures later in this course, we need shared vocabulary for these three.</p>
+      <div class="grid grid-3" style="margin-top:20px;">
+        <div class="card"><div class="model-num" style="background:rgba(139,233,253,.15);color:var(--cyan);border:1px solid var(--cyan);width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;">1</div><h3 style="margin-top:10px;">Interaction Model</h3><p>How processes communicate with each other.</p></div>
+        <div class="card"><div class="model-num" style="background:rgba(255,85,85,.15);color:var(--red);border:1px solid var(--red);width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;">2</div><h3 style="margin-top:10px;">Failure Model</h3><p>What can go wrong, and how the system should respond.</p></div>
+        <div class="card"><div class="model-num" style="background:rgba(189,147,249,.15);color:var(--purple);border:1px solid var(--purple);width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;">3</div><h3 style="margin-top:10px;">Security Model</h3><p>What an attacker might try, and what must be defended.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 4: MODEL 1 - INTERACTION -->
+  <section class="slide">
+    <div class="badge">MODEL 1 OF 3</div>
+    <h2>Interaction Model — how processes communicate</h2>
+    <div class="content">
+      <div class="model-card m1">
+        <div class="model-num">1</div>
+        <p class="lead" style="margin:0 0 4px;">Before you can design or debug a distributed system, you need to know the rules of how its parts talk to each other.</p>
+        <h3 style="margin-top:14px;">Key questions to always ask</h3>
+        <ul class="q-list">
+          <li>How fast is communication?</li>
+          <li>Is communication synchronous?</li>
+          <li>Is communication asynchronous?</li>
+          <li>Can messages be delayed?</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 5: MODEL 2 - FAILURE -->
+  <section class="slide">
+    <div class="badge">MODEL 2 OF 3</div>
+    <h2>Failure Model — what can go wrong</h2>
+    <div class="content">
+      <div class="model-card m2">
+        <div class="model-num">2</div>
+        <p class="lead" style="margin:0 0 4px;">A distributed system spans many machines and networks — which means there are many more places for things to break than in a single program.</p>
+        <h3 style="margin-top:14px;">Examples every engineer must plan for</h3>
+        <ul class="ex-list">
+          <li>Server crash</li>
+          <li>Network failure</li>
+          <li>Message loss</li>
+          <li>Timeout</li>
+          <li>Process failure</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 6: MODEL 3 - SECURITY -->
+  <section class="slide">
+    <div class="badge">MODEL 3 OF 3</div>
+    <h2>Security Model — what an attacker can do</h2>
+    <div class="content">
+      <div class="model-card m3">
+        <div class="model-num">3</div>
+        <p class="lead" style="margin:0 0 4px;">Once processes are talking over a network, that network is also open to anyone with bad intentions — not just your trusted services.</p>
+        <h3 style="margin-top:14px;">Examples to defend against</h3>
+        <ul class="ex-list">
+          <li>Impersonation</li>
+          <li>Unauthorized access</li>
+          <li>Message interception</li>
+          <li>Malicious requests</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 7: 5.1 SYNC VS ASYNC -->
+  <section class="slide">
+    <div class="badge">5.1 SYNCHRONOUS VS ASYNCHRONOUS</div>
+    <h2>Does the client wait, or move on?</h2>
+    <div class="content">
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="tag-warn">SYNCHRONOUS</div>
+          <div class="chain">
+            <div class="chain-node c2">Client → Request</div>
+            <div class="chain-arrow">↓</div>
+            <div class="wait-badge">WAIT</div>
+            <div class="chain-arrow">↓</div>
+            <div class="chain-node c3">Server → Response</div>
+          </div>
+          <p style="text-align:center;">The client blocks and does nothing else until the server replies.</p>
+        </div>
+        <div class="card">
+          <div class="tag-good">ASYNCHRONOUS</div>
+          <div class="chain">
+            <div class="chain-node c2">Client → Message Queue</div>
+            <div class="chain-arrow">↓</div>
+            <div class="chain-node c5">Server</div>
+          </div>
+          <p style="text-align:center;">The client hands off the message and doesn't necessarily wait for a response.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 8: 5.2 JAVA THREAD CODE -->
+  <section class="slide">
+    <div class="badge">5.2 JAVA THREAD SIMULATION</div>
+    <h2>Simulating asynchronous servers with threads</h2>
+    <div class="content">
+      <div class="code-wrap">
+        <div class="code-head">
+          <div class="dotc" style="background:#ff5f56;"></div>
+          <div class="dotc" style="background:#ffbd2e;"></div>
+          <div class="dotc" style="background:#27c93f;"></div>
+          <span class="filename">AsyncDemo.java</span>
+        </div>
+        <pre><code><span class="tok-kw">class</span> <span class="tok-type">Server</span> <span class="tok-kw">implements</span> <span class="tok-type">Runnable</span> {
+
+    <span class="tok-kw">private</span> <span class="tok-type">String</span> name;
+
+    <span class="tok-kw">public</span> <span class="tok-fn">Server</span>(<span class="tok-type">String</span> name) {
+        <span class="tok-kw">this</span>.name = name;
+    }
+
+    <span class="tok-an">@Override</span>
+    <span class="tok-kw">public</span> <span class="tok-kw">void</span> <span class="tok-fn">run</span>() {
+
+        <span class="tok-type">System</span>.out.println(name + <span class="tok-str">" started."</span>);
+
+        <span class="tok-kw">try</span> {
+            <span class="tok-type">Thread</span>.sleep(<span class="tok-num">2000</span>);
+        } <span class="tok-kw">catch</span> (<span class="tok-type">InterruptedException</span> e) {
+            <span class="tok-type">Thread</span>.currentThread().interrupt();
+        }
+
+        <span class="tok-type">System</span>.out.println(name + <span class="tok-str">" completed."</span>);
+    }
+}
+
+<span class="tok-kw">public class</span> <span class="tok-type">AsyncDemo</span> {
+
+    <span class="tok-kw">public static</span> <span class="tok-kw">void</span> <span class="tok-fn">main</span>(<span class="tok-type">String</span>[] args) {
+
+        <span class="tok-type">Thread</span> server1 = <span class="tok-kw">new</span> <span class="tok-type">Thread</span>(<span class="tok-kw">new</span> <span class="tok-fn">Server</span>(<span class="tok-str">"Server-1"</span>));
+        <span class="tok-type">Thread</span> server2 = <span class="tok-kw">new</span> <span class="tok-type">Thread</span>(<span class="tok-kw">new</span> <span class="tok-fn">Server</span>(<span class="tok-str">"Server-2"</span>));
+        <span class="tok-type">Thread</span> server3 = <span class="tok-kw">new</span> <span class="tok-type">Thread</span>(<span class="tok-kw">new</span> <span class="tok-fn">Server</span>(<span class="tok-str">"Server-3"</span>));
+
+        server1.start();
+        server2.start();
+        server3.start();
+
+        <span class="tok-type">System</span>.out.println(<span class="tok-str">"Client continues..."</span>);
+    }
+}</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 9: LINE EXPLAINER -->
+  <section class="slide">
+    <div class="badge">5.2 JAVA THREAD SIMULATION</div>
+    <h2>Why completion order isn't guaranteed</h2>
+    <div class="content">
+      <div class="card">
+        <div class="line-explainer"><span class="ln">implements Runnable</span><span class="desc">The <b>Server</b> class defines a task — the code any thread should run — without being a thread itself.</span></div>
+        <div class="line-explainer"><span class="ln">Thread.sleep(2000)</span><span class="desc">Simulates work taking time, like a real network call or database query.</span></div>
+        <div class="line-explainer"><span class="ln">.start() x3</span><span class="desc">All three threads are launched almost simultaneously and run independently, each on its own schedule.</span></div>
+        <div class="line-explainer"><span class="ln">"Client continues..."</span><span class="desc">This line often prints <b>before</b> any server finishes — the main thread doesn't wait for the others. That's the asynchronous behavior in action.</span></div>
+        <div class="line-explainer"><span class="ln">Key lesson</span><span class="desc">Threads execute independently, so the <b>completion order isn't something the programmer should assume</b> — it can change on every run.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 10: LIVE THREAD SIMULATION -->
+  <section class="slide">
+    <div class="badge">5.2 JAVA THREAD SIMULATION</div>
+    <h2>Run it — watch the order change each time</h2>
+    <div class="content">
+      <div class="thread-row" id="threadRow">
+        <div class="thread-box" id="th0"><div class="icon">🖥️</div><div class="name">Server-1</div><div class="status" id="st0">idle</div></div>
+        <div class="thread-box" id="th1"><div class="icon">🖥️</div><div class="name">Server-2</div><div class="status" id="st1">idle</div></div>
+        <div class="thread-box" id="th2"><div class="icon">🖥️</div><div class="name">Server-3</div><div class="status" id="st2">idle</div></div>
+      </div>
+      <div style="display:flex;gap:12px;margin-bottom:12px;">
+        <button class="demo-btn" id="runThreadsBtn" onclick="runThreads()">▶ Run threads</button>
+        <button class="demo-btn secondary" onclick="resetThreads()">↺ Reset</button>
+      </div>
+      <div class="thread-log" id="threadLog"><div>Ready. Click "Run threads" — notice the completion order changes each run.</div></div>
+      <p style="margin-top:12px;font-size:13px;color:var(--comment);">Each run picks random completion delays, just like real servers under variable load — that's why you can never hard-code an expected order.</p>
+    </div>
+  </section>
+
+  <!-- SLIDE 11: RECAP -->
+  <section class="slide">
+    <div class="kicker">RECAP</div>
+    <h2>Hour 5 — Key takeaways</h2>
+    <div class="content">
+      <div class="grid grid-2">
+        <div class="card"><h3>🔄 Interaction Model</h3><p>Defines how fast, how synchronous, and how reliably processes communicate.</p></div>
+        <div class="card"><h3>💥 Failure Model</h3><p>Crashes, network failures, message loss, timeouts, and process failures must all be assumed possible.</p></div>
+        <div class="card"><h3>🔐 Security Model</h3><p>Impersonation, unauthorized access, interception, and malicious requests are always in scope.</p></div>
+        <div class="card"><h3>🧵 Sync vs Async</h3><p>Synchronous calls block and wait; asynchronous calls hand off work and move on — threads make this concrete and unpredictable in order.</p></div>
+      </div>
+      <p class="lead" style="margin-top:20px;">Next hour: <b style="color:var(--fg);">Limitations of Distributed Systems</b> — network failures, partial failures, and the CAP perspective.</p>
+    </div>
+  </section>
+
+  <!-- SLIDE 12: QUIZ -->
+  <section class="slide">
+    <div class="kicker">QUICK CHECK</div>
+    <h2>Hour 5 quiz</h2>
+    <div class="content" id="quizContainer"></div>
+    <div style="margin-top:6px;" id="quizScoreRow"></div>
+  </section>
+
+</div>
+
+<div class="navbar">
+  <div class="brand">MERN Stack Bootcamp · <b>Hour 5</b> — Fundamental Models</div>
+  <div class="nav-controls">
+    <button class="nav-btn" id="prevBtn" onclick="goTo(current-1)">← Prev</button>
+    <div class="dots" id="dots"></div>
+    <span class="slide-counter" id="counter">1 / 12</span>
+    <button class="nav-btn" id="nextBtn" onclick="goTo(current+1)">Next →</button>
+  </div>
+</div>
+
+<script>
+/* ---------- SLIDE NAVIGATION ---------- */
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+let current = 0;
+
+const dotsWrap = document.getElementById('dots');
+for(let i=0;i<total;i++){
+  const d = document.createElement('div');
+  d.className = 'dot' + (i===0?' active':'');
+  d.onclick = () => goTo(i);
+  dotsWrap.appendChild(d);
+}
+const dotEls = document.querySelectorAll('.dot');
+
+function goTo(i){
+  if(i<0||i>=total) return;
+  slides[current].classList.remove('active');
+  dotEls[current].classList.remove('active');
+  current = i;
+  slides[current].classList.add('active');
+  dotEls[current].classList.add('active');
+  document.getElementById('counter').textContent = (current+1)+' / '+total;
+  document.getElementById('prevBtn').disabled = current===0;
+  document.getElementById('nextBtn').disabled = current===total-1;
+  document.getElementById('progressFill').style.width = ((current+1)/total*100)+'%';
+}
+document.addEventListener('keydown', e=>{
+  if(e.key==='ArrowRight') goTo(current+1);
+  if(e.key==='ArrowLeft') goTo(current-1);
+});
+goTo(0);
+
+/* ---------- THREAD SIMULATION (5.2) ---------- */
+let threadsRunning = false;
+function runThreads(){
+  if(threadsRunning) return;
+  threadsRunning = true;
+  const btn = document.getElementById('runThreadsBtn');
+  btn.disabled = true;
+  resetThreads(true);
+
+  const log = document.getElementById('threadLog');
+  log.innerHTML = '';
+  addTLog(log, 'Server-1.start(); Server-2.start(); Server-3.start();', 'main');
+
+  for(let i=0;i<3;i++){
+    document.getElementById('th'+i).classList.add('running');
+    document.getElementById('st'+i).textContent = 'running...';
+    addTLog(log, 'Server-'+(i+1)+' started.');
+  }
+
+  setTimeout(()=> addTLog(log, 'Client continues...', 'main'), 150);
+
+  const delays = [0,1,2].map(()=> 800 + Math.random()*1800);
+  delays.forEach((d, i)=>{
+    setTimeout(()=>{
+      const box = document.getElementById('th'+i);
+      box.classList.remove('running');
+      box.classList.add('done');
+      document.getElementById('st'+i).textContent = 'completed';
+      addTLog(log, 'Server-'+(i+1)+' completed.', 'done');
+      if(i === delays.indexOf(Math.max(...delays))){
+        threadsRunning = false;
+        btn.disabled = false;
+      }
+    }, d);
+  });
+}
+function addTLog(box, text, cls){
+  const div = document.createElement('div');
+  div.className = 'entry' + (cls? ' '+cls : '');
+  div.textContent = '› ' + text;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+function resetThreads(silent){
+  for(let i=0;i<3;i++){
+    const box = document.getElementById('th'+i);
+    box.classList.remove('running','done');
+    document.getElementById('st'+i).textContent = 'idle';
+  }
+  if(!silent){
+    document.getElementById('threadLog').innerHTML = '<div>Ready. Click "Run threads" — notice the completion order changes each run.</div>';
+  }
+}
+
+/* ---------- QUIZ ---------- */
+const quizData = [
+  {
+    q: "Which of these is a question the Interaction Model helps answer?",
+    opts: ["What color is the UI?", "Is communication synchronous or asynchronous?", "How many developers are on the team?", "What database engine is used?"],
+    correct: 1
+  },
+  {
+    q: "Which of these belongs to the Failure Model, not the Security Model?",
+    opts: ["Impersonation", "Message interception", "Network failure", "Unauthorized access"],
+    correct: 2
+  },
+  {
+    q: "In a synchronous interaction, what does the client do after sending a request?",
+    opts: ["Immediately sends another request", "Waits (blocks) for the response", "Ignores the server completely", "Shuts down"],
+    correct: 1
+  },
+  {
+    q: "In the Java thread demo, why might 'Client continues...' print before any server finishes?",
+    opts: [
+      "Because Java always runs main() last",
+      "Because the main thread doesn't wait for the started threads to finish",
+      "Because Thread.sleep() pauses the main thread too",
+      "It's a bug in the code"
+    ],
+    correct: 1
+  },
+  {
+    q: "What is the key lesson from running the thread demo multiple times?",
+    opts: [
+      "Servers always complete in the order they were started",
+      "Thread completion order isn't something a programmer should assume",
+      "Only one thread can run at a time in Java",
+      "Thread.sleep() guarantees a fixed order"
+    ],
+    correct: 1
+  }
+];
+
+let quizScore = 0;
+let quizAnswered = 0;
+const quizContainer = document.getElementById('quizContainer');
+quizData.forEach((item, qi)=>{
+  const wrap = document.createElement('div');
+  wrap.className = 'quiz-q';
+  const title = document.createElement('div');
+  title.className = 'q-title';
+  title.textContent = (qi+1) + '. ' + item.q;
+  wrap.appendChild(title);
+  item.opts.forEach((optText, oi)=>{
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = optText;
+    btn.onclick = () => {
+      const allOpts = wrap.querySelectorAll('.opt');
+      allOpts.forEach(o=>o.classList.add('disabled'));
+      if(oi === item.correct){
+        btn.classList.add('correct');
+        quizScore++;
+      } else {
+        btn.classList.add('incorrect');
+        allOpts[item.correct].classList.add('correct');
+      }
+      quizAnswered++;
+      updateScore();
+    };
+    wrap.appendChild(btn);
+  });
+  quizContainer.appendChild(wrap);
+});
+function updateScore(){
+  const row = document.getElementById('quizScoreRow');
+  row.innerHTML = '<span class="quiz-score">Score: '+quizScore+' / '+quizData.length+'</span>' +
+    (quizAnswered===quizData.length ? ' — Quiz complete! 🎉' : '');
+}
+</script>
+</body>
+</html>

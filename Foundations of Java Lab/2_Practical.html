@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Practical 2 — Employee Role &amp; Payroll Management System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#111119;
+    --bg-panel:#191925;
+    --bg-elevated:#20202f;
+    --bg-inset:#0c0c13;
+    --border:#2e2e42;
+    --border-soft:#25253a;
+    --text:#e7e7f2;
+    --text-dim:#9494b0;
+    --text-faint:#5f5f7a;
+    --orange:#ff8a3d;
+    --orange-soft:#ffb47a;
+    --blue:#6ab7ff;
+    --green:#7ee8a8;
+    --purple:#c9a6ff;
+    --yellow:#ffd479;
+    --red:#ff7a7a;
+    --gutter-w:52px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Sora',sans-serif;
+    font-size:16px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  code, .mono, .tag, .badge, .gutter, .concept-chip, .filetab, .crumb{
+    font-family:'JetBrains Mono',monospace;
+  }
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; gap:14px;
+    padding:12px 20px;
+    background:var(--bg-panel);
+    border-bottom:1px solid var(--border);
+  }
+  .topbar .dots{display:flex; gap:6px;}
+  .topbar .dots span{width:11px; height:11px; border-radius:50%; display:block;}
+  .dots span:nth-child(1){background:#ff6b6b;}
+  .dots span:nth-child(2){background:#ffd479;}
+  .dots span:nth-child(3){background:#7ee8a8;}
+  .topbar .title{font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--text-dim);}
+  .topbar .title b{color:var(--text); font-weight:600;}
+
+  /* ---------- Layout ---------- */
+  .shell{display:grid; grid-template-columns:270px 1fr; max-width:1400px; margin:0 auto;}
+
+  /* ---------- Sidebar ---------- */
+  .explorer{
+    position:sticky; top:49px; align-self:start;
+    height:calc(100vh - 49px); overflow-y:auto;
+    padding:22px 14px 40px;
+    border-right:1px solid var(--border);
+    background:var(--bg-panel);
+  }
+  .explorer::-webkit-scrollbar{width:8px;}
+  .explorer::-webkit-scrollbar-thumb{background:var(--border); border-radius:4px;}
+  .explorer-label{
+    font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.08em;
+    color:var(--text-faint); padding:0 10px 10px;
+  }
+  .tree-root{
+    font-family:'JetBrains Mono',monospace; font-size:12.5px; color:var(--text-dim);
+    padding:6px 10px 4px; display:flex; align-items:center; gap:6px;
+  }
+  .tree-root svg{flex:none;}
+  .tree-sub{
+    font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--text-faint);
+    padding:2px 10px 10px 30px;
+  }
+  .explorer nav{display:flex; flex-direction:column;}
+  .explorer a{
+    display:flex; align-items:baseline; gap:8px;
+    text-decoration:none; color:var(--text-dim);
+    padding:6px 10px 6px 26px; border-radius:6px; font-size:13px;
+    border-left:2px solid transparent;
+    transition:background .12s ease, color .12s ease;
+  }
+  .explorer a .part-letter{color:var(--orange); font-weight:600; font-size:11.5px;}
+  .explorer a:hover{background:var(--bg-elevated); color:var(--text);}
+  .explorer a.active{background:var(--bg-elevated); color:var(--text); border-left-color:var(--orange);}
+
+  /* ---------- Main ---------- */
+  main{padding:36px 44px 120px; min-width:0;}
+
+  .hero{padding-bottom:28px; margin-bottom:34px; border-bottom:1px solid var(--border);}
+  .hero .eyebrow-line{font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--orange-soft); margin-bottom:10px;}
+  .hero h1{font-size:2.3rem; font-weight:800; margin:0 0 12px; line-height:1.15; max-width:24ch;}
+  .hero p.lede{color:var(--text-dim); max-width:64ch; font-size:1rem; margin:0 0 20px;}
+  .hero-meta{display:flex; flex-wrap:wrap; gap:10px;}
+  .hero-meta span{
+    font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-dim);
+    background:var(--bg-panel); border:1px solid var(--border); padding:5px 10px; border-radius:6px;
+  }
+
+  /* ---------- OOP pillars strip ---------- */
+  .pillars{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:12px;
+    margin-bottom:36px;
+  }
+  .pillar{
+    background:var(--bg-panel); border:1px solid var(--border); border-radius:8px;
+    padding:14px 16px;
+  }
+  .pillar .p-name{font-size:.85rem; font-weight:600; color:var(--orange-soft); margin-bottom:4px;}
+  .pillar .p-desc{font-size:.78rem; color:var(--text-dim); line-height:1.5;}
+
+  /* ---------- Section ---------- */
+  section.part{
+    margin-bottom:46px; background:var(--bg-panel);
+    border:1px solid var(--border); border-radius:10px; overflow:hidden;
+    scroll-margin-top:64px;
+  }
+  .filetab{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:12px 18px; background:var(--bg-elevated); border-bottom:1px solid var(--border);
+  }
+  .filetab .fname{font-size:12.5px; color:var(--text-dim); display:flex; align-items:center; gap:8px;}
+  .filetab .fname b{color:var(--orange-soft); font-weight:600;}
+  .filetab .part-badge{
+    font-size:11px; color:var(--bg); background:var(--orange);
+    padding:2px 8px; border-radius:20px; font-weight:700; letter-spacing:.02em;
+  }
+
+  .part-body{padding:26px 26px 28px;}
+  .part-body h2{font-size:1.4rem; margin:0 0 6px; font-weight:700;}
+  .part-body .part-sub{color:var(--text-dim); font-size:.92rem; margin:0 0 20px;}
+  .part-body h3{font-size:.95rem; color:var(--orange-soft); margin:26px 0 10px; font-weight:600;}
+  .part-body h3:first-of-type{margin-top:4px;}
+  .part-body p{color:var(--text); font-size:.96rem; max-width:72ch;}
+  .part-body ul{margin:6px 0 0; padding-left:20px; color:var(--text);}
+  .part-body li{margin-bottom:4px; font-size:.95rem;}
+
+  /* ---------- Code / terminal ---------- */
+  .codeblock{
+    display:flex; background:var(--bg-inset); border:1px solid var(--border-soft);
+    border-radius:8px; overflow:hidden; margin:14px 0;
+  }
+  .codeblock .gutter{
+    flex:none; width:var(--gutter-w); padding:14px 0; background:#0a0a10;
+    color:var(--text-faint); font-size:12.5px; line-height:1.65; text-align:right; user-select:none;
+  }
+  .codeblock .gutter div{padding-right:14px;}
+  .codeblock pre{margin:0; padding:14px 18px; overflow-x:auto; font-size:12.8px; line-height:1.65; color:var(--text); flex:1;}
+  .codeblock code{white-space:pre;}
+
+  .kw{color:var(--purple);}
+  .cls{color:var(--yellow);}
+  .str{color:var(--green);}
+  .cmt{color:var(--text-faint); font-style:italic;}
+  .num{color:var(--blue);}
+  .fn{color:var(--orange-soft);}
+  .iface{color:var(--red);}
+
+  .terminal{
+    background:#0a0a10; border:1px solid var(--border-soft); border-radius:8px;
+    padding:14px 18px; margin:14px 0; font-family:'JetBrains Mono',monospace;
+    font-size:12.8px; line-height:1.7; color:#c9f7d6; overflow-x:auto;
+  }
+  .terminal-label{
+    font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-faint);
+    letter-spacing:.04em; margin:16px 0 0;
+  }
+
+  /* ---------- Tables ---------- */
+  table.spec{width:100%; border-collapse:collapse; margin:12px 0 4px; font-size:.9rem;}
+  table.spec th, table.spec td{text-align:left; padding:9px 14px; border-bottom:1px solid var(--border-soft);}
+  table.spec th{color:var(--text-faint); font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.03em; font-weight:500;}
+  table.spec td{color:var(--text);}
+  table.spec tr:last-child td{border-bottom:none;}
+
+  /* ---------- Concept chips ---------- */
+  .concepts{display:flex; flex-wrap:wrap; gap:8px; margin-top:18px; padding-top:18px; border-top:1px dashed var(--border);}
+  .concepts-label{width:100%; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-faint); letter-spacing:.04em; margin-bottom:2px;}
+  .concept-chip{
+    font-size:11.5px; color:var(--orange-soft); background:rgba(255,138,61,0.08);
+    border:1px solid rgba(255,138,61,0.25); padding:4px 9px; border-radius:5px;
+  }
+
+  /* ---------- Hierarchy / structure diagrams ---------- */
+  .structure{
+    font-family:'JetBrains Mono',monospace; font-size:12.5px; line-height:1.85;
+    background:var(--bg-inset); border:1px solid var(--border-soft); border-radius:8px;
+    padding:16px 20px; color:var(--text-dim); margin:14px 0; overflow-x:auto;
+  }
+  .structure .root{color:var(--orange-soft); font-weight:600;}
+  .structure .leaf{color:var(--blue);}
+  .structure .iface-leaf{color:var(--red);}
+  .structure .abstract-tag{color:var(--purple);}
+
+  /* ---------- Role cards (Part E salary breakdowns) ---------- */
+  .role-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin:16px 0 4px;}
+  .role-card{background:var(--bg-inset); border:1px solid var(--border-soft); border-radius:8px; padding:14px 16px;}
+  .role-card h4{margin:0 0 10px; font-size:.85rem; color:var(--orange-soft); font-weight:600;}
+  .role-card .line{display:flex; justify-content:space-between; font-size:.82rem; color:var(--text-dim); padding:3px 0;}
+  .role-card .line.total{color:var(--green); border-top:1px dashed var(--border-soft); margin-top:6px; padding-top:8px; font-weight:600;}
+
+  /* ---------- Callouts ---------- */
+  .note{
+    display:flex; gap:10px; background:rgba(106,183,255,0.06); border:1px solid rgba(106,183,255,0.22);
+    border-radius:8px; padding:12px 16px; margin:16px 0; font-size:.88rem; color:var(--text-dim);
+  }
+  .note b{color:var(--blue); font-weight:600;}
+  .note.warn{background:rgba(255,122,122,0.06); border-color:rgba(255,122,122,0.22);}
+  .note.warn b{color:var(--red);}
+  .note.bad code, .note.warn code{color:var(--red);}
+
+  /* ---------- Viva ---------- */
+  .viva{
+    background:var(--bg-inset); border:1px solid rgba(201,166,255,0.28); border-radius:8px;
+    padding:16px 18px; margin:18px 0;
+  }
+  .viva .viva-q{
+    font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.04em;
+    color:var(--purple); margin-bottom:8px;
+  }
+  .viva p{margin:0 0 10px; font-weight:600; font-size:.98rem;}
+  .viva-points{display:flex; flex-wrap:wrap; gap:8px;}
+  .viva-points span{
+    font-size:11.5px; color:var(--purple); background:rgba(201,166,255,0.08);
+    border:1px solid rgba(201,166,255,0.25); padding:4px 9px; border-radius:5px;
+    font-family:'JetBrains Mono',monospace;
+  }
+
+  /* ---------- Comparison (procedural vs OOP) ---------- */
+  .compare-grid{display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:6px;}
+  .compare-card{background:var(--bg-inset); border:1px solid var(--border-soft); border-radius:8px; padding:16px 18px;}
+  .compare-card h4{margin:0 0 10px; font-size:.85rem; font-weight:600;}
+  .compare-card.bad h4{color:var(--red);}
+  .compare-card.good h4{color:var(--green);}
+
+  /* ---------- Final output card ---------- */
+  .final-block{margin-top:10px;}
+
+  footer{
+    padding:30px 44px 60px; color:var(--text-faint); font-size:12.5px;
+    font-family:'JetBrains Mono',monospace; border-top:1px solid var(--border);
+  }
+
+  @media (max-width:900px){
+    .shell{grid-template-columns:1fr;}
+    .explorer{position:relative; top:0; height:auto; border-right:none; border-bottom:1px solid var(--border);}
+    main{padding:28px 20px 90px;}
+    .compare-grid, .role-grid, .pillars{grid-template-columns:1fr;}
+    .codeblock pre{font-size:12px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="dots"><span></span><span></span><span></span></div>
+  <div class="title"><b>Employee.java</b> — Practical 2 · Employee Role &amp; Payroll Management System</div>
+</div>
+
+<div class="shell">
+
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside class="explorer">
+    <div class="explorer-label">PROJECT EXPLORER</div>
+    <div class="tree-root">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" stroke="#ff8a3d" stroke-width="1.6"/></svg>
+      EmployeeRolePayroll
+    </div>
+    <div class="tree-sub">Employee.java · Developer.java · Tester.java · Manager.java · Reportable.java · WorkAssignable.java · Main.java</div>
+    <nav>
+      <a href="#part-a"><span class="part-letter">A</span> Base Employee Class</a>
+      <a href="#part-b"><span class="part-letter">B</span> Inheritance Hierarchy</a>
+      <a href="#part-c"><span class="part-letter">C</span> Constructors &amp; super</a>
+      <a href="#part-d"><span class="part-letter">D</span> Method Overriding</a>
+      <a href="#part-e"><span class="part-letter">E</span> Abstract Class</a>
+      <a href="#part-f"><span class="part-letter">F</span> Interfaces</a>
+      <a href="#part-g"><span class="part-letter">G</span> Multiple Inheritance</a>
+      <a href="#part-h"><span class="part-letter">H</span> Polymorphism</a>
+      <a href="#part-i"><span class="part-letter">I</span> Dynamic Binding</a>
+      <a href="#part-j"><span class="part-letter">J</span> Object Reuse</a>
+      <a href="#part-k"><span class="part-letter">K</span> Abstraction</a>
+      <a href="#part-l"><span class="part-letter">L</span> Procedural vs OOP</a>
+      <a href="#part-flow"><span class="part-letter">►</span> Final App Flow</a>
+    </nav>
+  </aside>
+
+  <!-- ===================== MAIN ===================== -->
+  <main>
+
+    <div class="hero">
+      <div class="eyebrow-line">practical 2 // object-oriented programming assessment</div>
+      <h1>Employee Role &amp; Payroll Management System</h1>
+      <p class="lede">
+        The HR team now needs to represent Developers, Testers, and Project Managers — each
+        sharing common employee information but differing in responsibilities and salary logic.
+        Built entirely in Core Java, this practical uses inheritance, abstraction, interfaces,
+        and polymorphism to model that difference cleanly.
+      </p>
+      <div class="hero-meta">
+        <span>Role: Junior Java Developer</span>
+        <span>Domain: HR Technology</span>
+        <span>Paradigm: Object-Oriented</span>
+        <span>Parts: A–L + Final Flow</span>
+      </div>
+    </div>
+
+    <div class="pillars">
+      <div class="pillar"><div class="p-name">Encapsulation</div><div class="p-desc">Private fields, controlled access via getters/setters — Part A</div></div>
+      <div class="pillar"><div class="p-name">Inheritance</div><div class="p-desc">Developer, Tester, Manager extend Employee — Parts B, C, J</div></div>
+      <div class="pillar"><div class="p-name">Abstraction</div><div class="p-desc">Abstract Employee, abstract calculateSalary() — Parts E, K</div></div>
+      <div class="pillar"><div class="p-name">Polymorphism</div><div class="p-desc">Overriding, dynamic binding, interfaces — Parts D, F, G, H, I</div></div>
+    </div>
+
+    <!-- ===================== PART A ===================== -->
+    <section class="part" id="part-a">
+      <div class="filetab">
+        <div class="fname"><b>Part A</b> — Employee.java</div>
+        <div class="part-badge">ENCAPSULATION</div>
+      </div>
+      <div class="part-body">
+        <h2>Create the Base Employee Class</h2>
+        <p class="part-sub">Common employee information, kept private, exposed only through public accessor methods.</p>
+
+        <div class="codeblock">
+          <div class="gutter"><div>1</div><div>2</div><div>3</div><div>4</div></div>
+          <pre><code><span class="kw">private</span> <span class="cls">String</span> employeeId;
+<span class="kw">private</span> <span class="cls">String</span> employeeName;
+<span class="kw">private</span> <span class="cls">String</span> department;
+<span class="kw">private</span> <span class="kw">double</span> basicSalary;</code></pre>
+        </div>
+
+        <p>Expose them through paired accessors:</p>
+        <ul>
+          <li><code>getEmployeeName()</code> / <code>setEmployeeName()</code></li>
+          <li><code>getDepartment()</code> / <code>setDepartment()</code></li>
+          <li><code>getBasicSalary()</code> / <code>setBasicSalary()</code></li>
+        </ul>
+
+        <div class="note">
+          <b>Industry practice —</b> business data should generally not be exposed directly. Prefer
+          <code>employee.getBasicSalary()</code> over reaching into <code>employee.basicSalary</code> —
+          this is controlled access, the core of encapsulation.
+        </div>
+
+        <div class="concepts">
+          <div class="concepts-label">CONCEPTS EXPOSED</div>
+          <span class="concept-chip">Class</span>
+          <span class="concept-chip">Object</span>
+          <span class="concept-chip">Encapsulation</span>
+          <span class="concept-chip">Access control</span>
+          <span class="concept-chip">Data hiding</span>
+          <span class="concept-chip">Getters and setters</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== PART B ===================== -->
+    <section class="part" id="part-b">
+      <div class="filetab">
+        <div class="fname"><b>Part B</b> — Developer.java · Tester.java · Manager.java</div>
+        <div class="part-badge">INHERITANCE</div>
+      </div>
+      <div class="part-body">
+        <h2>Employee Inheritance Hierarchy</h2>
+        <p class="part-sub">Three roles, one shared parent — each subclass adds a role-specific attribute.</p>
+
+        <div class="structure">
+                  <span class="root">Employee</span>
+                     |
+          -------------------------
+          |           |           |
+      <span class="leaf">Developer</span>     <span class="leaf">Tester</span>     <span class="leaf">Manager</span>
+        </div>
+
+        <div class="codeblock">
+          <div class="gutter"><div>1</div><div>2</div><div>3</div></div>
+          <pre><code><span class="kw">class</span> <span class="cls">Developer</span> <span class="kw">extends</span> <span class="cls">Employee</span> { }
+<span class="kw">class</span> <span class="cls">Tester</span> <span class="kw">extends</span> <span class="cls">Employee</span> { }
+<span class="kw">class</span> <span class="cls">Manager</span> <span class="kw">extends</span> <span class="cls">Employee</span> { }</code></pre>
+        </div>
+
+        <table class="spec">
+          <tr><th>Subclass</th><th>Role-specific attribute</th></tr>
+          <tr><td>Developer</td><td>programmingLanguage</td></tr>
+          <tr><td>Tester</td><td>testingTool</td></tr>
+          <tr><td>Manager</td><td>teamSize</td></tr>
+        </table>
+
+        <div class="concepts">
+          <div class="concepts-label">CONCEPTS EXPOSED</div>
+          <span class="concept-chip">Inheritance</span>
+          <span class="concept-chip">Inheritance hierarchy</span>
+          <span class="concept-chip">Subclasses</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== PART C ===================== -->
+    <section class="part" id="part-c">
+      <div class="filetab">
+        <div class="fname"><b>Part C</b> — Developer.java</div>
+        <div class="part-badge">SUPER</div>
+      </div>
+      <div class="part-body">
+        <h2>Constructors and super</h2>
+        <p class="part-sub">Child constructors delegate common-field initialization to the parent via super.</p>
+
+        <div class="codeblock">
+          <div class="gutter"><div>1</div><div>2</div><div>3</div><div>4</div><div>5</div><div>6</div></div>
+          <pre><code><span class="cls">Developer</span> developer = <span class="kw">new</span> <span class="cls">Developer</span>(
+    <span class="str">"EMP101"</span>,
+    <span class="str">"Rahul"</span>,
+    <span class="str">"IT"</span>,
+    <span class="num">50000</span>,
+    <span class="str">"Java"</span>
+);</code></pre>
+        </div>
+
+        <p>Inside the Developer constructor:</p>
+        <div class="codeblock">
+          <div class="gutter"><div>1</div></div>
+          <pre><code><span class="kw">super</span>(employeeId, employeeName, department, basicSalary);</code></pre>
+        </div>
+        <p>...then the developer-specific field (<code>programmingLanguage</code>) is set.</p>
+
+        <div class="concepts">
+          <div class="concepts-label">CONCEPTS EXPOSED</div>
+          <span class="concept-chip">Constructors</span>
+          <span class="concept-chip">Subclasses</span>
+          <span class="concept-chip">Parent class</span>
+          <span class="concept-chip">super</span>
+          <span class="concept-chip">Constructor chaining</span>
+          <span class="concept-chip">Code reuse</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== PART D ===================== -->
+    <section class="part" id="part-d">
+      <div class="filetab">
+        <div class="fname"><b>Part D</b> — displayRole()</div>
+        <div class="part-badge">OVERRIDING</div>
+      </div>
+      <div class="part-body">
+        <h2>Method Overriding</h2>
+        <p class="part-sub">A single parent method, reinterpreted by each subclass.</p>
+
+        <table class="spec">
+          <tr><th>Class</th><th>displayRole() output</th></tr>
+          <tr><td>Employee</td><td>Employee Role: General Employee</td></tr>
+          <tr><td>Developer</td><td>Employee Role: Software Developer</td></tr>
+          <tr><td>Tester</td><td>Employee Role: QA Tester</td></tr>
+          <tr><td>Manager</td><td>Employee Role: Project Manager</td></tr>
+        </table>
+
+        <div class="concepts">
+          <div class="concepts-label">CONCEPTS EXPOSED</div>
+          <span class="concept-chip">Method overriding</span>
+          <span class="concept-chip">Inheritance</span>
+          <span class="concept-chip">Runtime polymorphism</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== PART E ===================== -->
+    <section class="part" id="part-e">
+      <div class="filetab">
+        <div class="fname"><b>Part E</b> — Employee.java</div>
+        <div class="part-badge">ABSTRACT</div>
+      </div>
+      <div class="part-body">
+        <h2>Introduce an Abstract Class</h2>
+        <p class="part-sub">Employee becomes abstract; every subclass must supply its own salary calculation.</p>
+
+        <div class="codeblock">
+          <div class="gutter"><div>1</div></div>
+          <pre><code><span class="kw">abstract</span> <span class="kw">void</span> <span class="fn">calculateSalary</span>();</code></pre>
+        </div>
+
+        <div class="role-grid">
+          <div class="role-card">
+            <h4>Developer</h4>
+            <div class="line"><span>Basic Salary</span><span>Rs. 50,000</span></div>
+            <div class="line"><span>Technical Allowance</span><span>Rs. 5,000</span></div>
+            <div class="line total"><span>Final Salary</span><span>Rs. 55,000</span></div>
+          </div>
+          <div class="role-card">
+            <h4>Tester</h4>
+            <div class="line"><span>Basic Salary</span><span>Rs. 45,000</span></div>
+            <div class="line"><span>Testing Allowance</span><span>Rs. 3,000</span></div>
+            <div class="line total"><span>Final Salary</span><span>Rs. 48,000</span></div>
+          </div>
+          <div class="role-card">
+            <h4>Manager</h4>
+            <div class="line"><span>Basic Salary</span><span>Rs. 70,000</span></div>
+            <div class="line"><span>Management Allowance</span><span>Rs. 10,000</span></div>
+            <div class="line total"><span>Final Salary</span><span>Rs. 80,000</span></div>
+          </div>
+        </div>
+        <p style="font-size:.85rem;color:var(--text-faint);margin-top:8px;">The calculation itself can stay very simple — the point is the mandatory per-subclass implementation.</p>
+
+        <div class="concepts">
+          <div class="concepts-label">CONCEPTS EXPOSED</div>
+          <span class="concept-chip">Abstract class</span>
+          <span class="concept-chip">Abstract method</span>
+          <span class="concept-chip">Abstraction</span>
+          <span class="concept-chip">Mandatory implementation</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== PART F ===================== -->
+    <section class="part" id="part-f">
+      <div class="filetab">
+        <div class="fname"><b>Part F</b> — Reportable.java · WorkAssignable.java</div>
+        <div class="part-badge">INTERFACES</div>
+      </div>
+      <div class="part-body">
+        <h2>Create Interfaces</h2>
+        <p class="part-sub">Two capabilities employees can support, defined independently of the class hierarchy.</p>
+
+        <div class="codeblock">
+          <div class="gutter"><div>1</div><div>2</div><div>3</div></div>
+          <pre><code><span class="kw">interface</span> <span class="iface">Reportable</span> {
+    <span class="kw">void</span> <span class="fn">generateReport</span>();
+}</code></pre>
+        </div>
+        <div class="codeblock">
+          <div class="gutter"><div>1</div><div>2</div><div>3</div></div>
+          <pre><code><span class="kw">interface</span> <span class="iface">WorkAssignable</span> {
+    <span class="kw">void</span> <span class="fn">assignWork</span>();
+}</code></pre>
+        </div>
+
+        <div class="structure">
+<span class="root">Developer</span>
+   ├── <span class="leaf">Employee</span>
+   ├── <span class="iface-leaf">Reportable</span>
+   └── <span class="iface-leaf">WorkAssignable</span>
+        </div>
+
+        <div class="concepts">
+          <div class="concepts-label">CONCEPTS EXPOSED</div>
+          <span class="concept-chip">Interfaces</span>
+          <span class="concept-chip">Interface implementation</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== PART G ===================== -->
+    <section class="part" id="part-g">
+      <div class="filetab">
+        <div class="fname"><b>Part G</b> — Developer.java</div>
+        <div class="part-badge">MULTIPLE INHERITANCE</div>
+      </div>
+      <div class="part-body">
+        <h2>Multiple Inheritance Using Interfaces</h2>
+        <p class="part-sub">Java won't let a class extend two classes — but it can implement several interfaces.</p>
+
+        <div class="note warn">
+          <b>Not allowed —</b> <code>class Developer extends Employee, Person</code>
+        </div>
+
+        <div class="codeblock">
+          <div class="gutter"><div>1</div><div>2</div></div>
+          <pre><code><span class="kw">class</span> <span class="cls">Developer</span> <span class="kw">extends</span> <span class="cls">Employee</span>
+                  <span class="kw">implements</span> <span class="iface">Reportable</span>, <span class="iface">WorkAssignable</span></code></pre>
+        </div>
+
+        <p class="terminal-label">EXAMPLE OUTPUT</p>
+        <div class="terminal">Generating Developer Report...
+Developer: Rahul
+Project Report: Submitted
+
+Assigning Development Task...
+Task: Implement Login Module</div>
+
+        <div class="concepts">
+          <div class="concepts-label">CONCEPTS EXPOSED</div>
+          <span class="concept-chip">Interfaces</span>
+          <span class="concept-chip">Multiple inheritance via interfaces</span>
+          <span class="concept-chip">Abstraction</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== PART H ===================== -->
+    <section class="part" id="part-h">
+      <div class="filetab">
+        <div class="fname"><b>Part H</b> — Main.java</div>
+        <div class="part-badge">POLYMORPHISM</div>
+      </div>
+      <div class="part-body">
+        <h2>Demonstrate Polymorphism</h2>
+        <p class="part-sub">Different subclass objects, stored and invoked through the parent-class reference.</p>
+
+        <div class="codeblock">
+          <div class="gutter"><div>1</div><div>2</div><div>3</div></div>
+          <pre><code><span class="cls">Employee</span> emp1 = developer;
+<span class="cls">Employee</span> emp2 = tester;
+<span class="cls">Employee</span> emp3 = manager;
+
+emp1.<span class="fn">calculateSalary</span>();
+emp2.<span class="fn">calculateSalary</span>();
+emp3.<span class="fn">calculateSalary</span>();</code></pre>
+        </div>
+
+        <p class="terminal-label">EXPECTED OUTPUT</p>
+        <div class="terminal">Developer Salary: Rs. 55,000
+
+Tester Salary: Rs. 48,000
+
+Manager Salary: Rs. 80,000</div>
+
+        <div class="note">
+          <b>What to notice —</b> the reference type is <code>Employee</code>, but the actual object is
+          <code>Developer</code>, <code>Tester</code>, or <code>Manager</code> — runtime polymorphism and dynamic binding in action.
+        </div>
+
+        <div class="concepts">
+          <div class="concepts-label">CONCEPTS EXPOSED</div>
+          <span class="concept-chip">Polymorphism</span>
+          <span class="concept-chip">Reference vs object type</span>
+          <span class="concept-chip">Dynamic binding</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== PART I ===================== -->
+    <section class="part" id="part-i">
+      <div class="filetab">
+        <div class="fname"><b>Part I</b> — Main.java</div>
+        <div class="part-badge">DYNAMIC DISPATCH</div>
+      </div>
+      <div class="part-body">
+        <h2>Demonstrate Dynamic Binding</h2>
+        <p class="part-sub">An array of Employee references, resolved to concrete subclasses at runtime.</p>
+
+        <div class="codeblock">
+          <div class="gutter"><div>1</div><div>2</div><div>3</div><div>4</div><div>5</div><div>6</div><div>7</div></div>
+          <pre><code><span class="cls">Employee</span>[] employees = {
+    <span class="kw">new</span> <span class="cls">Developer</span>(...),
+    <span class="kw">new</span> <span class="cls">Tester</span>(...),
+    <span class="kw">new</span> <span class="cls">Manager</span>(...)
+};
+
+<span class="kw">for</span> (<span class="cls">Employee</span> employee : employees) {
+    employee.<span class="fn">displayRole</span>();
+    employee.<span class="fn">calculateSalary</span>();
+}</code></pre>
+        </div>
+
+        <p class="terminal-label">EXPECTED OUTPUT</p>
+        <div class="terminal">=========================================
+        EMPLOYEE ROLE SUMMARY
+=========================================
+
+Role       : Software Developer
+Salary     : Rs. 55,000
+
+Role       : QA Tester
+Salary     : Rs. 48,000
+
+Role       : Project Manager
+Salary     : Rs. 80,000</div>
+
+        <div class="note">
+          <b>Dynamic Method Dispatch —</b> the JVM resolves which overridden method runs based on the actual object at runtime, not the reference type.
+        </div>
+
+        <div class="concepts">
+          <div class="concepts-label">CONCEPTS EXPOSED</div>
+          <span class="concept-chip">Dynamic method dispatch</span>
+          <span class="concept-chip">Dynamic binding</span>
+          <span class="concept-chip">Enhanced for loop</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== PART J ===================== -->
+    <section class="part" id="part-j">
+      <div class="filetab">
+        <div class="fname"><b>Part J</b> — Employee.java</div>
+        <div class="part-badge">REUSE</div>
+      </div>
+      <div class="part-body">
+        <h2>Demonstrate Object Reuse</h2>
+        <p class="part-sub">Common employee fields are written once, in the parent, and inherited everywhere else.</p>
+
+        <div class="compare-grid">
+          <div class="compare-card bad">
+            <h4>Incorrect — duplicated fields</h4>
+            <div class="codeblock">
+              <div class="gutter"><div>1</div><div>2</div><div>3</div><div>4</div><div>5</div><div>6</div><div>7</div></div>
+              <pre><code><span class="kw">class</span> <span class="cls">Developer</span> {
+    <span class="cls">String</span> employeeId;
+    <span class="cls">String</span> employeeName;
+    <span class="cls">String</span> department;
+}
+<span class="kw">class</span> <span class="cls">Tester</span> {
+    <span class="cls">String</span> employeeId;
+    ...
+}</code></pre>
+            </div>
+          </div>
+          <div class="compare-card good">
+            <h4>Better — inherited once</h4>
+            <div class="structure">
+<span class="root">Employee</span>
+ ├── employeeId
+ ├── employeeName
+ ├── department
+ └── basicSalary
+   ↓
+<span class="leaf">Developer · Tester · Manager</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="concepts">
+          <div class="concepts-label">CONCEPTS EXPOSED</div>
+          <span class="concept-chip">Reusability</span>
+          <span class="concept-chip">Maintainability</span>
+          <span class="concept-chip">Inheritance</span>
+          <span class="concept-chip">Avoiding duplicate code</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== PART K ===================== -->
+    <section class="part" id="part-k">
+      <div class="filetab">
+        <div class="fname"><b>Part K</b> — Main.java</div>
+        <div class="part-badge">ABSTRACTION</div>
+      </div>
+      <div class="part-body">
+        <h2>Abstraction in the Application</h2>
+        <p class="part-sub">What the HR application needs to know, versus what it doesn't.</p>
+
+        <div class="codeblock">
+          <div class="gutter"><div>1</div></div>
+          <pre><code>employee.<span class="fn">calculateSalary</span>();</code></pre>
+        </div>
+
+        <p>The HR application can call this without knowing the internal calculation performed by Developer, Tester, or Manager — the implementation stays hidden behind the abstract method.</p>
+
+        <div class="note">
+          <b>Abstraction —</b> exposing essential behavior while hiding implementation details.
+        </div>
+
+        <div class="concepts">
+          <div class="concepts-label">CONCEPTS EXPOSED</div>
+          <span class="concept-chip">Abstraction</span>
+          <span class="concept-chip">Information hiding</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== PART L ===================== -->
+    <section class="part" id="part-l">
+      <div class="filetab">
+        <div class="fname"><b>Part L</b> — design-notes.md</div>
+        <div class="part-badge">COMPARISON</div>
+      </div>
+      <div class="part-body">
+        <h2>Procedural vs Object-Oriented Approach</h2>
+        <p class="part-sub">A brief comparison of the two ways this system could have been structured.</p>
+
+        <div class="compare-grid">
+          <div class="compare-card bad">
+            <h4>Procedural</h4>
+            <div class="structure">
+<span class="root">main()</span>
+  |
+  +-- developer details
+  +-- tester details
+  +-- manager details
+  +-- salary calculations
+  +-- reports
+            </div>
+            <p style="font-size:.82rem;color:var(--text-dim);margin:8px 0 0;">Can become difficult to maintain as the application grows.</p>
+          </div>
+          <div class="compare-card good">
+            <h4>Object-Oriented</h4>
+            <div class="structure">
+             <span class="abstract-tag">Employee</span>
+                 |
+      -------------------------
+      |           |           |
+  <span class="leaf">Developer</span>     <span class="leaf">Tester</span>     <span class="leaf">Manager</span>
+      |
+  <span class="iface-leaf">Interfaces</span>
+            </div>
+            <p style="font-size:.82rem;color:var(--text-dim);margin:8px 0 0;">Each object manages its own relevant behavior.</p>
+          </div>
+        </div>
+
+        <div class="viva">
+          <div class="viva-q">VIVA QUESTION</div>
+          <p>Why is OOP more suitable for a growing employee-management application?</p>
+          <div class="viva-points">
+            <span>Code reuse</span>
+            <span>Modularity</span>
+            <span>Maintainability</span>
+            <span>Data hiding</span>
+            <span>Extensibility</span>
+            <span>Polymorphism</span>
+            <span>Easier maintenance</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== FINAL FLOW ===================== -->
+    <section class="part" id="part-flow">
+      <div class="filetab">
+        <div class="fname"><b>Final</b> — Main.java</div>
+        <div class="part-badge">APP FLOW</div>
+      </div>
+      <div class="part-body">
+        <h2>Final Application Flow</h2>
+        <p class="part-sub">Tie every part together behind one menu-driven entry point.</p>
+
+        <div class="structure">
+<span class="root">START</span>
+  |
+  ↓
+Display Employee Management Menu
+  |
+  +---- 1. Add Developer
+  |
+  +---- 2. Add Tester
+  |
+  +---- 3. Add Manager
+  |
+  +---- 4. Display Employee Details
+  |
+  +---- 5. Calculate Salary
+  |
+  +---- 6. Generate Report
+  |
+  +---- 7. Exit
+  |
+  ↓
+<span class="root">END</span>
+        </div>
+        <p style="font-size:.85rem;color:var(--text-faint);">Implement the menu with a simple switch statement, as in the previous practical.</p>
+
+        <h3>Sample final output</h3>
+        <div class="terminal final-block">================================================
+        EMPLOYEE MANAGEMENT SYSTEM
+================================================
+
+Employee ID       : EMP101
+Employee Name     : Rahul Sharma
+Department        : IT
+Role              : Software Developer
+Programming Lang. : Java
+Basic Salary      : Rs. 50000
+Final Salary      : Rs. 55000
+
+------------------------------------------------
+
+Employee ID       : EMP102
+Employee Name     : Priya Singh
+Department        : QA
+Role              : QA Tester
+Testing Tool      : Selenium
+Basic Salary      : Rs. 45000
+Final Salary      : Rs. 48000
+
+------------------------------------------------
+
+Employee ID       : EMP103
+Employee Name     : Amit Kumar
+Department        : IT
+Role              : Project Manager
+Team Size         : 8
+Basic Salary      : Rs. 70000
+Final Salary      : Rs. 80000
+
+================================================
+Employee report generated successfully.
+================================================</div>
+
+        <h3>Expected class design</h3>
+        <div class="structure">
+                    &lt;&lt;abstract&gt;&gt;
+                      <span class="abstract-tag">Employee</span>
+                         |
+          -------------------------------
+          |              |              |
+      <span class="leaf">Developer</span>        <span class="leaf">Tester</span>         <span class="leaf">Manager</span>
+          |
+          |
+   ----------------
+   |              |
+<span class="iface-leaf">Reportable</span>   <span class="iface-leaf">WorkAssignable</span>
+        </div>
+
+        <table class="spec">
+          <tr><th>File</th><th>Purpose</th></tr>
+          <tr><td>Employee.java</td><td>Abstract base class — common fields, abstract calculateSalary()</td></tr>
+          <tr><td>Developer.java</td><td>Extends Employee, implements Reportable &amp; WorkAssignable</td></tr>
+          <tr><td>Tester.java</td><td>Extends Employee</td></tr>
+          <tr><td>Manager.java</td><td>Extends Employee</td></tr>
+          <tr><td>Reportable.java</td><td>Interface — generateReport()</td></tr>
+          <tr><td>WorkAssignable.java</td><td>Interface — assignWork()</td></tr>
+          <tr><td>Main.java</td><td>Menu-driven entry point</td></tr>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer>
+  Practical 2 · Employee Role &amp; Payroll Management System · Core Java, Object-Oriented Programming
+</footer>
+
+<script>
+  const links = Array.from(document.querySelectorAll('.explorer a'));
+  const sections = links.map(l => document.querySelector(l.getAttribute('href')));
+
+  function setActive(){
+    let currentIndex = 0;
+    const scrollPos = window.scrollY + 90;
+    sections.forEach((sec, i) => {
+      if (sec && sec.offsetTop <= scrollPos) currentIndex = i;
+    });
+    links.forEach((l, i) => l.classList.toggle('active', i === currentIndex));
+  }
+  window.addEventListener('scroll', setActive, { passive: true });
+  setActive();
+</script>
+
+</body>
+</html>
