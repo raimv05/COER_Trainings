@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hour 12 — Vector Clocks + Final Simulation</title>
+<style>
+  :root{
+    --bg:#282a36;
+    --bg-alt:#21222c;
+    --panel:#2f3140;
+    --line:#44475a;
+    --fg:#f8f8f2;
+    --muted:#a9adc7;
+    --comment:#6272a4;
+    --cyan:#8be9fd;
+    --green:#50fa7b;
+    --amber:#ffb86c;
+    --pink:#ff79c6;
+    --purple:#bd93f9;
+    --red:#ff5555;
+    --yellow:#f1fa8c;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    background:radial-gradient(circle at 15% 10%, #31334a 0%, var(--bg) 45%) fixed;
+    color:var(--fg);
+    font-family:'Segoe UI', Roboto, -apple-system, sans-serif;
+    overflow:hidden;
+  }
+  .deck{position:relative;width:100vw;height:100vh;}
+  .slide{
+    position:absolute;inset:0;
+    display:none;
+    flex-direction:column;
+    padding:56px 80px 90px;
+    animation:fadeIn .45s ease;
+  }
+  .slide.active{display:flex;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+  .kicker{color:var(--amber);font-size:14px;letter-spacing:2px;font-weight:600;margin-bottom:6px;}
+  h1{font-size:40px;margin:0 0 6px;color:var(--fg);}
+  h2{font-size:30px;margin:0 0 18px;color:var(--fg);}
+  h3{font-size:20px;margin:0 0 10px;color:var(--cyan);}
+  p{line-height:1.6;color:var(--muted);font-size:16px;}
+  .lead{font-size:19px;color:var(--fg);max-width:760px;}
+
+  .topbar{position:fixed;top:0;left:0;right:0;height:6px;background:var(--line);z-index:50;}
+  .topbar-fill{height:100%;background:linear-gradient(90deg,var(--amber),var(--pink));transition:width .3s ease;}
+  .navbar{
+    position:fixed;bottom:0;left:0;right:0;height:64px;
+    background:rgba(33,34,44,.92);border-top:1px solid var(--line);
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 32px;backdrop-filter:blur(6px);z-index:50;
+  }
+  .navbar .brand{font-size:13px;color:var(--comment);}
+  .navbar .brand b{color:var(--amber);}
+  .nav-controls{display:flex;align-items:center;gap:14px;}
+  .nav-btn{
+    background:var(--panel);border:1px solid var(--line);color:var(--fg);
+    padding:8px 18px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;transition:.2s;
+  }
+  .nav-btn:hover{border-color:var(--amber);color:var(--amber);}
+  .nav-btn:disabled{opacity:.35;cursor:not-allowed;}
+  .slide-counter{color:var(--muted);font-size:13px;min-width:60px;text-align:center;}
+  .dots{display:flex;gap:5px;flex-wrap:wrap;max-width:360px;}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--line);cursor:pointer;transition:.2s;}
+  .dot.active{background:var(--amber);width:18px;border-radius:4px;}
+
+  .grid{display:grid;gap:16px;}
+  .grid-4{grid-template-columns:repeat(4,1fr);}
+  .grid-3{grid-template-columns:repeat(3,1fr);}
+  .grid-2{grid-template-columns:repeat(2,1fr);}
+  .content{flex:1;overflow-y:auto;padding-right:8px;}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;}
+  .badge{
+    display:inline-block;background:rgba(189,147,249,.15);color:var(--purple);
+    border:1px solid rgba(189,147,249,.4);padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;
+    margin-bottom:14px;letter-spacing:.5px;
+  }
+  .badge.final{background:rgba(255,184,108,.15);color:var(--amber);border-color:rgba(255,184,108,.4);}
+  .tag-warn{
+    display:inline-block;background:rgba(255,85,85,.12);color:var(--red);
+    border:1px solid rgba(255,85,85,.4);padding:4px 12px;border-radius:20px;
+    font-size:12px;font-weight:700;letter-spacing:1px;margin-bottom:10px;
+  }
+  .tag-good{
+    display:inline-block;background:rgba(80,250,123,.12);color:var(--green);
+    border:1px solid rgba(80,250,123,.4);padding:4px 12px;border-radius:20px;
+    font-size:12px;font-weight:700;letter-spacing:1px;margin-bottom:10px;
+  }
+
+  /* Vector display */
+  .vec-box{
+    display:inline-flex;gap:4px;background:var(--bg-alt);border:1px solid var(--line);border-radius:8px;
+    padding:8px 12px;font-family:'Consolas',monospace;font-weight:800;font-size:18px;
+  }
+  .vec-box .v{color:var(--amber);min-width:20px;text-align:center;}
+  .vec-box .v.hl{color:var(--green);}
+
+  /* CODE */
+  .code-wrap{background:var(--bg-alt);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;}
+  .code-head{display:flex;align-items:center;gap:8px;padding:10px 14px;background:#1c1d27;border-bottom:1px solid var(--line);}
+  .code-head .dotc{width:11px;height:11px;border-radius:50%;}
+  .code-head .filename{margin-left:8px;color:var(--comment);font-size:12px;font-family:'Consolas','Courier New',monospace;}
+  pre{margin:0;padding:16px 20px;overflow-x:auto;font-family:'Consolas','Courier New',monospace;font-size:13px;line-height:1.6;}
+  code{color:var(--fg);}
+  .tok-kw{color:var(--pink);}
+  .tok-type{color:var(--cyan);}
+  .tok-str{color:var(--yellow);}
+  .tok-fn{color:var(--green);}
+  .tok-num{color:var(--purple);}
+  .tok-cm{color:var(--comment);font-style:italic;}
+
+  .line-explainer{display:flex;gap:12px;padding:10px 0;border-bottom:1px dashed var(--line);align-items:flex-start;}
+  .line-explainer:last-child{border-bottom:none;}
+  .line-explainer .ln{
+    background:var(--bg-alt);color:var(--amber);font-family:'Consolas',monospace;font-size:12px;
+    padding:3px 8px;border-radius:5px;white-space:nowrap;border:1px solid var(--line);
+  }
+  .line-explainer .desc{font-size:14px;color:var(--muted);line-height:1.5;}
+  .line-explainer .desc b{color:var(--fg);}
+
+  /* Terminal output */
+  .terminal{background:var(--bg-alt);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;}
+  .terminal-head{display:flex;align-items:center;gap:8px;padding:10px 14px;background:#1c1d27;border-bottom:1px solid var(--line);}
+  .terminal-body{padding:16px 20px;font-family:'Consolas',monospace;font-size:14px;line-height:2;color:var(--green);}
+  .terminal-body .blank{height:8px;}
+
+  /* Rule walkthrough diagram */
+  .rule-step{display:flex;align-items:center;gap:16px;justify-content:center;padding:8px 0;flex-wrap:wrap;}
+  .rule-arrow{color:var(--comment);font-size:22px;}
+  .rule-label{font-size:13px;color:var(--muted);min-width:170px;text-align:right;}
+
+  /* Comparison table */
+  .comp-table{width:100%;border-collapse:collapse;}
+  .comp-table th, .comp-table td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--line);font-size:14px;}
+  .comp-table th{color:var(--amber);font-size:13px;text-transform:uppercase;letter-spacing:.5px;}
+  .comp-table td.lamport{color:var(--cyan);}
+  .comp-table td.vector{color:var(--green);}
+
+  /* Live simulator */
+  .demo-btn{
+    background:linear-gradient(135deg,var(--amber),#ff9d4d);color:#282a36;border:none;
+    padding:8px 14px;border-radius:7px;font-weight:700;cursor:pointer;font-size:12.5px;transition:.2s;
+  }
+  .demo-btn:hover{filter:brightness(1.1);}
+  .demo-btn:disabled{opacity:.4;cursor:not-allowed;}
+  .demo-btn.secondary{background:var(--line);color:var(--fg);}
+  .demo-btn.send{background:linear-gradient(135deg,var(--cyan),#5fb8d4);color:#161825;}
+  .demo-btn.recv{background:linear-gradient(135deg,var(--pink),#d45fa8);color:#161825;}
+  .vc-row{display:flex;gap:16px;flex-wrap:wrap;}
+  .vc-panel{
+    flex:1;min-width:220px;background:var(--bg-alt);border:1px solid var(--line);border-radius:10px;padding:14px;
+  }
+  .vc-panel h4{margin:0 0 8px;font-size:13px;color:var(--fg);}
+  .vc-vector{font-size:22px;font-weight:800;font-family:'Consolas',monospace;color:var(--amber);text-align:center;margin-bottom:10px;}
+  .vc-btns{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
+  .vc-log{
+    background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;
+    font-family:'Consolas',monospace;font-size:10.5px;height:80px;overflow-y:auto;color:var(--muted);
+  }
+  .inbox-badge{
+    display:inline-block;background:rgba(255,184,108,.15);border:1px solid var(--amber);color:var(--amber);
+    font-size:10px;padding:1px 6px;border-radius:9px;margin-left:4px;
+  }
+
+  /* Quiz */
+  .quiz-q{margin-bottom:22px;}
+  .quiz-q .q-title{font-size:16px;color:var(--fg);font-weight:600;margin-bottom:10px;}
+  .opt{
+    display:block;width:100%;text-align:left;background:var(--panel);border:1px solid var(--line);
+    color:var(--fg);padding:10px 14px;border-radius:8px;margin-bottom:8px;cursor:pointer;font-size:14px;transition:.15s;
+  }
+  .opt:hover{border-color:var(--cyan);}
+  .opt.correct{border-color:var(--green);background:rgba(80,250,123,.12);color:var(--green);}
+  .opt.incorrect{border-color:var(--red);background:rgba(255,85,85,.12);color:var(--red);}
+  .opt.disabled{pointer-events:none;}
+  .quiz-score{color:var(--amber);font-weight:700;font-size:16px;}
+
+  ::-webkit-scrollbar{width:8px;height:8px;}
+  ::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+
+  @media (max-width:900px){
+    .slide{padding:36px 24px 90px;}
+    .grid-4{grid-template-columns:repeat(2,1fr);}
+    .grid-3{grid-template-columns:repeat(2,1fr);}
+    .grid-2{grid-template-columns:1fr;}
+    h1{font-size:28px;}
+    h2{font-size:22px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar"><div class="topbar-fill" id="progressFill"></div></div>
+
+<div class="deck" id="deck">
+
+  <!-- SLIDE 1: TITLE -->
+  <section class="slide active">
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;">
+      <div class="kicker">MERN STACK BOOTCAMP · DISTRIBUTED SYSTEMS FOUNDATIONS</div>
+      <div class="badge final">🏁 FINAL HOUR OF THE MODULE</div>
+      <h1 style="font-size:52px;">Hour 12</h1>
+      <h2 style="color:var(--amber);font-size:34px;">Vector Clocks + Final Simulation</h2>
+      <p class="lead">The most advanced hour in this module — closing the gap Lamport clocks leave open, with a full three-process simulation you can run yourself.</p>
+      <div style="margin-top:24px;display:flex;gap:12px;flex-wrap:wrap;">
+        <div class="card" style="padding:10px 18px;">🧭 Why Vector Clocks</div>
+        <div class="card" style="padding:10px 18px;">☕ Java VectorClock</div>
+        <div class="card" style="padding:10px 18px;">🧪 3-Process Simulator</div>
+        <div class="card" style="padding:10px 18px;">⚖️ Lamport vs Vector</div>
+      </div>
+    </div>
+    <p style="color:var(--comment);font-size:13px;">Instructor: Manish Rai</p>
+  </section>
+
+  <!-- SLIDE 2: AGENDA -->
+  <section class="slide">
+    <div class="kicker">SESSION MAP</div>
+    <h2>What we'll cover this hour</h2>
+    <div class="content">
+      <div class="grid grid-2" style="gap:16px;">
+        <div class="card"><h3>12.1 Why Vector Clocks?</h3><p>What Lamport clocks can't tell us, and how a vector fixes it.</p></div>
+        <div class="card"><h3>12.2 Vector Clock Rules</h3><p>Tick, send, and receive — worked through with real vectors.</p></div>
+        <div class="card"><h3>12.3 Java Implementation</h3><p>A clean, reusable VectorClock class.</p></div>
+        <div class="card"><h3>12.4 Complete Demo</h3><p>Three processes, real output — and a live version you can drive yourself.</p></div>
+        <div class="card"><h3>12.5 Comparing Vectors</h3><p>Dominance (A → B) vs. concurrency (A || B).</p></div>
+        <div class="card"><h3>Final Comparison</h3><p>Lamport clocks vs. vector clocks — everything this module has been building toward.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 3: 12.1 WHY VECTOR CLOCKS -->
+  <section class="slide">
+    <div class="badge">12.1 WHY DO WE NEED VECTOR CLOCKS?</div>
+    <h2>What Lamport clocks can't tell us</h2>
+    <div class="content">
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="tag-good">LAMPORT CLOCKS CAN TELL US</div>
+          <div class="vec-box" style="font-size:22px;"><span class="v">A &lt; B</span></div>
+        </div>
+        <div class="card">
+          <div class="tag-warn">BUT CANNOT ALWAYS TELL US</div>
+          <p style="margin:0;">Whether <b style="color:var(--fg);">A caused B</b>, or whether the events were completely <b style="color:var(--fg);">independent</b>.</p>
+        </div>
+      </div>
+      <div class="card" style="margin-top:16px;">
+        <p style="margin:0;">Vector clocks solve this by maintaining a full <b style="color:var(--fg);">vector</b> — one counter per process — instead of a single number. For three processes, every clock starts identical:</p>
+        <div style="display:flex;gap:14px;justify-content:center;margin-top:14px;flex-wrap:wrap;">
+          <div class="vec-box"><span class="v">P1 = [0,0,0]</span></div>
+          <div class="vec-box"><span class="v">P2 = [0,0,0]</span></div>
+          <div class="vec-box"><span class="v">P3 = [0,0,0]</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 4: 12.2 VECTOR CLOCK RULES -->
+  <section class="slide">
+    <div class="badge">12.2 VECTOR CLOCK RULES</div>
+    <h2>Walking through the rules</h2>
+    <div class="content">
+      <div class="rule-step"><span class="rule-label">Internal event at P1:</span><div class="vec-box"><span class="v">0,0,0</span></div><span class="rule-arrow">→</span><div class="vec-box"><span class="v hl">1</span><span class="v">,0,0</span></div></div>
+      <div class="rule-step"><span class="rule-label">Another event at P1:</span><div class="vec-box"><span class="v hl">2</span><span class="v">,0,0</span></div></div>
+      <div class="rule-step"><span class="rule-label">P1 sends to P2:</span><div class="vec-box"><span class="v">P1 = [</span><span class="v hl">3</span><span class="v">,0,0]</span></div></div>
+      <div class="rule-step"><span class="rule-label">P2 currently holds:</span><div class="vec-box"><span class="v">P2 = [0,0,0]</span></div></div>
+      <div class="rule-step"><span class="rule-label">Component-wise max:</span><div class="vec-box"><span class="v">max([0,0,0], [3,0,0])</span></div></div>
+      <div class="rule-step"><span class="rule-label">Then increment P2's own slot:</span><div class="vec-box"><span class="v">[3,</span><span class="v hl">1</span><span class="v">,0]</span></div></div>
+    </div>
+  </section>
+
+  <!-- SLIDE 5: 12.3 JAVA CLASS -->
+  <section class="slide">
+    <div class="badge">12.3 JAVA IMPLEMENTATION</div>
+    <h2>The VectorClock class</h2>
+    <div class="content">
+      <div class="code-wrap">
+        <div class="code-head">
+          <div class="dotc" style="background:#ff5f56;"></div>
+          <div class="dotc" style="background:#ffbd2e;"></div>
+          <div class="dotc" style="background:#27c93f;"></div>
+          <span class="filename">VectorClock.java</span>
+        </div>
+        <pre><code><span class="tok-kw">import</span> java.util.Arrays;
+
+<span class="tok-kw">class</span> <span class="tok-type">VectorClock</span> {
+
+    <span class="tok-kw">private</span> <span class="tok-kw">int</span>[] clock;
+
+    <span class="tok-kw">public</span> <span class="tok-fn">VectorClock</span>(<span class="tok-kw">int</span> numberOfProcesses) {
+        clock = <span class="tok-kw">new</span> <span class="tok-kw">int</span>[numberOfProcesses];
+    }
+
+    <span class="tok-kw">public</span> <span class="tok-kw">void</span> <span class="tok-fn">tick</span>(<span class="tok-kw">int</span> processId) {
+        clock[processId]++;
+    }
+
+    <span class="tok-kw">public</span> <span class="tok-kw">void</span> <span class="tok-fn">receive</span>(
+            <span class="tok-kw">int</span>[] receivedClock,
+            <span class="tok-kw">int</span> processId) {
+
+        <span class="tok-kw">for</span> (<span class="tok-kw">int</span> i = <span class="tok-num">0</span>; i &lt; clock.length; i++) {
+            clock[i] = <span class="tok-type">Math</span>.max(clock[i], receivedClock[i]);
+        }
+
+        clock[processId]++;
+    }
+
+    <span class="tok-kw">public</span> <span class="tok-kw">int</span>[] <span class="tok-fn">getClock</span>() {
+        <span class="tok-kw">return</span> clock.clone();
+    }
+
+    <span class="tok-an">@Override</span>
+    <span class="tok-kw">public</span> <span class="tok-type">String</span> <span class="tok-fn">toString</span>() {
+        <span class="tok-kw">return</span> <span class="tok-type">Arrays</span>.toString(clock);
+    }
+}</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 6: LINE EXPLAINER -->
+  <section class="slide">
+    <div class="badge">12.3 JAVA IMPLEMENTATION</div>
+    <h2>Reading the class</h2>
+    <div class="content">
+      <div class="card">
+        <div class="line-explainer"><span class="ln">int[] clock</span><span class="desc">One slot per process — this is the whole difference from a Lamport clock's single integer.</span></div>
+        <div class="line-explainer"><span class="ln">tick(processId)</span><span class="desc">Increments only <b>this process's own slot</b> — never anyone else's.</span></div>
+        <div class="line-explainer"><span class="ln">receive(...)</span><span class="desc">Takes the <b>component-wise max</b> across the entire vector, then increments its own slot — exactly the rule from 12.2.</span></div>
+        <div class="line-explainer"><span class="ln">clock.clone()</span><span class="desc">Returns a copy so the caller can't accidentally mutate this process's internal state.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 7: 12.4 DEMO CODE -->
+  <section class="slide">
+    <div class="badge">12.4 COMPLETE VECTOR CLOCK DEMO</div>
+    <h2>Three processes, one scenario</h2>
+    <div class="content">
+      <div class="code-wrap">
+        <div class="code-head">
+          <div class="dotc" style="background:#ff5f56;"></div>
+          <div class="dotc" style="background:#ffbd2e;"></div>
+          <div class="dotc" style="background:#27c93f;"></div>
+          <span class="filename">VectorClockDemo.java</span>
+        </div>
+        <pre><code><span class="tok-kw">public class</span> <span class="tok-type">VectorClockDemo</span> {
+
+    <span class="tok-kw">public static</span> <span class="tok-kw">void</span> <span class="tok-fn">main</span>(<span class="tok-type">String</span>[] args) {
+
+        <span class="tok-type">VectorClock</span> p1 = <span class="tok-kw">new</span> <span class="tok-fn">VectorClock</span>(<span class="tok-num">3</span>);
+        <span class="tok-type">VectorClock</span> p2 = <span class="tok-kw">new</span> <span class="tok-fn">VectorClock</span>(<span class="tok-num">3</span>);
+        <span class="tok-type">VectorClock</span> p3 = <span class="tok-kw">new</span> <span class="tok-fn">VectorClock</span>(<span class="tok-num">3</span>);
+
+        <span class="tok-cm">// P1 performs an event</span>
+        p1.tick(<span class="tok-num">0</span>);
+        <span class="tok-type">System</span>.out.println(<span class="tok-str">"P1: "</span> + p1);
+
+        <span class="tok-cm">// P1 performs another event</span>
+        p1.tick(<span class="tok-num">0</span>);
+        <span class="tok-type">System</span>.out.println(<span class="tok-str">"P1: "</span> + p1);
+
+        <span class="tok-cm">// P1 sends its clock to P2</span>
+        <span class="tok-kw">int</span>[] message = p1.getClock();
+        p2.receive(message, <span class="tok-num">1</span>);
+        <span class="tok-type">System</span>.out.println(<span class="tok-str">"P2 after receiving: "</span> + p2);
+
+        <span class="tok-cm">// P3 performs an independent event</span>
+        p3.tick(<span class="tok-num">2</span>);
+        <span class="tok-type">System</span>.out.println(<span class="tok-str">"P3: "</span> + p3);
+    }
+}</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 8: EXPECTED OUTPUT -->
+  <section class="slide">
+    <div class="badge">12.4 COMPLETE VECTOR CLOCK DEMO</div>
+    <h2>Expected conceptual output</h2>
+    <div class="content">
+      <div class="terminal">
+        <div class="terminal-head">
+          <div class="dotc" style="width:11px;height:11px;border-radius:50%;background:#ff5f56;"></div>
+          <div class="dotc" style="width:11px;height:11px;border-radius:50%;background:#ffbd2e;"></div>
+          <div class="dotc" style="width:11px;height:11px;border-radius:50%;background:#27c93f;"></div>
+          <span class="filename">console output</span>
+        </div>
+        <div class="terminal-body">
+P1: [1, 0, 0]
+<div class="blank"></div>
+P1: [2, 0, 0]
+<div class="blank"></div>
+P2 after receiving: [2, 1, 0]
+<div class="blank"></div>
+P3: [0, 0, 1]
+        </div>
+      </div>
+      <p style="margin-top:14px;">Notice P3's vector only has its own slot touched — it had no contact with P1 or P2, so it stays fully independent of them.</p>
+    </div>
+  </section>
+
+  <!-- SLIDE 9: LIVE 3-PROCESS SIMULATOR -->
+  <section class="slide">
+    <div class="badge">🧪 LIVE VECTOR CLOCK SIMULATOR</div>
+    <h2>Build your own scenario across 3 processes</h2>
+    <div class="content">
+      <div class="vc-row">
+        <div class="vc-panel">
+          <h4>🖥️ P1 (index 0)</h4>
+          <div class="vc-vector" id="vcP1">[0,0,0]</div>
+          <div class="vc-btns">
+            <button class="demo-btn" onclick="vcTick(0)">Tick</button>
+            <button class="demo-btn send" onclick="vcSend(0,1)">Send→P2</button>
+            <button class="demo-btn send" onclick="vcSend(0,2)">Send→P3</button>
+          </div>
+          <button class="demo-btn recv" id="vcRecvBtn0" onclick="vcReceive(0)" disabled>Receive<span class="inbox-badge" id="vcInbox0" style="display:none;">1</span></button>
+          <div class="vc-log" id="vcLog0" style="margin-top:8px;"><div>Ready.</div></div>
+        </div>
+        <div class="vc-panel">
+          <h4>🖥️ P2 (index 1)</h4>
+          <div class="vc-vector" id="vcP2">[0,0,0]</div>
+          <div class="vc-btns">
+            <button class="demo-btn" onclick="vcTick(1)">Tick</button>
+            <button class="demo-btn send" onclick="vcSend(1,0)">Send→P1</button>
+            <button class="demo-btn send" onclick="vcSend(1,2)">Send→P3</button>
+          </div>
+          <button class="demo-btn recv" id="vcRecvBtn1" onclick="vcReceive(1)" disabled>Receive<span class="inbox-badge" id="vcInbox1" style="display:none;">1</span></button>
+          <div class="vc-log" id="vcLog1" style="margin-top:8px;"><div>Ready.</div></div>
+        </div>
+        <div class="vc-panel">
+          <h4>🖥️ P3 (index 2)</h4>
+          <div class="vc-vector" id="vcP2b">[0,0,0]</div>
+          <div class="vc-btns">
+            <button class="demo-btn" onclick="vcTick(2)">Tick</button>
+            <button class="demo-btn send" onclick="vcSend(2,0)">Send→P1</button>
+            <button class="demo-btn send" onclick="vcSend(2,1)">Send→P2</button>
+          </div>
+          <button class="demo-btn recv" id="vcRecvBtn2" onclick="vcReceive(2)" disabled>Receive<span class="inbox-badge" id="vcInbox2" style="display:none;">1</span></button>
+          <div class="vc-log" id="vcLog2" style="margin-top:8px;"><div>Ready.</div></div>
+        </div>
+      </div>
+      <div style="margin-top:12px;">
+        <button class="demo-btn secondary" onclick="vcReset()">↺ Reset all three processes</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 10: 12.5 DOMINANCE -->
+  <section class="slide">
+    <div class="badge">12.5 COMPARING VECTOR CLOCKS</div>
+    <h2>When one vector dominates another</h2>
+    <div class="content">
+      <div style="display:flex;gap:20px;justify-content:center;">
+        <div class="vec-box" style="font-size:24px;"><span class="v">A = [2,1,0]</span></div>
+        <div class="vec-box" style="font-size:24px;"><span class="v">B = [2,3,0]</span></div>
+      </div>
+      <p class="lead" style="text-align:center;margin-top:16px;">Because every component of A is ≤ the matching component of B, and at least one is <b style="color:var(--fg);">strictly smaller</b> (1 &lt; 3)...</p>
+      <div class="terminal-body" style="text-align:center;font-size:24px;margin-top:8px;">A → B</div>
+      <div class="card" style="margin-top:10px;">
+        <p style="margin:0;">A vector <b style="color:var(--fg);">dominates</b> another exactly when it's less-than-or-equal in every slot, with at least one strictly less. This is the vector-clock generalization of the happened-before relation.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 11: 12.5 CONCURRENT -->
+  <section class="slide">
+    <div class="badge">12.5 COMPARING VECTOR CLOCKS</div>
+    <h2>When neither vector dominates</h2>
+    <div class="content">
+      <div style="display:flex;gap:20px;justify-content:center;">
+        <div class="vec-box" style="font-size:24px;"><span class="v">A = [2,1,0]</span></div>
+        <div class="vec-box" style="font-size:24px;"><span class="v">B = [1,0,3]</span></div>
+      </div>
+      <p class="lead" style="text-align:center;margin-top:16px;">A is bigger in slot 0 and 1, but B is bigger in slot 2 — neither vector dominates the other.</p>
+      <div class="terminal-body" style="text-align:center;font-size:24px;margin-top:8px;">A || B</div>
+      <div class="card" style="margin-top:10px;">
+        <p style="margin:0;">A and B are <b style="color:var(--fg);">concurrent events</b> — genuinely independent, with no causal relationship either way. <b style="color:var(--amber);">This is one of the most important differences between Lamport and vector clocks</b>: a single Lamport number can never express "these two things simply have nothing to do with each other."</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 12: FINAL COMPARISON -->
+  <section class="slide">
+    <div class="badge final">🏁 FINAL COMPARISON STUDENTS SHOULD KNOW</div>
+    <h2>Lamport clocks vs. vector clocks</h2>
+    <div class="content">
+      <table class="comp-table">
+        <tr><th>Property</th><th>Lamport Clock</th><th>Vector Clock</th></tr>
+        <tr><td>What it stores</td><td class="lamport">A single integer</td><td class="vector">One integer per process</td></tr>
+        <tr><td>Can detect A → B?</td><td class="lamport">Yes, if it truly happened</td><td class="vector">Yes, and more precisely</td></tr>
+        <tr><td>Can detect concurrency (A || B)?</td><td class="lamport">No — cannot distinguish from A → B</td><td class="vector">Yes — dominance check reveals it</td></tr>
+        <tr><td>Does L(A) &lt; L(B) imply causation?</td><td class="lamport">No — false positives possible</td><td class="vector">Dominance is exact — no false positives</td></tr>
+        <tr><td>Memory cost</td><td class="lamport">O(1) — one number</td><td class="vector">O(n) — one slot per process</td></tr>
+        <tr><td>Typical use case</td><td class="lamport">Simple total ordering, logs</td><td class="vector">Conflict detection, replicated data, version tracking</td></tr>
+      </table>
+      <p class="lead" style="margin-top:18px;">Vector clocks cost more memory as the system grows, but they're the only tool here that can tell independence from causation — which is exactly why systems like distributed databases and version-control tools rely on vector-clock-style reasoning.</p>
+    </div>
+  </section>
+
+  <!-- SLIDE 13: RECAP -->
+  <section class="slide">
+    <div class="kicker">RECAP</div>
+    <h2>Hour 12 — Key takeaways</h2>
+    <div class="content">
+      <div class="grid grid-2">
+        <div class="card"><h3>🧭 One counter per process</h3><p>A vector clock tracks every process's progress, not just its own — closing the gap Lamport clocks leave open.</p></div>
+        <div class="card"><h3>⚖️ tick + max + increment</h3><p>Local events bump your own slot; receiving takes the component-wise max, then bumps your own slot again.</p></div>
+        <div class="card"><h3>➡️ Dominance = causation</h3><p>A → B exactly when A is ≤ B everywhere and strictly less somewhere — no false positives.</p></div>
+        <div class="card"><h3>|| = genuinely independent</h3><p>When neither vector dominates, the events are concurrent — something Lamport clocks alone could never prove.</p></div>
+      </div>
+      <p class="lead" style="margin-top:20px;">This closes the Distributed Systems Foundations module — from resource sharing all the way to vector clocks, you now have the theoretical and practical toolkit to reason about any distributed system.</p>
+    </div>
+  </section>
+
+  <!-- SLIDE 14: QUIZ -->
+  <section class="slide">
+    <div class="kicker">FINAL QUICK CHECK</div>
+    <h2>Hour 12 quiz</h2>
+    <div class="content" id="quizContainer"></div>
+    <div style="margin-top:6px;" id="quizScoreRow"></div>
+  </section>
+
+</div>
+
+<div class="navbar">
+  <div class="brand">MERN Stack Bootcamp · <b>Hour 12</b> — Vector Clocks + Final Simulation</div>
+  <div class="nav-controls">
+    <button class="nav-btn" id="prevBtn" onclick="goTo(current-1)">← Prev</button>
+    <div class="dots" id="dots"></div>
+    <span class="slide-counter" id="counter">1 / 14</span>
+    <button class="nav-btn" id="nextBtn" onclick="goTo(current+1)">Next →</button>
+  </div>
+</div>
+
+<script>
+/* ---------- SLIDE NAVIGATION ---------- */
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+let current = 0;
+
+const dotsWrap = document.getElementById('dots');
+for(let i=0;i<total;i++){
+  const d = document.createElement('div');
+  d.className = 'dot' + (i===0?' active':'');
+  d.onclick = () => goTo(i);
+  dotsWrap.appendChild(d);
+}
+const dotEls = document.querySelectorAll('.dot');
+
+function goTo(i){
+  if(i<0||i>=total) return;
+  slides[current].classList.remove('active');
+  dotEls[current].classList.remove('active');
+  current = i;
+  slides[current].classList.add('active');
+  dotEls[current].classList.add('active');
+  document.getElementById('counter').textContent = (current+1)+' / '+total;
+  document.getElementById('prevBtn').disabled = current===0;
+  document.getElementById('nextBtn').disabled = current===total-1;
+  document.getElementById('progressFill').style.width = ((current+1)/total*100)+'%';
+}
+document.addEventListener('keydown', e=>{
+  if(e.key==='ArrowRight') goTo(current+1);
+  if(e.key==='ArrowLeft') goTo(current-1);
+});
+goTo(0);
+
+/* ---------- LIVE VECTOR CLOCK SIMULATOR ---------- */
+const vcState = {
+  0: { clock: [0,0,0], inbox: [] },
+  1: { clock: [0,0,0], inbox: [] },
+  2: { clock: [0,0,0], inbox: [] }
+};
+const vcDisplayIds = { 0:'vcP1', 1:'vcP2', 2:'vcP2b' };
+
+function vcRenderVector(id){
+  document.getElementById(vcDisplayIds[id]).textContent = '[' + vcState[id].clock.join(',') + ']';
+  const inbox = vcState[id].inbox;
+  const btn = document.getElementById('vcRecvBtn'+id);
+  const badge = document.getElementById('vcInbox'+id);
+  if(inbox.length > 0){
+    btn.disabled = false;
+    badge.style.display = 'inline-block';
+    badge.textContent = inbox.length;
+  } else {
+    btn.disabled = true;
+    badge.style.display = 'none';
+  }
+}
+function vcLog(id, text){
+  const log = document.getElementById('vcLog'+id);
+  const div = document.createElement('div');
+  div.textContent = '› ' + text;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+function vcTick(id){
+  vcState[id].clock[id]++;
+  vcLog(id, 'tick(' + id + ') -> [' + vcState[id].clock.join(',') + ']');
+  vcRenderVector(id);
+}
+function vcSend(fromId, toId){
+  const snapshot = vcState[fromId].clock.slice();
+  vcState[toId].inbox.push({ from: fromId, vec: snapshot });
+  vcLog(fromId, 'sent [' + snapshot.join(',') + '] to P' + (toId+1));
+  vcRenderVector(toId);
+}
+function vcReceive(id){
+  const inbox = vcState[id].inbox;
+  if(inbox.length === 0) return;
+  const msg = inbox.shift();
+  const before = vcState[id].clock.slice();
+  const merged = before.map((v,i)=> Math.max(v, msg.vec[i]));
+  merged[id]++;
+  vcState[id].clock = merged;
+  vcLog(id, 'receive from P'+(msg.from+1)+' ['+msg.vec.join(',')+'] -> max then +1 -> ['+merged.join(',')+']');
+  vcRenderVector(id);
+}
+function vcReset(){
+  for(let i=0;i<3;i++){
+    vcState[i] = { clock: [0,0,0], inbox: [] };
+    document.getElementById('vcLog'+i).innerHTML = '<div>Ready.</div>';
+    vcRenderVector(i);
+  }
+}
+vcRenderVector(0); vcRenderVector(1); vcRenderVector(2);
+
+/* ---------- QUIZ ---------- */
+const quizData = [
+  {
+    q: "What can Lamport clocks NOT reliably tell us that vector clocks can?",
+    opts: [
+      "Whether an event happened",
+      "Whether two events are independent (concurrent) versus causally related",
+      "The name of the process",
+      "How many processes exist"
+    ],
+    correct: 1
+  },
+  {
+    q: "In the VectorClock class, what does receive() do?",
+    opts: [
+      "Overwrites the whole vector with the received one",
+      "Takes the component-wise max with the received vector, then increments its own slot",
+      "Ignores the received vector",
+      "Resets the vector to all zeros"
+    ],
+    correct: 1
+  },
+  {
+    q: "Given A = [2,1,0] and B = [2,3,0], what is the relationship?",
+    opts: ["A || B (concurrent)", "B → A", "A → B", "A = B"],
+    correct: 2
+  },
+  {
+    q: "Given A = [2,1,0] and B = [1,0,3], what is the relationship?",
+    opts: ["A → B", "B → A", "A || B (concurrent)", "They are identical"],
+    correct: 2
+  },
+  {
+    q: "What is the main trade-off of vector clocks compared to Lamport clocks?",
+    opts: [
+      "Vector clocks are always slower to compute",
+      "Vector clocks use more memory (one slot per process) in exchange for detecting concurrency",
+      "Vector clocks cannot detect causality at all",
+      "Vector clocks only work with two processes"
+    ],
+    correct: 1
+  }
+];
+
+let quizScore = 0;
+let quizAnswered = 0;
+const quizContainer = document.getElementById('quizContainer');
+quizData.forEach((item, qi)=>{
+  const wrap = document.createElement('div');
+  wrap.className = 'quiz-q';
+  const title = document.createElement('div');
+  title.className = 'q-title';
+  title.textContent = (qi+1) + '. ' + item.q;
+  wrap.appendChild(title);
+  item.opts.forEach((optText, oi)=>{
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = optText;
+    btn.onclick = () => {
+      const allOpts = wrap.querySelectorAll('.opt');
+      allOpts.forEach(o=>o.classList.add('disabled'));
+      if(oi === item.correct){
+        btn.classList.add('correct');
+        quizScore++;
+      } else {
+        btn.classList.add('incorrect');
+        allOpts[item.correct].classList.add('correct');
+      }
+      quizAnswered++;
+      updateScore();
+    };
+    wrap.appendChild(btn);
+  });
+  quizContainer.appendChild(wrap);
+});
+function updateScore(){
+  const row = document.getElementById('quizScoreRow');
+  row.innerHTML = '<span class="quiz-score">Score: '+quizScore+' / '+quizData.length+'</span>' +
+    (quizAnswered===quizData.length ? ' — Module complete! 🎉' : '');
+}
+</script>
+</body>
+</html>

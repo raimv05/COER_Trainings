@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hour 8 — Shared Memory and Distributed Shared Memory</title>
+<style>
+  :root{
+    --bg:#282a36;
+    --bg-alt:#21222c;
+    --panel:#2f3140;
+    --line:#44475a;
+    --fg:#f8f8f2;
+    --muted:#a9adc7;
+    --comment:#6272a4;
+    --cyan:#8be9fd;
+    --green:#50fa7b;
+    --amber:#ffb86c;
+    --pink:#ff79c6;
+    --purple:#bd93f9;
+    --red:#ff5555;
+    --yellow:#f1fa8c;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    background:radial-gradient(circle at 15% 10%, #31334a 0%, var(--bg) 45%) fixed;
+    color:var(--fg);
+    font-family:'Segoe UI', Roboto, -apple-system, sans-serif;
+    overflow:hidden;
+  }
+  .deck{position:relative;width:100vw;height:100vh;}
+  .slide{
+    position:absolute;inset:0;
+    display:none;
+    flex-direction:column;
+    padding:56px 80px 90px;
+    animation:fadeIn .45s ease;
+  }
+  .slide.active{display:flex;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+  .kicker{color:var(--amber);font-size:14px;letter-spacing:2px;font-weight:600;margin-bottom:6px;}
+  h1{font-size:40px;margin:0 0 6px;color:var(--fg);}
+  h2{font-size:30px;margin:0 0 18px;color:var(--fg);}
+  h3{font-size:20px;margin:0 0 10px;color:var(--cyan);}
+  p{line-height:1.6;color:var(--muted);font-size:16px;}
+  .lead{font-size:19px;color:var(--fg);max-width:760px;}
+
+  .topbar{position:fixed;top:0;left:0;right:0;height:6px;background:var(--line);z-index:50;}
+  .topbar-fill{height:100%;background:linear-gradient(90deg,var(--amber),var(--pink));transition:width .3s ease;}
+  .navbar{
+    position:fixed;bottom:0;left:0;right:0;height:64px;
+    background:rgba(33,34,44,.92);border-top:1px solid var(--line);
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 32px;backdrop-filter:blur(6px);z-index:50;
+  }
+  .navbar .brand{font-size:13px;color:var(--comment);}
+  .navbar .brand b{color:var(--amber);}
+  .nav-controls{display:flex;align-items:center;gap:14px;}
+  .nav-btn{
+    background:var(--panel);border:1px solid var(--line);color:var(--fg);
+    padding:8px 18px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;transition:.2s;
+  }
+  .nav-btn:hover{border-color:var(--amber);color:var(--amber);}
+  .nav-btn:disabled{opacity:.35;cursor:not-allowed;}
+  .slide-counter{color:var(--muted);font-size:13px;min-width:60px;text-align:center;}
+  .dots{display:flex;gap:6px;}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--line);cursor:pointer;transition:.2s;}
+  .dot.active{background:var(--amber);width:20px;border-radius:4px;}
+
+  .grid{display:grid;gap:16px;}
+  .grid-4{grid-template-columns:repeat(4,1fr);}
+  .grid-3{grid-template-columns:repeat(3,1fr);}
+  .grid-2{grid-template-columns:repeat(2,1fr);}
+  .content{flex:1;overflow-y:auto;padding-right:8px;}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;}
+  .badge{
+    display:inline-block;background:rgba(189,147,249,.15);color:var(--purple);
+    border:1px solid rgba(189,147,249,.4);padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;
+    margin-bottom:14px;letter-spacing:.5px;
+  }
+  .tag-warn{
+    display:inline-block;background:rgba(255,85,85,.12);color:var(--red);
+    border:1px solid rgba(255,85,85,.4);padding:4px 12px;border-radius:20px;
+    font-size:12px;font-weight:700;letter-spacing:1px;margin-bottom:10px;
+  }
+  .tag-good{
+    display:inline-block;background:rgba(80,250,123,.12);color:var(--green);
+    border:1px solid rgba(80,250,123,.4);padding:4px 12px;border-radius:20px;
+    font-size:12px;font-weight:700;letter-spacing:1px;margin-bottom:10px;
+  }
+
+  .resource-card{
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:16px;text-align:center;transition:.2s;
+  }
+  .resource-card:hover{border-color:var(--red);transform:translateY(-3px);}
+  .resource-card .ic{font-size:24px;margin-bottom:8px;display:block;}
+  .resource-card .lbl{font-size:13.5px;color:var(--fg);font-weight:600;}
+
+  /* CODE */
+  .code-wrap{background:var(--bg-alt);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;}
+  .code-head{display:flex;align-items:center;gap:8px;padding:10px 14px;background:#1c1d27;border-bottom:1px solid var(--line);}
+  .code-head .dotc{width:11px;height:11px;border-radius:50%;}
+  .code-head .filename{margin-left:8px;color:var(--comment);font-size:12px;font-family:'Consolas','Courier New',monospace;}
+  pre{margin:0;padding:16px 20px;overflow-x:auto;font-family:'Consolas','Courier New',monospace;font-size:13.5px;line-height:1.65;}
+  code{color:var(--fg);}
+  .tok-kw{color:var(--pink);}
+  .tok-type{color:var(--cyan);}
+  .tok-str{color:var(--yellow);}
+  .tok-cm{color:var(--comment);font-style:italic;}
+  .tok-fn{color:var(--green);}
+  .tok-num{color:var(--purple);}
+
+  .line-explainer{display:flex;gap:12px;padding:10px 0;border-bottom:1px dashed var(--line);align-items:flex-start;}
+  .line-explainer:last-child{border-bottom:none;}
+  .line-explainer .ln{
+    background:var(--bg-alt);color:var(--amber);font-family:'Consolas',monospace;font-size:12px;
+    padding:3px 8px;border-radius:5px;white-space:nowrap;border:1px solid var(--line);
+  }
+  .line-explainer .desc{font-size:14px;color:var(--muted);line-height:1.5;}
+  .line-explainer .desc b{color:var(--fg);}
+
+  /* Shared memory diagram */
+  .sm-wrap{display:flex;flex-direction:column;align-items:center;padding:16px 0;}
+  .sm-node{
+    background:var(--panel);border:1px solid var(--line);border-radius:8px;
+    padding:14px 30px;font-weight:600;font-size:15px;color:var(--fg);min-width:170px;text-align:center;
+  }
+  .sm-node.thread{border-color:var(--cyan);color:var(--cyan);}
+  .sm-node.mem{border-color:var(--amber);color:var(--amber);font-size:16px;padding:16px 34px;}
+  .sm-arrow{color:var(--comment);font-size:20px;line-height:1;padding:4px 0;}
+
+  /* Distributed shared memory diagrams */
+  .dsm-row{display:flex;justify-content:center;gap:90px;padding:12px 0;position:relative;}
+  .dsm-col{display:flex;flex-direction:column;align-items:center;gap:8px;}
+  .dsm-bridge{
+    position:absolute;top:22px;left:50%;transform:translateX(-50%);
+    color:var(--comment);font-size:13px;font-weight:600;text-align:center;
+  }
+  .dsm-bridge .line{width:210px;height:2px;background:var(--line);margin-top:4px;}
+
+  /* Live race demo */
+  .demo-btn{
+    background:linear-gradient(135deg,var(--amber),#ff9d4d);color:#282a36;border:none;
+    padding:10px 22px;border-radius:8px;font-weight:700;cursor:pointer;font-size:14px;transition:.2s;
+  }
+  .demo-btn:hover{filter:brightness(1.1);transform:translateY(-1px);}
+  .demo-btn.secondary{background:var(--line);color:var(--fg);}
+  .demo-btn:disabled{opacity:.45;cursor:not-allowed;}
+  .counter-display{
+    background:var(--bg-alt);border:1px solid var(--line);border-radius:10px;
+    padding:22px;text-align:center;min-width:220px;
+  }
+  .counter-num{font-size:40px;font-weight:800;font-family:'Consolas',monospace;}
+  .counter-num.bad{color:var(--red);}
+  .counter-num.good{color:var(--green);}
+  .counter-expected{font-size:13px;color:var(--comment);margin-top:6px;}
+  .race-log{
+    background:var(--bg-alt);border:1px solid var(--line);border-radius:8px;padding:12px 16px;
+    font-family:'Consolas',monospace;font-size:12px;height:110px;overflow-y:auto;color:var(--muted);
+  }
+  .race-log .entry.lost{color:var(--red);}
+  .race-log .entry.ok{color:var(--green);}
+
+  /* Quiz */
+  .quiz-q{margin-bottom:22px;}
+  .quiz-q .q-title{font-size:16px;color:var(--fg);font-weight:600;margin-bottom:10px;}
+  .opt{
+    display:block;width:100%;text-align:left;background:var(--panel);border:1px solid var(--line);
+    color:var(--fg);padding:10px 14px;border-radius:8px;margin-bottom:8px;cursor:pointer;font-size:14px;transition:.15s;
+  }
+  .opt:hover{border-color:var(--cyan);}
+  .opt.correct{border-color:var(--green);background:rgba(80,250,123,.12);color:var(--green);}
+  .opt.incorrect{border-color:var(--red);background:rgba(255,85,85,.12);color:var(--red);}
+  .opt.disabled{pointer-events:none;}
+  .quiz-score{color:var(--amber);font-weight:700;font-size:16px;}
+
+  ::-webkit-scrollbar{width:8px;height:8px;}
+  ::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+
+  @media (max-width:900px){
+    .slide{padding:36px 24px 90px;}
+    .grid-4{grid-template-columns:repeat(2,1fr);}
+    .grid-3{grid-template-columns:repeat(2,1fr);}
+    .grid-2{grid-template-columns:1fr;}
+    h1{font-size:28px;}
+    h2{font-size:22px;}
+    .dsm-row{gap:24px;flex-wrap:wrap;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar"><div class="topbar-fill" id="progressFill"></div></div>
+
+<div class="deck" id="deck">
+
+  <!-- SLIDE 1: TITLE -->
+  <section class="slide active">
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;">
+      <div class="kicker">MERN STACK BOOTCAMP · DISTRIBUTED SYSTEMS FOUNDATIONS</div>
+      <h1 style="font-size:52px;">Hour 8</h1>
+      <h2 style="color:var(--amber);font-size:34px;">Shared Memory &amp; Distributed Shared Memory</h2>
+      <p class="lead">From threads on one machine sharing memory, to processes on different machines pretending to — and everything that goes wrong in between.</p>
+      <div style="margin-top:28px;display:flex;gap:12px;flex-wrap:wrap;">
+        <div class="card" style="padding:10px 18px;">🧵 Shared Memory</div>
+        <div class="card" style="padding:10px 18px;">🏁 Race Conditions</div>
+        <div class="card" style="padding:10px 18px;">🔒 Synchronization</div>
+        <div class="card" style="padding:10px 18px;">🌐 Distributed Shared Memory</div>
+      </div>
+    </div>
+    <p style="color:var(--comment);font-size:13px;">Instructor: Manish Rai</p>
+  </section>
+
+  <!-- SLIDE 2: AGENDA -->
+  <section class="slide">
+    <div class="kicker">SESSION MAP</div>
+    <h2>What we'll cover this hour</h2>
+    <div class="content">
+      <div class="grid grid-2" style="gap:16px;">
+        <div class="card"><h3>8.1 Shared Memory</h3><p>How two threads on the same machine read and write the same memory.</p></div>
+        <div class="card"><h3>8.2 Race Condition</h3><p>Why two threads incrementing the same counter don't always add up the way you'd expect.</p></div>
+        <div class="card"><h3>8.3 Fix Using Synchronization</h3><p>Protecting the critical section so only one thread can touch shared state at a time.</p></div>
+        <div class="card"><h3>8.4 Distributed Shared Memory</h3><p>The illusion of shared memory across machines — and the real network underneath it.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 3: 8.1 SHARED MEMORY -->
+  <section class="slide">
+    <div class="badge">8.1 SHARED MEMORY</div>
+    <h2>Two threads, one memory</h2>
+    <div class="content">
+      <div class="sm-wrap">
+        <div class="sm-node thread">Thread A</div>
+        <div class="sm-arrow">↓</div>
+        <div class="sm-node mem">🧠 Shared Memory</div>
+        <div class="sm-arrow">↑</div>
+        <div class="sm-node thread">Thread B</div>
+      </div>
+      <p class="lead" style="text-align:center;">In a normal computer, both threads access the exact same memory — the same variables, the same objects, in real time.</p>
+      <div class="card" style="margin-top:10px;">
+        <p style="margin:0;">This is fast and convenient — no network, no serialization, just direct access. But it means <b style="color:var(--fg);">both threads can read and write at the same instant</b>, and that's where today's problem begins.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 4: 8.2 RACE CONDITION CODE -->
+  <section class="slide">
+    <div class="badge">8.2 RACE CONDITION</div>
+    <h2>Two threads, one counter, one surprise</h2>
+    <div class="content">
+      <div class="code-wrap">
+        <div class="code-head">
+          <div class="dotc" style="background:#ff5f56;"></div>
+          <div class="dotc" style="background:#ffbd2e;"></div>
+          <div class="dotc" style="background:#27c93f;"></div>
+          <span class="filename">RaceConditionDemo.java</span>
+        </div>
+        <pre><code><span class="tok-kw">class</span> <span class="tok-type">Counter</span> {
+
+    <span class="tok-kw">int</span> count = <span class="tok-num">0</span>;
+
+    <span class="tok-kw">void</span> <span class="tok-fn">increment</span>() {
+        count++;
+    }
+}
+
+<span class="tok-kw">public class</span> <span class="tok-type">RaceConditionDemo</span> {
+
+    <span class="tok-kw">public static</span> <span class="tok-kw">void</span> <span class="tok-fn">main</span>(<span class="tok-type">String</span>[] args)
+            <span class="tok-kw">throws</span> <span class="tok-type">InterruptedException</span> {
+
+        <span class="tok-type">Counter</span> counter = <span class="tok-kw">new</span> <span class="tok-fn">Counter</span>();
+
+        <span class="tok-type">Thread</span> t1 = <span class="tok-kw">new</span> <span class="tok-type">Thread</span>(() -> {
+            <span class="tok-kw">for</span> (<span class="tok-kw">int</span> i = <span class="tok-num">0</span>; i &lt; <span class="tok-num">100000</span>; i++) {
+                counter.increment();
+            }
+        });
+
+        <span class="tok-type">Thread</span> t2 = <span class="tok-kw">new</span> <span class="tok-type">Thread</span>(() -> {
+            <span class="tok-kw">for</span> (<span class="tok-kw">int</span> i = <span class="tok-num">0</span>; i &lt; <span class="tok-num">100000</span>; i++) {
+                counter.increment();
+            }
+        });
+
+        t1.start();
+        t2.start();
+
+        t1.join();
+        t2.join();
+
+        <span class="tok-type">System</span>.out.println(
+                <span class="tok-str">"Final count: "</span> + counter.count);
+    }
+}</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 5: RACE CONDITION EXPLANATION -->
+  <section class="slide">
+    <div class="badge">8.2 RACE CONDITION</div>
+    <h2>Why the count comes up short</h2>
+    <div class="content">
+      <div class="grid grid-2">
+        <div class="card" style="text-align:center;">
+          <div class="tag-good">STUDENTS EXPECT</div>
+          <div style="font-size:38px;font-weight:800;font-family:'Consolas',monospace;color:var(--green);">200000</div>
+          <p>100,000 increments from each thread, added together.</p>
+        </div>
+        <div class="card" style="text-align:center;">
+          <div class="tag-warn">WHAT ACTUALLY HAPPENS</div>
+          <div style="font-size:38px;font-weight:800;font-family:'Consolas',monospace;color:var(--red);">&lt; 200000</div>
+          <p>A smaller, often inconsistent value.</p>
+        </div>
+      </div>
+      <div class="card" style="margin-top:16px;">
+        <p style="margin:0;"><code style="color:var(--amber);">count++</code> looks like one instruction, but it's actually three: <b style="color:var(--fg);">read</b> count, <b style="color:var(--fg);">add</b> 1, <b style="color:var(--fg);">write</b> it back. If both threads read the same value before either writes, one increment gets silently lost. This is a <b style="color:var(--fg);">race condition</b>.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 6: LIVE RACE DEMO -->
+  <section class="slide">
+    <div class="badge">8.2 RACE CONDITION — TRY IT LIVE</div>
+    <h2>Simulate the lost updates yourself</h2>
+    <div class="content">
+      <p>Two simulated threads each try to increment a shared counter 20 times, with a tiny delay between "read" and "write" — just enough to interleave, like real threads do.</p>
+      <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;margin-top:12px;">
+        <div class="counter-display">
+          <div class="counter-num" id="raceCounterNum">0</div>
+          <div class="counter-expected">Expected: 40 (20 + 20)</div>
+        </div>
+        <div class="race-log" id="raceLog" style="flex:1;min-width:280px;"><div>Ready. Click "Run unsynchronized" to simulate the race.</div></div>
+      </div>
+      <div style="margin-top:14px;display:flex;gap:12px;">
+        <button class="demo-btn" id="raceRunBtn" onclick="runUnsyncRace()">▶ Run unsynchronized</button>
+        <button class="demo-btn secondary" onclick="resetRace()">↺ Reset</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 7: 8.3 SYNCHRONIZATION CODE -->
+  <section class="slide">
+    <div class="badge">8.3 FIX USING SYNCHRONIZATION</div>
+    <h2>Protecting the critical section</h2>
+    <div class="content">
+      <div class="code-wrap">
+        <div class="code-head">
+          <div class="dotc" style="background:#ff5f56;"></div>
+          <div class="dotc" style="background:#ffbd2e;"></div>
+          <div class="dotc" style="background:#27c93f;"></div>
+          <span class="filename">Counter.java</span>
+        </div>
+        <pre><code><span class="tok-kw">class</span> <span class="tok-type">Counter</span> {
+
+    <span class="tok-kw">private</span> <span class="tok-kw">int</span> count = <span class="tok-num">0</span>;
+
+    <span class="tok-kw">synchronized</span> <span class="tok-kw">void</span> <span class="tok-fn">increment</span>() {
+        count++;
+    }
+
+    <span class="tok-kw">int</span> <span class="tok-fn">getCount</span>() {
+        <span class="tok-kw">return</span> count;
+    }
+}</code></pre>
+      </div>
+      <div class="card" style="margin-top:16px;">
+        <p style="margin:0;">Adding <code style="color:var(--amber);">synchronized</code> means only <b style="color:var(--fg);">one thread at a time</b> can execute <code style="color:var(--amber);">increment()</code> on this object — the other thread has to wait its turn. Now the critical section is protected, and no update can be lost.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 8: LIVE SYNCHRONIZED DEMO -->
+  <section class="slide">
+    <div class="badge">8.3 FIX USING SYNCHRONIZATION — TRY IT LIVE</div>
+    <h2>Same race, now protected</h2>
+    <div class="content">
+      <p>Run the same two-thread scenario, but this time each increment is treated as an atomic, locked operation — exactly like <code style="color:var(--amber);">synchronized</code> does in Java.</p>
+      <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;margin-top:12px;">
+        <div class="counter-display">
+          <div class="counter-num good" id="syncCounterNum">0</div>
+          <div class="counter-expected">Expected: 40 (20 + 20)</div>
+        </div>
+        <div class="race-log" id="syncLog" style="flex:1;min-width:280px;"><div>Ready. Click "Run synchronized" to see the protected version.</div></div>
+      </div>
+      <div style="margin-top:14px;display:flex;gap:12px;">
+        <button class="demo-btn" id="syncRunBtn" onclick="runSyncRace()">▶ Run synchronized</button>
+        <button class="demo-btn secondary" onclick="resetSync()">↺ Reset</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 9: 8.4 DISTRIBUTED SHARED MEMORY - CONCEPTUAL -->
+  <section class="slide">
+    <div class="badge">8.4 DISTRIBUTED SHARED MEMORY</div>
+    <h2>The conceptual model</h2>
+    <div class="content">
+      <div class="dsm-row">
+        <div class="dsm-col"><div class="sm-node thread">Process A</div></div>
+        <div class="dsm-col"><div class="sm-node thread">Process B</div></div>
+        <div class="dsm-bridge"><span>Shared Memory</span><div class="line"></div></div>
+      </div>
+      <p class="lead" style="text-align:center;margin-top:24px;">On paper, distributed shared memory looks just like regular shared memory — two processes reading and writing the same logical memory space, no matter which machine they're on.</p>
+    </div>
+  </section>
+
+  <!-- SLIDE 10: 8.4 PHYSICAL REALITY -->
+  <section class="slide">
+    <div class="badge">8.4 DISTRIBUTED SHARED MEMORY</div>
+    <h2>But physically...</h2>
+    <div class="content">
+      <div class="dsm-row">
+        <div class="dsm-col">
+          <div class="sm-node thread">Machine A</div>
+          <div class="sm-arrow">↓</div>
+          <div class="sm-node mem" style="min-width:150px;">Memory A</div>
+        </div>
+        <div class="dsm-col">
+          <div class="sm-node thread">Machine B</div>
+          <div class="sm-arrow">↓</div>
+          <div class="sm-node mem" style="min-width:150px;">Memory B</div>
+        </div>
+        <div class="dsm-bridge"><span>Network</span><div class="line"></div></div>
+      </div>
+      <p class="lead" style="text-align:center;">There's no real shared memory at all — just two separate machines with their own separate memory, faking it over a network connection.</p>
+      <h3 style="margin-top:14px;">What that faking costs you</h3>
+      <div class="grid grid-4">
+        <div class="resource-card"><span class="ic">🔄</span><span class="lbl">Consistency issues</span></div>
+        <div class="resource-card"><span class="ic">🔒</span><span class="lbl">Synchronization issues</span></div>
+        <div class="resource-card"><span class="ic">📡</span><span class="lbl">Network latency</span></div>
+        <div class="resource-card"><span class="ic">💥</span><span class="lbl">Failure handling problems</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 11: RECAP -->
+  <section class="slide">
+    <div class="kicker">RECAP</div>
+    <h2>Hour 8 — Key takeaways</h2>
+    <div class="content">
+      <div class="grid grid-2">
+        <div class="card"><h3>🧵 Shared memory is direct</h3><p>Threads on the same machine read and write the exact same memory — fast, but dangerous without care.</p></div>
+        <div class="card"><h3>🏁 count++ isn't atomic</h3><p>It's read-add-write — three steps that can interleave between threads and silently lose updates.</p></div>
+        <div class="card"><h3>🔒 synchronized protects the critical section</h3><p>Only one thread executes the protected method at a time, eliminating the race.</p></div>
+        <div class="card"><h3>🌐 Distributed shared memory is an illusion</h3><p>Physically it's separate machines and separate memory, faked over a network — with consistency, sync, latency, and failure costs.</p></div>
+      </div>
+      <p class="lead" style="margin-top:20px;">Next hour: building on these fundamentals as we move deeper into distributed coordination.</p>
+    </div>
+  </section>
+
+  <!-- SLIDE 12: QUIZ -->
+  <section class="slide">
+    <div class="kicker">QUICK CHECK</div>
+    <h2>Hour 8 quiz</h2>
+    <div class="content" id="quizContainer"></div>
+    <div style="margin-top:6px;" id="quizScoreRow"></div>
+  </section>
+
+</div>
+
+<div class="navbar">
+  <div class="brand">MERN Stack Bootcamp · <b>Hour 8</b> — Shared Memory &amp; Distributed Shared Memory</div>
+  <div class="nav-controls">
+    <button class="nav-btn" id="prevBtn" onclick="goTo(current-1)">← Prev</button>
+    <div class="dots" id="dots"></div>
+    <span class="slide-counter" id="counter">1 / 12</span>
+    <button class="nav-btn" id="nextBtn" onclick="goTo(current+1)">Next →</button>
+  </div>
+</div>
+
+<script>
+/* ---------- SLIDE NAVIGATION ---------- */
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+let current = 0;
+
+const dotsWrap = document.getElementById('dots');
+for(let i=0;i<total;i++){
+  const d = document.createElement('div');
+  d.className = 'dot' + (i===0?' active':'');
+  d.onclick = () => goTo(i);
+  dotsWrap.appendChild(d);
+}
+const dotEls = document.querySelectorAll('.dot');
+
+function goTo(i){
+  if(i<0||i>=total) return;
+  slides[current].classList.remove('active');
+  dotEls[current].classList.remove('active');
+  current = i;
+  slides[current].classList.add('active');
+  dotEls[current].classList.add('active');
+  document.getElementById('counter').textContent = (current+1)+' / '+total;
+  document.getElementById('prevBtn').disabled = current===0;
+  document.getElementById('nextBtn').disabled = current===total-1;
+  document.getElementById('progressFill').style.width = ((current+1)/total*100)+'%';
+}
+document.addEventListener('keydown', e=>{
+  if(e.key==='ArrowRight') goTo(current+1);
+  if(e.key==='ArrowLeft') goTo(current-1);
+});
+goTo(0);
+
+/* ---------- 8.2 UNSYNCHRONIZED RACE SIMULATION ---------- */
+function sleep(ms){ return new Promise(res=>setTimeout(res, ms)); }
+
+let raceRunning = false;
+async function runUnsyncRace(){
+  if(raceRunning) return;
+  raceRunning = true;
+  const btn = document.getElementById('raceRunBtn');
+  btn.disabled = true;
+  const numEl = document.getElementById('raceCounterNum');
+  const log = document.getElementById('raceLog');
+  log.innerHTML = '';
+  numEl.textContent = '0';
+  numEl.className = 'counter-num';
+
+  let sharedCount = 0;
+  let lostCount = 0;
+
+  // simulate a thread doing N increments with read->delay->write (allows interleaving)
+  async function threadWork(label, n){
+    for(let i=0;i<n;i++){
+      const readVal = sharedCount;            // read
+      await sleep(5 + Math.random()*15);       // simulated context switch
+      sharedCount = readVal + 1;               // write (may overwrite another thread's write)
+      numEl.textContent = sharedCount;
+    }
+  }
+
+  addRaceLog(log, 'Thread A and Thread B both start incrementing...', 'info');
+  await Promise.all([threadWork('A', 20), threadWork('B', 20)]);
+
+  const expected = 40;
+  if(sharedCount < expected){
+    numEl.classList.add('bad');
+    addRaceLog(log, 'Final count: ' + sharedCount + ' (expected 40) — updates were lost!', 'lost');
+  } else {
+    numEl.classList.add('good');
+    addRaceLog(log, 'Final count: ' + sharedCount + ' — got lucky this run, try again!', 'ok');
+  }
+  raceRunning = false;
+  btn.disabled = false;
+}
+function addRaceLog(box, text, cls){
+  const div = document.createElement('div');
+  div.className = 'entry' + (cls? ' '+cls : '');
+  div.textContent = '› ' + text;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+function resetRace(){
+  document.getElementById('raceCounterNum').textContent = '0';
+  document.getElementById('raceCounterNum').className = 'counter-num';
+  document.getElementById('raceLog').innerHTML = '<div>Ready. Click "Run unsynchronized" to simulate the race.</div>';
+}
+
+/* ---------- 8.3 SYNCHRONIZED RACE SIMULATION ---------- */
+let syncRunning = false;
+async function runSyncRace(){
+  if(syncRunning) return;
+  syncRunning = true;
+  const btn = document.getElementById('syncRunBtn');
+  btn.disabled = true;
+  const numEl = document.getElementById('syncCounterNum');
+  const log = document.getElementById('syncLog');
+  log.innerHTML = '';
+  numEl.textContent = '0';
+
+  let sharedCount = 0;
+  let locked = false;
+
+  async function acquireLock(){
+    while(locked){ await sleep(2); }
+    locked = true;
+  }
+  function releaseLock(){ locked = false; }
+
+  async function threadWork(n){
+    for(let i=0;i<n;i++){
+      await acquireLock();          // wait for the lock
+      const readVal = sharedCount;
+      await sleep(5 + Math.random()*15); // simulated delay, but protected
+      sharedCount = readVal + 1;
+      numEl.textContent = sharedCount;
+      releaseLock();
+    }
+  }
+
+  addRaceLog(log, 'Thread A and Thread B both start — but increment() is synchronized...', 'info');
+  await Promise.all([threadWork(20), threadWork(20)]);
+
+  addRaceLog(log, 'Final count: ' + sharedCount + ' (expected 40) — no updates lost.', 'ok');
+  syncRunning = false;
+  btn.disabled = false;
+}
+function resetSync(){
+  document.getElementById('syncCounterNum').textContent = '0';
+  document.getElementById('syncLog').innerHTML = '<div>Ready. Click "Run synchronized" to see the protected version.</div>';
+}
+
+/* ---------- QUIZ ---------- */
+const quizData = [
+  {
+    q: "In shared memory, how do two threads on the same machine communicate?",
+    opts: ["Only through the network", "By directly reading and writing the same memory", "Through a message queue only", "They cannot communicate"],
+    correct: 1
+  },
+  {
+    q: "Why can `counter.count++` produce a wrong final result with two threads?",
+    opts: [
+      "Because Java doesn't support integers",
+      "Because count++ is actually three steps (read, add, write) that can interleave between threads",
+      "Because threads can't access the same object",
+      "Because it always throws an exception"
+    ],
+    correct: 1
+  },
+  {
+    q: "What does adding `synchronized` to a method do?",
+    opts: [
+      "Makes the method run twice as fast",
+      "Allows only one thread at a time to execute that method on the object",
+      "Deletes the method's return value",
+      "Prevents the method from ever being called"
+    ],
+    correct: 1
+  },
+  {
+    q: "In distributed shared memory, what is physically true even though it 'looks' like shared memory?",
+    opts: [
+      "There is one single memory chip shared by all machines",
+      "Each machine actually has its own separate memory, connected only by a network",
+      "No machine has any memory at all",
+      "Only one machine is allowed to have memory"
+    ],
+    correct: 1
+  },
+  {
+    q: "Which of these is NOT listed as a cost of distributed shared memory?",
+    opts: ["Consistency issues", "Network latency", "Zero synchronization needed", "Failure handling problems"],
+    correct: 2
+  }
+];
+
+let quizScore = 0;
+let quizAnswered = 0;
+const quizContainer = document.getElementById('quizContainer');
+quizData.forEach((item, qi)=>{
+  const wrap = document.createElement('div');
+  wrap.className = 'quiz-q';
+  const title = document.createElement('div');
+  title.className = 'q-title';
+  title.textContent = (qi+1) + '. ' + item.q;
+  wrap.appendChild(title);
+  item.opts.forEach((optText, oi)=>{
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = optText;
+    btn.onclick = () => {
+      const allOpts = wrap.querySelectorAll('.opt');
+      allOpts.forEach(o=>o.classList.add('disabled'));
+      if(oi === item.correct){
+        btn.classList.add('correct');
+        quizScore++;
+      } else {
+        btn.classList.add('incorrect');
+        allOpts[item.correct].classList.add('correct');
+      }
+      quizAnswered++;
+      updateScore();
+    };
+    wrap.appendChild(btn);
+  });
+  quizContainer.appendChild(wrap);
+});
+function updateScore(){
+  const row = document.getElementById('quizScoreRow');
+  row.innerHTML = '<span class="quiz-score">Score: '+quizScore+' / '+quizData.length+'</span>' +
+    (quizAnswered===quizData.length ? ' — Quiz complete! 🎉' : '');
+}
+</script>
+</body>
+</html>

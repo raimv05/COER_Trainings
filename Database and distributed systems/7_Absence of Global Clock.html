@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hour 7 — Absence of a Global Clock</title>
+<style>
+  :root{
+    --bg:#282a36;
+    --bg-alt:#21222c;
+    --panel:#2f3140;
+    --line:#44475a;
+    --fg:#f8f8f2;
+    --muted:#a9adc7;
+    --comment:#6272a4;
+    --cyan:#8be9fd;
+    --green:#50fa7b;
+    --amber:#ffb86c;
+    --pink:#ff79c6;
+    --purple:#bd93f9;
+    --red:#ff5555;
+    --yellow:#f1fa8c;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    background:radial-gradient(circle at 15% 10%, #31334a 0%, var(--bg) 45%) fixed;
+    color:var(--fg);
+    font-family:'Segoe UI', Roboto, -apple-system, sans-serif;
+    overflow:hidden;
+  }
+  .deck{position:relative;width:100vw;height:100vh;}
+  .slide{
+    position:absolute;inset:0;
+    display:none;
+    flex-direction:column;
+    padding:56px 80px 90px;
+    animation:fadeIn .45s ease;
+  }
+  .slide.active{display:flex;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+  .kicker{color:var(--amber);font-size:14px;letter-spacing:2px;font-weight:600;margin-bottom:6px;}
+  h1{font-size:40px;margin:0 0 6px;color:var(--fg);}
+  h2{font-size:30px;margin:0 0 18px;color:var(--fg);}
+  h3{font-size:20px;margin:0 0 10px;color:var(--cyan);}
+  p{line-height:1.6;color:var(--muted);font-size:16px;}
+  .lead{font-size:19px;color:var(--fg);max-width:760px;}
+
+  .topbar{position:fixed;top:0;left:0;right:0;height:6px;background:var(--line);z-index:50;}
+  .topbar-fill{height:100%;background:linear-gradient(90deg,var(--amber),var(--pink));transition:width .3s ease;}
+  .navbar{
+    position:fixed;bottom:0;left:0;right:0;height:64px;
+    background:rgba(33,34,44,.92);border-top:1px solid var(--line);
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 32px;backdrop-filter:blur(6px);z-index:50;
+  }
+  .navbar .brand{font-size:13px;color:var(--comment);}
+  .navbar .brand b{color:var(--amber);}
+  .nav-controls{display:flex;align-items:center;gap:14px;}
+  .nav-btn{
+    background:var(--panel);border:1px solid var(--line);color:var(--fg);
+    padding:8px 18px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;transition:.2s;
+  }
+  .nav-btn:hover{border-color:var(--amber);color:var(--amber);}
+  .nav-btn:disabled{opacity:.35;cursor:not-allowed;}
+  .slide-counter{color:var(--muted);font-size:13px;min-width:60px;text-align:center;}
+  .dots{display:flex;gap:6px;}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--line);cursor:pointer;transition:.2s;}
+  .dot.active{background:var(--amber);width:20px;border-radius:4px;}
+
+  .grid{display:grid;gap:16px;}
+  .grid-4{grid-template-columns:repeat(4,1fr);}
+  .grid-3{grid-template-columns:repeat(3,1fr);}
+  .grid-2{grid-template-columns:repeat(2,1fr);}
+  .content{flex:1;overflow-y:auto;padding-right:8px;}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;}
+  .badge{
+    display:inline-block;background:rgba(189,147,249,.15);color:var(--purple);
+    border:1px solid rgba(189,147,249,.4);padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;
+    margin-bottom:14px;letter-spacing:.5px;
+  }
+  .tag-warn{
+    display:inline-block;background:rgba(255,85,85,.12);color:var(--red);
+    border:1px solid rgba(255,85,85,.4);padding:4px 12px;border-radius:20px;
+    font-size:12px;font-weight:700;letter-spacing:1px;margin-bottom:10px;
+  }
+  .tag-good{
+    display:inline-block;background:rgba(80,250,123,.12);color:var(--green);
+    border:1px solid rgba(80,250,123,.4);padding:4px 12px;border-radius:20px;
+    font-size:12px;font-weight:700;letter-spacing:1px;margin-bottom:10px;
+  }
+  .tag-info{
+    display:inline-block;background:rgba(139,233,253,.12);color:var(--cyan);
+    border:1px solid rgba(139,233,253,.4);padding:4px 12px;border-radius:20px;
+    font-size:12px;font-weight:700;letter-spacing:1px;margin-bottom:10px;
+  }
+
+  .resource-card{
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:16px;text-align:center;transition:.2s;
+  }
+  .resource-card:hover{border-color:var(--amber);transform:translateY(-3px);}
+  .resource-card .ic{font-size:24px;margin-bottom:8px;display:block;}
+  .resource-card .lbl{font-size:13.5px;color:var(--fg);font-weight:600;}
+
+  /* CODE */
+  .code-wrap{background:var(--bg-alt);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;}
+  .code-head{display:flex;align-items:center;gap:8px;padding:10px 14px;background:#1c1d27;border-bottom:1px solid var(--line);}
+  .code-head .dotc{width:11px;height:11px;border-radius:50%;}
+  .code-head .filename{margin-left:8px;color:var(--comment);font-size:12px;font-family:'Consolas','Courier New',monospace;}
+  pre{margin:0;padding:16px 20px;overflow-x:auto;font-family:'Consolas','Courier New',monospace;font-size:13.5px;line-height:1.65;}
+  code{color:var(--fg);}
+  .tok-kw{color:var(--pink);}
+  .tok-type{color:var(--cyan);}
+  .tok-str{color:var(--yellow);}
+  .tok-cm{color:var(--comment);font-style:italic;}
+  .tok-fn{color:var(--green);}
+  .tok-num{color:var(--purple);}
+
+  .line-explainer{display:flex;gap:12px;padding:10px 0;border-bottom:1px dashed var(--line);align-items:flex-start;}
+  .line-explainer:last-child{border-bottom:none;}
+  .line-explainer .ln{
+    background:var(--bg-alt);color:var(--amber);font-family:'Consolas',monospace;font-size:12px;
+    padding:3px 8px;border-radius:5px;white-space:nowrap;border:1px solid var(--line);
+  }
+  .line-explainer .desc{font-size:14px;color:var(--muted);line-height:1.5;}
+  .line-explainer .desc b{color:var(--fg);}
+
+  /* Two-computer clock diagram */
+  .clock-wrap{display:flex;justify-content:center;align-items:flex-start;gap:70px;padding:20px 0;position:relative;}
+  .clock-col{display:flex;flex-direction:column;align-items:center;gap:8px;}
+  .clock-machine{
+    background:var(--panel);border:1px solid var(--line);border-radius:10px;
+    padding:14px 26px;font-weight:700;color:var(--fg);
+  }
+  .clock-time{
+    font-family:'Consolas',monospace;font-size:22px;font-weight:800;color:var(--amber);
+    background:var(--bg-alt);border:1px solid var(--line);border-radius:8px;padding:8px 18px;
+  }
+  .msg-arrow{
+    position:absolute;top:96px;left:50%;transform:translateX(-50%);
+    display:flex;flex-direction:column;align-items:center;color:var(--cyan);font-size:13px;font-weight:600;
+  }
+  .msg-arrow .line{width:210px;height:2px;background:var(--cyan);position:relative;margin-top:4px;}
+  .msg-arrow .line::after{content:'▶';position:absolute;right:-8px;top:-9px;color:var(--cyan);font-size:14px;}
+
+  /* ATM diagram reuse */
+  .atm-wrap{display:flex;justify-content:center;gap:50px;padding:16px 0;flex-wrap:wrap;}
+  .atm-card{
+    background:var(--panel);border:1px solid var(--line);border-radius:10px;
+    padding:20px 26px;text-align:center;min-width:200px;
+  }
+  .atm-card h4{margin:0 0 10px;color:var(--fg);font-size:16px;}
+  .atm-time{font-family:'Consolas',monospace;color:var(--amber);font-size:20px;font-weight:700;}
+  .atm-action{margin-top:10px;font-size:13.5px;color:var(--muted);}
+
+  /* Event ordering reframe */
+  .vs-wrap{display:flex;align-items:center;justify-content:center;gap:24px;flex-wrap:wrap;margin-top:16px;}
+  .vs-card{
+    flex:1;min-width:260px;max-width:340px;padding:22px;border-radius:12px;text-align:center;
+  }
+  .vs-card.bad{background:rgba(255,85,85,.08);border:1px solid rgba(255,85,85,.4);}
+  .vs-card.good{background:rgba(80,250,123,.08);border:1px solid rgba(80,250,123,.4);}
+  .vs-card .q{font-size:16px;font-weight:700;font-style:italic;}
+  .vs-arrow{font-size:26px;color:var(--comment);}
+
+  /* Live clock drift demo */
+  .demo-btn{
+    background:linear-gradient(135deg,var(--amber),#ff9d4d);color:#282a36;border:none;
+    padding:10px 22px;border-radius:8px;font-weight:700;cursor:pointer;font-size:14px;transition:.2s;
+  }
+  .demo-btn:hover{filter:brightness(1.1);transform:translateY(-1px);}
+  .demo-btn.secondary{background:var(--line);color:var(--fg);}
+  .demo-btn:disabled{opacity:.45;cursor:not-allowed;}
+  .machine-row{display:flex;gap:24px;justify-content:center;margin:18px 0;flex-wrap:wrap;}
+  .machine-box{
+    background:var(--bg-alt);border:2px solid var(--line);border-radius:10px;
+    padding:16px 22px;text-align:center;min-width:180px;
+  }
+  .machine-box .mname{font-size:13px;font-weight:700;color:var(--fg);margin-bottom:6px;}
+  .machine-box .mtime{font-family:'Consolas',monospace;font-size:22px;font-weight:800;color:var(--cyan);}
+  .machine-box .mdrift{font-size:11.5px;color:var(--comment);margin-top:4px;}
+  .clock-log{
+    background:var(--bg-alt);border:1px solid var(--line);border-radius:8px;padding:12px 16px;
+    font-family:'Consolas',monospace;font-size:12.5px;height:110px;overflow-y:auto;color:var(--muted);
+  }
+
+  /* Quiz */
+  .quiz-q{margin-bottom:22px;}
+  .quiz-q .q-title{font-size:16px;color:var(--fg);font-weight:600;margin-bottom:10px;}
+  .opt{
+    display:block;width:100%;text-align:left;background:var(--panel);border:1px solid var(--line);
+    color:var(--fg);padding:10px 14px;border-radius:8px;margin-bottom:8px;cursor:pointer;font-size:14px;transition:.15s;
+  }
+  .opt:hover{border-color:var(--cyan);}
+  .opt.correct{border-color:var(--green);background:rgba(80,250,123,.12);color:var(--green);}
+  .opt.incorrect{border-color:var(--red);background:rgba(255,85,85,.12);color:var(--red);}
+  .opt.disabled{pointer-events:none;}
+  .quiz-score{color:var(--amber);font-weight:700;font-size:16px;}
+
+  ::-webkit-scrollbar{width:8px;height:8px;}
+  ::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+
+  @media (max-width:900px){
+    .slide{padding:36px 24px 90px;}
+    .grid-4{grid-template-columns:repeat(2,1fr);}
+    .grid-3{grid-template-columns:repeat(2,1fr);}
+    .grid-2{grid-template-columns:1fr;}
+    h1{font-size:28px;}
+    h2{font-size:22px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar"><div class="topbar-fill" id="progressFill"></div></div>
+
+<div class="deck" id="deck">
+
+  <!-- SLIDE 1: TITLE -->
+  <section class="slide active">
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;">
+      <div class="kicker">MERN STACK BOOTCAMP · DISTRIBUTED SYSTEMS FOUNDATIONS</div>
+      <h1 style="font-size:52px;">Hour 7</h1>
+      <h2 style="color:var(--amber);font-size:34px;">Absence of a Global Clock</h2>
+      <p class="lead">This is the transition from practical concepts to theory — the hour where "what time is it?" stops being a simple question.</p>
+      <div style="margin-top:28px;display:flex;gap:12px;flex-wrap:wrap;">
+        <div class="card" style="padding:10px 18px;">🕒 No Shared Clock</div>
+        <div class="card" style="padding:10px 18px;">🏧 Real-Life ATM Case</div>
+        <div class="card" style="padding:10px 18px;">🔀 Event Ordering</div>
+        <div class="card" style="padding:10px 18px;">☕ Java Timestamp Demo</div>
+      </div>
+    </div>
+    <p style="color:var(--comment);font-size:13px;">Instructor: Manish Rai</p>
+  </section>
+
+  <!-- SLIDE 2: AGENDA -->
+  <section class="slide">
+    <div class="kicker">SESSION MAP</div>
+    <h2>What we'll cover this hour</h2>
+    <div class="content">
+      <div class="grid grid-2" style="gap:16px;">
+        <div class="card"><h3>7.1 The Problem</h3><p>Two computers, two timestamps, one message — and no clear answer to "which happened first?"</p></div>
+        <div class="card"><h3>7.2 Why?</h3><p>Clock drift, different clock sources, network delay, and synchronization errors — even NTP can't fully fix this.</p></div>
+        <div class="card"><h3>7.3 Real-Life Example</h3><p>Two ATMs, two timestamps, two withdrawals — the same problem in a scenario you already understand.</p></div>
+        <div class="card"><h3>7.4 Event Ordering</h3><p>Why we stop asking "what time" and start asking "what happened before what."</p></div>
+        <div class="card" style="grid-column:1/-1;"><h3>7.5 Java Physical Clock Demonstration</h3><p>A working demo of <code style="color:var(--amber);">System.currentTimeMillis()</code> — and why it's not enough on its own.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 3: 7.1 THE PROBLEM -->
+  <section class="slide">
+    <div class="badge">7.1 THE PROBLEM</div>
+    <h2>Which event happened first?</h2>
+    <div class="content">
+      <div class="clock-wrap">
+        <div class="clock-col">
+          <div class="clock-machine">Computer A</div>
+          <div class="clock-time">10:00:01</div>
+        </div>
+        <div class="clock-col">
+          <div class="clock-machine">Computer B</div>
+          <div class="clock-time">10:00:03</div>
+        </div>
+        <div class="msg-arrow"><span>Message</span><div class="line"></div></div>
+      </div>
+      <p class="lead" style="text-align:center;margin-top:16px;">Computer A's clock says 10:00:01, Computer B's clock says 10:00:03 when the message arrives. It looks obvious — A happened first. But can we actually trust that?</p>
+      <div class="card" style="margin-top:10px;">
+        <p style="margin:0;">We cannot blindly trust physical clocks. Two machines rarely show the <b style="color:var(--fg);">exact</b> same time, and that small gap is enough to make "which happened first" a genuinely hard question.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 4: 7.2 WHY -->
+  <section class="slide">
+    <div class="badge">7.2 WHY?</div>
+    <h2>Why physical clocks can't be trusted blindly</h2>
+    <div class="content">
+      <div class="grid grid-4">
+        <div class="resource-card"><span class="ic">🐢</span><span class="lbl">Clock drift</span></div>
+        <div class="resource-card"><span class="ic">🧭</span><span class="lbl">Different clock sources</span></div>
+        <div class="resource-card"><span class="ic">📡</span><span class="lbl">Network delay</span></div>
+        <div class="resource-card"><span class="ic">⚠️</span><span class="lbl">Synchronization errors</span></div>
+      </div>
+      <div class="card" style="margin-top:18px;">
+        <p style="margin:0;">Even <b style="color:var(--fg);">NTP synchronization</b> — the standard protocol computers use to sync their clocks — doesn't make distributed systems behave as if they possess a perfectly synchronized global clock. There's always some residual error, and that error is enough to make simple timestamp comparisons unreliable.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 5: 7.3 REAL-LIFE EXAMPLE -->
+  <section class="slide">
+    <div class="badge">7.3 REAL-LIFE EXAMPLE</div>
+    <h2>Two ATMs, two timestamps</h2>
+    <div class="content">
+      <div class="atm-wrap">
+        <div class="atm-card">
+          <h4>🏧 ATM A</h4>
+          <div class="atm-time">10:00:01</div>
+          <div class="atm-action">Withdraw ₹500</div>
+        </div>
+        <div class="atm-card">
+          <h4>🏧 ATM B</h4>
+          <div class="atm-time">10:00:00</div>
+          <div class="atm-action">Withdraw ₹700</div>
+        </div>
+      </div>
+      <p class="lead" style="text-align:center;">ATM A's clock says its withdrawal happened at 10:00:01. ATM B's clock says its withdrawal happened at 10:00:00 — a second <i>earlier</i>. Which one actually happened first?</p>
+      <div class="card">
+        <p style="margin:0;">Physical timestamps alone may not provide a reliable causal ordering. If ATM B's clock is running fast, its withdrawal might actually have happened after ATM A's — the timestamps are lying to us, and a bank auditing these transactions can't just trust the printed time.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 6: 7.4 EVENT ORDERING -->
+  <section class="slide">
+    <div class="badge">7.4 EVENT ORDERING</div>
+    <h2>Asking a better question</h2>
+    <div class="content">
+      <div class="vs-wrap">
+        <div class="vs-card bad">
+          <div class="tag-warn">THE OLD QUESTION</div>
+          <div class="q">"What exact time did this event happen?"</div>
+        </div>
+        <div class="vs-arrow">→</div>
+        <div class="vs-card good">
+          <div class="tag-good">THE BETTER QUESTION</div>
+          <div class="q">"Did event A happen before event B?"</div>
+        </div>
+      </div>
+      <p class="lead" style="text-align:center;margin-top:20px;">Instead of relying on exact timestamps, distributed systems reason about the <b style="color:var(--fg);">order</b> of events relative to each other. This shift in thinking is what leads directly to <b style="color:var(--amber);">logical clocks</b> — the topic we'll build starting next hour.</p>
+    </div>
+  </section>
+
+  <!-- SLIDE 7: 7.5 JAVA CODE -->
+  <section class="slide">
+    <div class="badge">7.5 JAVA PHYSICAL CLOCK DEMONSTRATION</div>
+    <h2>What <code style="color:var(--amber);">System.currentTimeMillis()</code> actually gives you</h2>
+    <div class="content">
+      <div class="code-wrap">
+        <div class="code-head">
+          <div class="dotc" style="background:#ff5f56;"></div>
+          <div class="dotc" style="background:#ffbd2e;"></div>
+          <div class="dotc" style="background:#27c93f;"></div>
+          <span class="filename">PhysicalClockDemo.java</span>
+        </div>
+        <pre><code><span class="tok-kw">public class</span> <span class="tok-type">PhysicalClockDemo</span> {
+
+    <span class="tok-kw">public static</span> <span class="tok-kw">void</span> <span class="tok-fn">main</span>(<span class="tok-type">String</span>[] args) {
+
+        <span class="tok-kw">long</span> timeA = <span class="tok-type">System</span>.currentTimeMillis();
+
+        performTaskA();
+
+        <span class="tok-kw">long</span> timeB = <span class="tok-type">System</span>.currentTimeMillis();
+
+        <span class="tok-type">System</span>.out.println(<span class="tok-str">"Event A: "</span> + timeA);
+        <span class="tok-type">System</span>.out.println(<span class="tok-str">"Event B: "</span> + timeB);
+    }
+
+    <span class="tok-kw">static</span> <span class="tok-kw">void</span> <span class="tok-fn">performTaskA</span>() {
+
+        <span class="tok-kw">try</span> {
+            <span class="tok-type">Thread</span>.sleep(<span class="tok-num">100</span>);
+        } <span class="tok-kw">catch</span> (<span class="tok-type">InterruptedException</span> e) {
+            <span class="tok-type">Thread</span>.currentThread().interrupt();
+        }
+    }
+}</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 8: LINE EXPLAINER -->
+  <section class="slide">
+    <div class="badge">7.5 JAVA PHYSICAL CLOCK DEMONSTRATION</div>
+    <h2>Why this still isn't enough</h2>
+    <div class="content">
+      <div class="card">
+        <div class="line-explainer"><span class="ln">timeA</span><span class="desc">Captures this machine's clock reading right before the task runs — accurate for <b>this machine only</b>.</span></div>
+        <div class="line-explainer"><span class="ln">performTaskA()</span><span class="desc">Simulates real work taking time, just like a network call or database write would.</span></div>
+        <div class="line-explainer"><span class="ln">timeB</span><span class="desc">Captures the clock again afterward — on the same machine, <b>timeB will always be ≥ timeA</b>. That's the one guarantee a physical clock gives you.</span></div>
+        <div class="line-explainer"><span class="ln">The catch</span><span class="desc">That guarantee <b>breaks the moment a second machine is involved</b> — its clock may run faster, slower, or simply be set differently.</span></div>
+      </div>
+      <div class="card" style="margin-top:16px;">
+        <p style="margin:0;">Physical timestamps are useful, but distributed ordering requires a <b style="color:var(--fg);">deeper abstraction</b> — one that doesn't depend on every machine's clock agreeing. That abstraction is what we build next: logical clocks.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 9: LIVE CLOCK DRIFT DEMO -->
+  <section class="slide">
+    <div class="badge">7.5 JAVA PHYSICAL CLOCK DEMONSTRATION</div>
+    <h2>Watch two clocks drift apart live</h2>
+    <div class="content">
+      <p>Both machines start perfectly in sync. Click "Start clocks" and watch what happens after a few seconds — even a tiny difference in tick rate is enough to break simple timestamp comparisons.</p>
+      <div class="machine-row">
+        <div class="machine-box"><div class="mname">🖥️ Machine A</div><div class="mtime" id="clockA">00:00.000</div><div class="mdrift">baseline rate</div></div>
+        <div class="machine-box"><div class="mname">🖥️ Machine B</div><div class="mtime" id="clockB">00:00.000</div><div class="mdrift" id="driftLabel">slightly faster</div></div>
+      </div>
+      <div style="display:flex;gap:12px;justify-content:center;margin-bottom:12px;">
+        <button class="demo-btn" id="clockBtn" onclick="toggleClocks()">▶ Start clocks</button>
+        <button class="demo-btn secondary" onclick="resetClocks()">↺ Reset</button>
+      </div>
+      <div class="clock-log" id="clockLog"><div>Ready. Watch the two "identical" clocks slowly disagree.</div></div>
+    </div>
+  </section>
+
+  <!-- SLIDE 10: RECAP -->
+  <section class="slide">
+    <div class="kicker">RECAP</div>
+    <h2>Hour 7 — Key takeaways</h2>
+    <div class="content">
+      <div class="grid grid-2">
+        <div class="card"><h3>🕒 No shared clock exists</h3><p>Every machine has its own clock — there's no single "true time" they all agree on.</p></div>
+        <div class="card"><h3>⚠️ Drift, delay, and error compound</h3><p>Clock drift, different sources, network delay, and sync errors all chip away at trust in physical timestamps — even with NTP.</p></div>
+        <div class="card"><h3>🏧 Real systems feel this</h3><p>Two ATMs with slightly different clocks can genuinely disagree on which transaction happened first.</p></div>
+        <div class="card"><h3>🔀 Order matters more than time</h3><p>Asking "did A happen before B?" instead of "what time did A happen?" is the doorway to logical clocks.</p></div>
+      </div>
+      <p class="lead" style="margin-top:20px;">Next hour: <b style="color:var(--fg);">Shared Memory</b> — race conditions, critical sections, and synchronization.</p>
+    </div>
+  </section>
+
+  <!-- SLIDE 11: QUIZ -->
+  <section class="slide">
+    <div class="kicker">QUICK CHECK</div>
+    <h2>Hour 7 quiz</h2>
+    <div class="content" id="quizContainer"></div>
+    <div style="margin-top:6px;" id="quizScoreRow"></div>
+  </section>
+
+</div>
+
+<div class="navbar">
+  <div class="brand">MERN Stack Bootcamp · <b>Hour 7</b> — Absence of a Global Clock</div>
+  <div class="nav-controls">
+    <button class="nav-btn" id="prevBtn" onclick="goTo(current-1)">← Prev</button>
+    <div class="dots" id="dots"></div>
+    <span class="slide-counter" id="counter">1 / 11</span>
+    <button class="nav-btn" id="nextBtn" onclick="goTo(current+1)">Next →</button>
+  </div>
+</div>
+
+<script>
+/* ---------- SLIDE NAVIGATION ---------- */
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+let current = 0;
+
+const dotsWrap = document.getElementById('dots');
+for(let i=0;i<total;i++){
+  const d = document.createElement('div');
+  d.className = 'dot' + (i===0?' active':'');
+  d.onclick = () => goTo(i);
+  dotsWrap.appendChild(d);
+}
+const dotEls = document.querySelectorAll('.dot');
+
+function goTo(i){
+  if(i<0||i>=total) return;
+  slides[current].classList.remove('active');
+  dotEls[current].classList.remove('active');
+  current = i;
+  slides[current].classList.add('active');
+  dotEls[current].classList.add('active');
+  document.getElementById('counter').textContent = (current+1)+' / '+total;
+  document.getElementById('prevBtn').disabled = current===0;
+  document.getElementById('nextBtn').disabled = current===total-1;
+  document.getElementById('progressFill').style.width = ((current+1)/total*100)+'%';
+}
+document.addEventListener('keydown', e=>{
+  if(e.key==='ArrowRight') goTo(current+1);
+  if(e.key==='ArrowLeft') goTo(current-1);
+});
+goTo(0);
+
+/* ---------- 7.5 CLOCK DRIFT DEMO ---------- */
+let clockRunning = false;
+let clockInterval = null;
+let elapsedMs = 0;
+const driftFactor = 1.015; // machine B runs 1.5% faster
+let loggedMilestones = new Set();
+
+function fmt(ms){
+  const totalSec = ms/1000;
+  const m = Math.floor(totalSec/60);
+  const s = (totalSec % 60).toFixed(3);
+  return String(m).padStart(2,'0') + ':' + s.padStart(6,'0');
+}
+
+function toggleClocks(){
+  const btn = document.getElementById('clockBtn');
+  if(clockRunning){
+    clearInterval(clockInterval);
+    clockRunning = false;
+    btn.textContent = '▶ Resume clocks';
+    return;
+  }
+  clockRunning = true;
+  btn.textContent = '⏸ Pause clocks';
+  const startReal = performance.now() - elapsedMs;
+  clockInterval = setInterval(()=>{
+    elapsedMs = performance.now() - startReal;
+    document.getElementById('clockA').textContent = fmt(elapsedMs);
+    document.getElementById('clockB').textContent = fmt(elapsedMs * driftFactor);
+
+    const diffMs = Math.round(elapsedMs * driftFactor - elapsedMs);
+    const milestone = Math.floor(elapsedMs/3000);
+    if(diffMs > 0 && !loggedMilestones.has(milestone) && elapsedMs > 500){
+      loggedMilestones.add(milestone);
+      addClockLog('At '+fmt(elapsedMs)+', Machine B has drifted '+diffMs+' ms ahead of Machine A.');
+    }
+  }, 50);
+}
+function resetClocks(){
+  clearInterval(clockInterval);
+  clockRunning = false;
+  elapsedMs = 0;
+  loggedMilestones = new Set();
+  document.getElementById('clockA').textContent = '00:00.000';
+  document.getElementById('clockB').textContent = '00:00.000';
+  document.getElementById('clockBtn').textContent = '▶ Start clocks';
+  document.getElementById('clockLog').innerHTML = '<div>Ready. Watch the two "identical" clocks slowly disagree.</div>';
+}
+function addClockLog(text){
+  const log = document.getElementById('clockLog');
+  const div = document.createElement('div');
+  div.textContent = '› ' + text;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+
+/* ---------- QUIZ ---------- */
+const quizData = [
+  {
+    q: "Why can't we blindly trust physical clocks to order events across two computers?",
+    opts: [
+      "Because computers don't have clocks",
+      "Because clock drift, different sources, delay, and sync errors make timestamps unreliable across machines",
+      "Because physical clocks only work at night",
+      "Because Java doesn't support timestamps"
+    ],
+    correct: 1
+  },
+  {
+    q: "Does NTP synchronization fully solve the global clock problem?",
+    opts: [
+      "Yes, NTP makes all clocks perfectly identical",
+      "No — even with NTP, systems don't behave as if they share a perfectly synchronized global clock",
+      "NTP is unrelated to clocks",
+      "NTP only works for local programs"
+    ],
+    correct: 1
+  },
+  {
+    q: "In the two-ATM example, why can't we trust the printed timestamps to tell us which withdrawal happened first?",
+    opts: [
+      "ATMs don't have clocks",
+      "Each ATM's clock may be off by a different amount, so the 'earlier' timestamp might not reflect true order",
+      "Withdrawals never have timestamps",
+      "Both withdrawals always happen at the same instant"
+    ],
+    correct: 1
+  },
+  {
+    q: "What question do distributed systems ask instead of 'what exact time did this happen'?",
+    opts: [
+      "How much did this cost?",
+      "Did event A happen before event B?",
+      "Who caused this event?",
+      "What server logged this event?"
+    ],
+    correct: 1
+  },
+  {
+    q: "In the Java demo, what's the one guarantee System.currentTimeMillis() gives you?",
+    opts: [
+      "It's accurate across every machine in the world",
+      "On the same machine, a later reading will be greater than or equal to an earlier one",
+      "It never has any delay",
+      "It automatically syncs with other machines"
+    ],
+    correct: 1
+  }
+];
+
+let quizScore = 0;
+let quizAnswered = 0;
+const quizContainer = document.getElementById('quizContainer');
+quizData.forEach((item, qi)=>{
+  const wrap = document.createElement('div');
+  wrap.className = 'quiz-q';
+  const title = document.createElement('div');
+  title.className = 'q-title';
+  title.textContent = (qi+1) + '. ' + item.q;
+  wrap.appendChild(title);
+  item.opts.forEach((optText, oi)=>{
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = optText;
+    btn.onclick = () => {
+      const allOpts = wrap.querySelectorAll('.opt');
+      allOpts.forEach(o=>o.classList.add('disabled'));
+      if(oi === item.correct){
+        btn.classList.add('correct');
+        quizScore++;
+      } else {
+        btn.classList.add('incorrect');
+        allOpts[item.correct].classList.add('correct');
+      }
+      quizAnswered++;
+      updateScore();
+    };
+    wrap.appendChild(btn);
+  });
+  quizContainer.appendChild(wrap);
+});
+function updateScore(){
+  const row = document.getElementById('quizScoreRow');
+  row.innerHTML = '<span class="quiz-score">Score: '+quizScore+' / '+quizData.length+'</span>' +
+    (quizAnswered===quizData.length ? ' — Quiz complete! 🎉' : '');
+}
+</script>
+</body>
+</html>

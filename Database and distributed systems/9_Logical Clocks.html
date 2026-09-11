@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hour 9 — Logical Clocks</title>
+<style>
+  :root{
+    --bg:#282a36;
+    --bg-alt:#21222c;
+    --panel:#2f3140;
+    --line:#44475a;
+    --fg:#f8f8f2;
+    --muted:#a9adc7;
+    --comment:#6272a4;
+    --cyan:#8be9fd;
+    --green:#50fa7b;
+    --amber:#ffb86c;
+    --pink:#ff79c6;
+    --purple:#bd93f9;
+    --red:#ff5555;
+    --yellow:#f1fa8c;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    background:radial-gradient(circle at 15% 10%, #31334a 0%, var(--bg) 45%) fixed;
+    color:var(--fg);
+    font-family:'Segoe UI', Roboto, -apple-system, sans-serif;
+    overflow:hidden;
+  }
+  .deck{position:relative;width:100vw;height:100vh;}
+  .slide{
+    position:absolute;inset:0;
+    display:none;
+    flex-direction:column;
+    padding:56px 80px 90px;
+    animation:fadeIn .45s ease;
+  }
+  .slide.active{display:flex;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+  .kicker{color:var(--amber);font-size:14px;letter-spacing:2px;font-weight:600;margin-bottom:6px;}
+  h1{font-size:40px;margin:0 0 6px;color:var(--fg);}
+  h2{font-size:30px;margin:0 0 18px;color:var(--fg);}
+  h3{font-size:20px;margin:0 0 10px;color:var(--cyan);}
+  p{line-height:1.6;color:var(--muted);font-size:16px;}
+  .lead{font-size:19px;color:var(--fg);max-width:760px;}
+
+  .topbar{position:fixed;top:0;left:0;right:0;height:6px;background:var(--line);z-index:50;}
+  .topbar-fill{height:100%;background:linear-gradient(90deg,var(--amber),var(--pink));transition:width .3s ease;}
+  .navbar{
+    position:fixed;bottom:0;left:0;right:0;height:64px;
+    background:rgba(33,34,44,.92);border-top:1px solid var(--line);
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 32px;backdrop-filter:blur(6px);z-index:50;
+  }
+  .navbar .brand{font-size:13px;color:var(--comment);}
+  .navbar .brand b{color:var(--amber);}
+  .nav-controls{display:flex;align-items:center;gap:14px;}
+  .nav-btn{
+    background:var(--panel);border:1px solid var(--line);color:var(--fg);
+    padding:8px 18px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;transition:.2s;
+  }
+  .nav-btn:hover{border-color:var(--amber);color:var(--amber);}
+  .nav-btn:disabled{opacity:.35;cursor:not-allowed;}
+  .slide-counter{color:var(--muted);font-size:13px;min-width:60px;text-align:center;}
+  .dots{display:flex;gap:6px;}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--line);cursor:pointer;transition:.2s;}
+  .dot.active{background:var(--amber);width:20px;border-radius:4px;}
+
+  .grid{display:grid;gap:16px;}
+  .grid-4{grid-template-columns:repeat(4,1fr);}
+  .grid-3{grid-template-columns:repeat(3,1fr);}
+  .grid-2{grid-template-columns:repeat(2,1fr);}
+  .content{flex:1;overflow-y:auto;padding-right:8px;}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;}
+  .badge{
+    display:inline-block;background:rgba(189,147,249,.15);color:var(--purple);
+    border:1px solid rgba(189,147,249,.4);padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;
+    margin-bottom:14px;letter-spacing:.5px;
+  }
+
+  /* Formula box */
+  .formula-box{
+    background:var(--bg-alt);border:1px solid var(--line);border-radius:10px;
+    padding:20px 26px;text-align:center;font-family:'Consolas',monospace;font-size:22px;
+    font-weight:700;color:var(--amber);margin:14px 0;
+  }
+  .formula-small{font-size:16px;}
+
+  /* Rule cards */
+  .rule-card{
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px;
+    position:relative;
+  }
+  .rule-num{
+    width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-weight:700;font-size:14px;background:rgba(139,233,253,.15);color:var(--cyan);border:1px solid var(--cyan);
+    margin-bottom:10px;
+  }
+  .rule-formula{
+    font-family:'Consolas',monospace;background:var(--bg-alt);border:1px solid var(--line);border-radius:6px;
+    padding:8px 12px;color:var(--green);font-size:14px;margin-top:10px;display:inline-block;
+  }
+
+  /* P1/P2 event diagram */
+  .events-wrap{display:flex;justify-content:center;gap:120px;padding:20px 0;position:relative;}
+  .events-col{display:flex;flex-direction:column;align-items:center;gap:26px;position:relative;}
+  .proc-label{font-weight:700;color:var(--fg);font-size:15px;margin-bottom:4px;}
+  .event-dot{
+    width:44px;height:44px;border-radius:50%;background:var(--panel);border:2px solid var(--cyan);
+    display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--cyan);font-size:16px;
+  }
+  .event-dot.p2{border-color:var(--pink);color:var(--pink);}
+  .events-col::before{
+    content:'';position:absolute;top:36px;bottom:20px;left:50%;transform:translateX(-1px);
+    width:2px;background:var(--line);
+  }
+  .msg-cross{
+    position:absolute;color:var(--amber);font-size:12px;font-weight:700;
+    display:flex;flex-direction:column;align-items:center;
+  }
+  .msg-cross .arrow-line{width:120px;height:2px;background:var(--amber);position:relative;margin-top:4px;}
+  .msg-cross .arrow-line::after{content:'▶';position:absolute;right:-8px;top:-9px;color:var(--amber);font-size:14px;}
+
+  .chain-result{
+    text-align:center;font-family:'Consolas',monospace;font-size:22px;font-weight:800;color:var(--green);
+    background:var(--bg-alt);border:1px solid var(--line);border-radius:10px;padding:16px;margin-top:10px;
+  }
+
+  /* Live Lamport clock simulator */
+  .demo-btn{
+    background:linear-gradient(135deg,var(--amber),#ff9d4d);color:#282a36;border:none;
+    padding:9px 16px;border-radius:8px;font-weight:700;cursor:pointer;font-size:13px;transition:.2s;
+  }
+  .demo-btn:hover{filter:brightness(1.1);transform:translateY(-1px);}
+  .demo-btn:disabled{opacity:.4;cursor:not-allowed;}
+  .demo-btn.secondary{background:var(--line);color:var(--fg);}
+  .demo-btn.msg{background:linear-gradient(135deg,var(--cyan),#5fb8d4);color:#161825;}
+  .demo-btn.recv{background:linear-gradient(135deg,var(--pink),#d45fa8);color:#161825;}
+
+  .proc-panel{
+    background:var(--bg-alt);border:1px solid var(--line);border-radius:10px;padding:16px;flex:1;min-width:260px;
+  }
+  .proc-panel h4{margin:0 0 10px;font-size:14px;color:var(--fg);}
+  .proc-clock{font-size:32px;font-weight:800;font-family:'Consolas',monospace;color:var(--amber);text-align:center;margin-bottom:10px;}
+  .proc-btns{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+  .proc-log{
+    background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;
+    font-family:'Consolas',monospace;font-size:11.5px;height:100px;overflow-y:auto;color:var(--muted);
+  }
+  .inbox-badge{
+    display:inline-block;background:rgba(255,184,108,.15);border:1px solid var(--amber);color:var(--amber);
+    font-size:11px;padding:2px 8px;border-radius:10px;margin-left:6px;
+  }
+  .sim-row{display:flex;gap:20px;flex-wrap:wrap;}
+
+  /* Quiz */
+  .quiz-q{margin-bottom:22px;}
+  .quiz-q .q-title{font-size:16px;color:var(--fg);font-weight:600;margin-bottom:10px;}
+  .opt{
+    display:block;width:100%;text-align:left;background:var(--panel);border:1px solid var(--line);
+    color:var(--fg);padding:10px 14px;border-radius:8px;margin-bottom:8px;cursor:pointer;font-size:14px;transition:.15s;
+  }
+  .opt:hover{border-color:var(--cyan);}
+  .opt.correct{border-color:var(--green);background:rgba(80,250,123,.12);color:var(--green);}
+  .opt.incorrect{border-color:var(--red);background:rgba(255,85,85,.12);color:var(--red);}
+  .opt.disabled{pointer-events:none;}
+  .quiz-score{color:var(--amber);font-weight:700;font-size:16px;}
+
+  ::-webkit-scrollbar{width:8px;height:8px;}
+  ::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+
+  @media (max-width:900px){
+    .slide{padding:36px 24px 90px;}
+    .grid-4{grid-template-columns:repeat(2,1fr);}
+    .grid-3{grid-template-columns:repeat(2,1fr);}
+    .grid-2{grid-template-columns:1fr;}
+    h1{font-size:28px;}
+    h2{font-size:22px;}
+    .events-wrap{gap:40px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar"><div class="topbar-fill" id="progressFill"></div></div>
+
+<div class="deck" id="deck">
+
+  <!-- SLIDE 1: TITLE -->
+  <section class="slide active">
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;">
+      <div class="kicker">MERN STACK BOOTCAMP · DISTRIBUTED SYSTEMS FOUNDATIONS</div>
+      <h1 style="font-size:52px;">Hour 9</h1>
+      <h2 style="color:var(--amber);font-size:34px;">Logical Clocks</h2>
+      <p class="lead">The central theory of this module — how distributed systems agree on the order of events without ever agreeing on the time.</p>
+      <div style="margin-top:28px;display:flex;gap:12px;flex-wrap:wrap;">
+        <div class="card" style="padding:10px 18px;">🔢 Logical Clocks</div>
+        <div class="card" style="padding:10px 18px;">➡️ Happened-Before</div>
+        <div class="card" style="padding:10px 18px;">🧮 Lamport's Algorithm</div>
+        <div class="card" style="padding:10px 18px;">🧪 Live Simulator</div>
+      </div>
+    </div>
+    <p style="color:var(--comment);font-size:13px;">Instructor: Manish Rai</p>
+  </section>
+
+  <!-- SLIDE 2: AGENDA -->
+  <section class="slide">
+    <div class="kicker">SESSION MAP</div>
+    <h2>What we'll cover this hour</h2>
+    <div class="content">
+      <div class="grid grid-2" style="gap:16px;">
+        <div class="card"><h3>9.1 Definition</h3><p>What a logical clock actually is — and what it deliberately does not try to be.</p></div>
+        <div class="card"><h3>9.2 Happened-Before Relation</h3><p>Lamport's A → B notation and the three rules that define it.</p></div>
+        <div class="card"><h3>9.3 Example</h3><p>Tracing happened-before across two processes and a message.</p></div>
+        <div class="card"><h3>9.4 Logical Clock Rules</h3><p>The exact algorithm: before an event, on send, and on receive.</p></div>
+        <div class="card" style="grid-column:1/-1;"><h3>🧪 Live Lamport Clock Simulator</h3><p>Trigger local events, sends, and receives yourself and watch the clocks update in real time.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 3: 9.1 DEFINITION -->
+  <section class="slide">
+    <div class="badge">9.1 DEFINITION</div>
+    <h2>What is a logical clock?</h2>
+    <div class="content">
+      <div class="card">
+        <p class="lead" style="margin:0;">A <b style="color:var(--fg);">logical clock</b> assigns a number to an event to help determine event ordering.</p>
+      </div>
+      <div class="card" style="margin-top:16px;border-color:var(--red);">
+        <p style="margin:0;"><span style="color:var(--red);font-weight:700;">It does not</span> attempt to represent real-world time. There's no seconds, no milliseconds, no wall-clock date — just a counter that goes up in a way that respects the order events actually happened in.</p>
+      </div>
+      <p style="margin-top:16px;">This is the direct answer to Hour 7's problem: if physical clocks can't be trusted, build a clock that doesn't need to match real time at all — it only needs to get the <b style="color:var(--fg);">order</b> right.</p>
+    </div>
+  </section>
+
+  <!-- SLIDE 4: 9.2 HAPPENED-BEFORE INTRO -->
+  <section class="slide">
+    <div class="badge">9.2 HAPPENED-BEFORE RELATION</div>
+    <h2>Lamport's notation</h2>
+    <div class="content">
+      <div class="formula-box" style="font-size:34px;">A → B</div>
+      <p class="lead" style="text-align:center;">meaning: <b style="color:var(--fg);">Event A happened before event B.</b></p>
+      <p style="text-align:center;max-width:640px;margin:10px auto 0;">This simple arrow is the entire foundation of ordering in distributed systems. Everything else this hour is just precise rules for when you're allowed to write it.</p>
+    </div>
+  </section>
+
+  <!-- SLIDE 5: THREE RULES -->
+  <section class="slide">
+    <div class="badge">9.2 HAPPENED-BEFORE RELATION</div>
+    <h2>The three rules</h2>
+    <div class="content">
+      <div class="grid grid-3">
+        <div class="rule-card">
+          <div class="rule-num">1</div>
+          <h3 style="font-size:16px;">Same process</h3>
+          <p>If A happens before B in the same process (in program order)...</p>
+          <div class="rule-formula">A → B</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-num">2</div>
+          <h3 style="font-size:16px;">Message</h3>
+          <p>If A sends a message and B is the event of receiving it...</p>
+          <div class="rule-formula">A → B</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-num">3</div>
+          <h3 style="font-size:16px;">Transitivity</h3>
+          <p>If A → B and B → C, then it follows that...</p>
+          <div class="rule-formula">A → C</div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:16px;">
+        <p style="margin:0;">These three rules are all Lamport needs — sequencing within a process, causality across a message, and chaining those relationships together.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 6: 9.3 EXAMPLE -->
+  <section class="slide">
+    <div class="badge">9.3 EXAMPLE</div>
+    <h2>Tracing happened-before across two processes</h2>
+    <div class="content">
+      <div class="events-wrap">
+        <div class="events-col">
+          <div class="proc-label">Process P1</div>
+          <div class="event-dot">A</div>
+          <div class="event-dot">B</div>
+        </div>
+        <div class="events-col">
+          <div class="proc-label">Process P2</div>
+          <div class="event-dot p2">C</div>
+          <div class="event-dot p2">D</div>
+        </div>
+        <div class="msg-cross" style="top:96px;left:50%;transform:translateX(-50%);">
+          <span>Message</span>
+          <div class="arrow-line"></div>
+        </div>
+      </div>
+      <p class="lead" style="text-align:center;">A happens, then B (same process, Rule 1). B sends a message that C receives (Rule 2). Then D happens after C (Rule 1 again, on P2).</p>
+      <div class="chain-result">A → B → C → D</div>
+      <p style="text-align:center;margin-top:8px;color:var(--comment);">Chained together entirely by Rules 1, 2, and 3 — no wall-clock time required.</p>
+    </div>
+  </section>
+
+  <!-- SLIDE 7: 9.4 LOGICAL CLOCK RULES -->
+  <section class="slide">
+    <div class="badge">9.4 LOGICAL CLOCK RULES</div>
+    <h2>The core Lamport-clock algorithm</h2>
+    <div class="content">
+      <div class="grid grid-3">
+        <div class="rule-card">
+          <h3 style="font-size:15px;">Before an event</h3>
+          <div class="formula-box formula-small" style="margin:10px 0 0;">clock = clock + 1</div>
+        </div>
+        <div class="rule-card">
+          <h3 style="font-size:15px;">Sending a message</h3>
+          <div class="formula-box formula-small" style="margin:10px 0 0;">clock = clock + 1<br>send(timestamp)</div>
+        </div>
+        <div class="rule-card">
+          <h3 style="font-size:15px;">Receiving a message (T)</h3>
+          <div class="formula-box formula-small" style="margin:10px 0 0;">clock = max(localClock, T) + 1</div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:16px;">
+        <p style="margin:0;">The receive rule is the clever part: taking the <b style="color:var(--fg);">max</b> of your own clock and the sender's timestamp guarantees your clock jumps forward far enough to stay consistent with what you just learned about — while the <b style="color:var(--fg);">+1</b> guarantees the receive event is still ordered strictly after the send.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 8: LIVE SIMULATOR -->
+  <section class="slide">
+    <div class="badge">🧪 LIVE LAMPORT CLOCK SIMULATOR</div>
+    <h2>Run the algorithm yourself</h2>
+    <div class="content">
+      <p>Trigger local events, sends, and receives on either process and watch each clock update using the exact rules from 9.4.</p>
+      <div class="sim-row" style="margin-top:12px;">
+        <div class="proc-panel">
+          <h4>🖥️ Process P1</h4>
+          <div class="proc-clock" id="p1Clock">0</div>
+          <div class="proc-btns">
+            <button class="demo-btn" onclick="localEvent('p1')">Local event</button>
+            <button class="demo-btn msg" onclick="sendMessage('p1','p2')">Send → P2</button>
+            <button class="demo-btn recv" id="p1RecvBtn" onclick="receiveMessage('p1')" disabled>Receive<span class="inbox-badge" id="p1Inbox" style="display:none;">1</span></button>
+          </div>
+          <div class="proc-log" id="p1Log"><div>Ready.</div></div>
+        </div>
+        <div class="proc-panel">
+          <h4>🖥️ Process P2</h4>
+          <div class="proc-clock" id="p2Clock">0</div>
+          <div class="proc-btns">
+            <button class="demo-btn" onclick="localEvent('p2')">Local event</button>
+            <button class="demo-btn msg" onclick="sendMessage('p2','p1')">Send → P1</button>
+            <button class="demo-btn recv" id="p2RecvBtn" onclick="receiveMessage('p2')" disabled>Receive<span class="inbox-badge" id="p2Inbox" style="display:none;">1</span></button>
+          </div>
+          <div class="proc-log" id="p2Log"><div>Ready.</div></div>
+        </div>
+      </div>
+      <div style="margin-top:12px;">
+        <button class="demo-btn secondary" onclick="resetSim()">↺ Reset both processes</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 9: RECAP -->
+  <section class="slide">
+    <div class="kicker">RECAP</div>
+    <h2>Hour 9 — Key takeaways</h2>
+    <div class="content">
+      <div class="grid grid-2">
+        <div class="card"><h3>🔢 Order, not time</h3><p>A logical clock assigns numbers to order events — it never tries to represent real-world time.</p></div>
+        <div class="card"><h3>➡️ Happened-before is built from 3 rules</h3><p>Same-process order, message send/receive, and transitivity chain together to define A → B.</p></div>
+        <div class="card"><h3>🧮 The algorithm is simple</h3><p>+1 before any event, +1 and send on message send, max(local, received) + 1 on receive.</p></div>
+        <div class="card"><h3>🧪 It's mechanical, not magical</h3><p>Running the simulator shows the same three rules apply every single time, regardless of how many events pile up.</p></div>
+      </div>
+      <p class="lead" style="margin-top:20px;">Next up: extending this into <b style="color:var(--fg);">Vector Clocks</b> — capturing causality that Lamport clocks alone can't fully distinguish.</p>
+    </div>
+  </section>
+
+  <!-- SLIDE 10: QUIZ -->
+  <section class="slide">
+    <div class="kicker">QUICK CHECK</div>
+    <h2>Hour 9 quiz</h2>
+    <div class="content" id="quizContainer"></div>
+    <div style="margin-top:6px;" id="quizScoreRow"></div>
+  </section>
+
+</div>
+
+<div class="navbar">
+  <div class="brand">MERN Stack Bootcamp · <b>Hour 9</b> — Logical Clocks</div>
+  <div class="nav-controls">
+    <button class="nav-btn" id="prevBtn" onclick="goTo(current-1)">← Prev</button>
+    <div class="dots" id="dots"></div>
+    <span class="slide-counter" id="counter">1 / 10</span>
+    <button class="nav-btn" id="nextBtn" onclick="goTo(current+1)">Next →</button>
+  </div>
+</div>
+
+<script>
+/* ---------- SLIDE NAVIGATION ---------- */
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+let current = 0;
+
+const dotsWrap = document.getElementById('dots');
+for(let i=0;i<total;i++){
+  const d = document.createElement('div');
+  d.className = 'dot' + (i===0?' active':'');
+  d.onclick = () => goTo(i);
+  dotsWrap.appendChild(d);
+}
+const dotEls = document.querySelectorAll('.dot');
+
+function goTo(i){
+  if(i<0||i>=total) return;
+  slides[current].classList.remove('active');
+  dotEls[current].classList.remove('active');
+  current = i;
+  slides[current].classList.add('active');
+  dotEls[current].classList.add('active');
+  document.getElementById('counter').textContent = (current+1)+' / '+total;
+  document.getElementById('prevBtn').disabled = current===0;
+  document.getElementById('nextBtn').disabled = current===total-1;
+  document.getElementById('progressFill').style.width = ((current+1)/total*100)+'%';
+}
+document.addEventListener('keydown', e=>{
+  if(e.key==='ArrowRight') goTo(current+1);
+  if(e.key==='ArrowLeft') goTo(current-1);
+});
+goTo(0);
+
+/* ---------- LAMPORT CLOCK SIMULATOR ---------- */
+const state = {
+  p1: { clock: 0, inbox: [] },
+  p2: { clock: 0, inbox: [] }
+};
+
+function addLog(procId, text){
+  const log = document.getElementById(procId+'Log');
+  const div = document.createElement('div');
+  div.textContent = '› ' + text;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+
+function updateUI(procId){
+  document.getElementById(procId+'Clock').textContent = state[procId].clock;
+  const inbox = state[procId].inbox;
+  const btn = document.getElementById(procId+'RecvBtn');
+  const badge = document.getElementById(procId+'Inbox');
+  if(inbox.length > 0){
+    btn.disabled = false;
+    badge.style.display = 'inline-block';
+    badge.textContent = inbox.length;
+  } else {
+    btn.disabled = true;
+    badge.style.display = 'none';
+  }
+}
+
+function localEvent(procId){
+  state[procId].clock += 1;
+  addLog(procId, 'Local event → clock = ' + state[procId].clock);
+  updateUI(procId);
+}
+
+function sendMessage(fromId, toId){
+  state[fromId].clock += 1;
+  const timestamp = state[fromId].clock;
+  addLog(fromId, 'Send → clock = ' + timestamp + ', message sent with T=' + timestamp);
+  state[toId].inbox.push(timestamp);
+  updateUI(fromId);
+  updateUI(toId);
+}
+
+function receiveMessage(procId){
+  const inbox = state[procId].inbox;
+  if(inbox.length === 0) return;
+  const T = inbox.shift();
+  const before = state[procId].clock;
+  state[procId].clock = Math.max(before, T) + 1;
+  addLog(procId, 'Receive T=' + T + ' → clock = max(' + before + ', ' + T + ') + 1 = ' + state[procId].clock);
+  updateUI(procId);
+}
+
+function resetSim(){
+  state.p1 = { clock: 0, inbox: [] };
+  state.p2 = { clock: 0, inbox: [] };
+  document.getElementById('p1Log').innerHTML = '<div>Ready.</div>';
+  document.getElementById('p2Log').innerHTML = '<div>Ready.</div>';
+  updateUI('p1');
+  updateUI('p2');
+}
+
+/* ---------- QUIZ ---------- */
+const quizData = [
+  {
+    q: "What does a logical clock attempt to represent?",
+    opts: [
+      "Exact real-world wall-clock time",
+      "A number that helps order events, without representing real time",
+      "The physical distance between machines",
+      "The number of CPU cores"
+    ],
+    correct: 1
+  },
+  {
+    q: "According to Rule 2 of the happened-before relation, if A sends a message and B receives it, we can say:",
+    opts: ["B → A", "A → B", "A and B are unrelated", "A = B"],
+    correct: 1
+  },
+  {
+    q: "If A → B and B → C, what does transitivity (Rule 3) tell us?",
+    opts: ["A → C", "C → A", "B → A", "Nothing can be concluded"],
+    correct: 0
+  },
+  {
+    q: "What happens to a process's clock right before any local event?",
+    opts: ["It resets to 0", "clock = clock + 1", "clock = clock - 1", "It stays the same"],
+    correct: 1
+  },
+  {
+    q: "When a process receives a message with timestamp T, what's the correct update rule?",
+    opts: [
+      "clock = T",
+      "clock = localClock + T",
+      "clock = max(localClock, T) + 1",
+      "clock = min(localClock, T)"
+    ],
+    correct: 2
+  }
+];
+
+let quizScore = 0;
+let quizAnswered = 0;
+const quizContainer = document.getElementById('quizContainer');
+quizData.forEach((item, qi)=>{
+  const wrap = document.createElement('div');
+  wrap.className = 'quiz-q';
+  const title = document.createElement('div');
+  title.className = 'q-title';
+  title.textContent = (qi+1) + '. ' + item.q;
+  wrap.appendChild(title);
+  item.opts.forEach((optText, oi)=>{
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = optText;
+    btn.onclick = () => {
+      const allOpts = wrap.querySelectorAll('.opt');
+      allOpts.forEach(o=>o.classList.add('disabled'));
+      if(oi === item.correct){
+        btn.classList.add('correct');
+        quizScore++;
+      } else {
+        btn.classList.add('incorrect');
+        allOpts[item.correct].classList.add('correct');
+      }
+      quizAnswered++;
+      updateScore();
+    };
+    wrap.appendChild(btn);
+  });
+  quizContainer.appendChild(wrap);
+});
+function updateScore(){
+  const row = document.getElementById('quizScoreRow');
+  row.innerHTML = '<span class="quiz-score">Score: '+quizScore+' / '+quizData.length+'</span>' +
+    (quizAnswered===quizData.length ? ' — Quiz complete! 🎉' : '');
+}
+</script>
+</body>
+</html>
