@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Automation Testing — Hour 8 | Automation Tools + Selenium Comparison</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0E14;
+    --panel:#131720;
+    --panel-alt:#171C27;
+    --border:#232938;
+    --border-soft:#1B2130;
+    --text:#E7EAF0;
+    --text-dim:#8B93A7;
+    --text-faint:#5B6478;
+    --pass:#35D0A0;
+    --pass-dim:#1D5B49;
+    --fail:#FF6B7A;
+    --fail-dim:#5C2530;
+    --info:#6C8CFF;
+    --info-dim:#26305C;
+    --warn:#FFB454;
+    --warn-dim:#5C4520;
+    --radius-s:6px;
+    --radius-m:10px;
+    /* tool identity colors — neutral, not pass/fail semantics */
+    --sel:#6C8CFF;
+    --sel-dim:#26305C;
+    --pw:#C79BFF;
+    --pw-dim:#3C2B5C;
+    --cy:#FF9A5A;
+    --cy-dim:#5C3A20;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:'Inter',sans-serif; font-size:16px; line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{font-family:'Space Grotesk',sans-serif; font-weight:600; color:#F4F6FA; line-height:1.25; margin:0;}
+  code, .mono{font-family:'JetBrains Mono',monospace;}
+  a{color:inherit;}
+  ::selection{background:var(--info-dim); color:#fff;}
+
+  .shell{display:grid; grid-template-columns:250px minmax(0,1fr); max-width:1320px; margin:0 auto;}
+  .sidebar{
+    position:sticky; top:0; height:100vh; padding:32px 20px 32px 32px;
+    border-right:1px solid var(--border-soft); display:flex; flex-direction:column; gap:28px;
+  }
+  .brand{display:flex; flex-direction:column; gap:4px;}
+  .brand .tag{font-size:12px; color:var(--info); font-weight:600; letter-spacing:.02em;}
+  .brand h1{font-size:19px;}
+  .brand .sub{font-size:13px;color:var(--text-dim);}
+
+  .navlist{list-style:none; margin:0;padding:0; display:flex; flex-direction:column; gap:2px; font-size:14px;}
+  .navlist a{
+    display:flex; gap:10px; align-items:baseline; text-decoration:none;
+    color:var(--text-dim); padding:7px 10px; border-radius:var(--radius-s);
+    border-left:2px solid transparent; transition:color .15s ease, background .15s ease, border-color .15s ease;
+  }
+  .navlist a .n{font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-faint); min-width:26px;}
+  .navlist a:hover{color:var(--text); background:var(--panel);}
+  .navlist a.active{color:#fff; background:var(--panel); border-left-color:var(--info);}
+  .navlist a.active .n{color:var(--info);}
+
+  .sidebar-foot{margin-top:auto; font-size:12px; color:var(--text-faint); border-top:1px solid var(--border-soft); padding-top:16px;}
+
+  main{padding:56px 48px 120px 48px; min-width:0;}
+  .hero{padding-bottom:44px; margin-bottom:44px; border-bottom:1px solid var(--border-soft);}
+  .hero .kicker{color:var(--info); font-weight:600; font-size:13px; margin-bottom:14px; display:block;}
+  .hero h1{font-size:38px; letter-spacing:-0.01em; max-width:680px;}
+  .hero p.lead{margin-top:16px; max-width:640px; color:var(--text-dim); font-size:16px;}
+  .hero-stats{display:flex; gap:32px; margin-top:32px; flex-wrap:wrap;}
+  .hero-stats div{display:flex; flex-direction:column; gap:2px;}
+  .hero-stats .num{font-family:'Space Grotesk',sans-serif; font-size:24px; font-weight:700; color:#fff;}
+  .hero-stats .lbl{font-size:12.5px; color:var(--text-faint);}
+
+  section{margin-bottom:72px; scroll-margin-top:24px;}
+  section .sec-head{display:flex; align-items:baseline; gap:14px; margin-bottom:18px;}
+  section .sec-head .idx{font-family:'JetBrains Mono',monospace; color:var(--info); font-size:15px; font-weight:600;}
+  section .sec-head h2{font-size:25px;}
+  section > p{color:var(--text-dim); max-width:700px;}
+  section > p + p{margin-top:14px;}
+
+  .callout{background:var(--panel); border:1px solid var(--border-soft); border-radius:var(--radius-m); padding:22px 24px; margin-top:20px;}
+  .callout h4{font-size:15px; margin-bottom:12px; color:#fff;}
+  .callout p{color:var(--text-dim); font-size:14.5px;}
+
+  /* ---------- tool section header ---------- */
+  .tool-head{display:flex; align-items:center; gap:12px; margin-top:8px;}
+  .tool-dot{width:11px; height:11px; border-radius:50%; flex-shrink:0;}
+  .tool-name{font-family:'Space Grotesk',sans-serif; font-size:20px; color:#fff;}
+  .tool-block{border-left:2px solid var(--border-soft); padding-left:20px; margin-top:28px;}
+  .tool-block.sel{border-left-color:var(--sel);}
+  .tool-block.pw{border-left-color:var(--pw);}
+  .tool-block.cy{border-left-color:var(--cy);}
+
+  .chip-row{display:flex; flex-wrap:wrap; gap:9px; margin-top:16px;}
+  .chip{font-size:12.5px; padding:6px 13px; border-radius:20px; border:1px solid; font-family:'JetBrains Mono',monospace;}
+  .chip.sel{color:var(--sel); background:rgba(108,140,255,0.08); border-color:rgba(108,140,255,0.3);}
+  .chip.pw{color:var(--pw); background:rgba(199,155,255,0.08); border-color:rgba(199,155,255,0.3);}
+  .chip.cy{color:var(--cy); background:rgba(255,154,90,0.08); border-color:rgba(255,154,90,0.3);}
+  .chip-label{width:100%; font-size:11.5px; color:var(--text-faint); font-family:'Inter',sans-serif; margin-top:8px; margin-bottom:-4px;}
+
+  /* ---------- Code window ---------- */
+  .code-window{margin-top:20px; background:#0E1219; border:1px solid var(--border-soft); border-radius:var(--radius-m); overflow:hidden;}
+  .code-window .cw-head{
+    display:flex; align-items:center; gap:8px; padding:10px 14px; background:var(--panel-alt);
+    border-bottom:1px solid var(--border-soft); font-size:12.5px; color:var(--text-faint);
+  }
+  .code-window .cw-head .dot{width:8px;height:8px;border-radius:50%;}
+  .code-window .cw-head .fname{margin-left:6px; font-family:'JetBrains Mono',monospace;}
+  .code-window pre{margin:0; padding:20px 22px; font-family:'JetBrains Mono',monospace; font-size:13px; line-height:1.8; overflow-x:auto;}
+  .code-window .c-kw{color:#8AB4FF;}
+  .code-window .c-fn{color:#7EE0C8;}
+  .code-window .c-str{color:#FFC98B;}
+  .code-window .c-cm{color:var(--text-faint); font-style:italic;}
+  .code-window .c-cls{color:#FFD479;}
+
+  /* ---------- comparison table ---------- */
+  .table-wrap{margin-top:24px; overflow-x:auto; border:1px solid var(--border-soft); border-radius:var(--radius-m);}
+  table.tool-compare{width:100%; border-collapse:collapse; font-size:13px; min-width:760px;}
+  table.tool-compare thead th{
+    text-align:left; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13.5px;
+    padding:13px 18px; background:var(--panel-alt); border-bottom:1px solid var(--border-soft);
+  }
+  table.tool-compare thead th:first-child{color:var(--text-faint); font-family:'Inter',sans-serif; font-weight:500; font-size:12px;}
+  table.tool-compare thead th.sel{color:var(--sel);}
+  table.tool-compare thead th.pw{color:var(--pw);}
+  table.tool-compare thead th.cy{color:var(--cy);}
+  table.tool-compare tbody td{padding:12px 18px; border-bottom:1px solid var(--border-soft); color:var(--text-dim); background:var(--panel);}
+  table.tool-compare tbody td:first-child{color:var(--text); font-weight:500; white-space:nowrap;}
+  table.tool-compare tbody tr:last-child td{border-bottom:none;}
+  table.tool-compare tbody tr:nth-child(even) td{background:var(--panel-alt);}
+
+  /* ---------- avoid / prefer contrast (reused pattern) ---------- */
+  .contrast{margin-top:26px; display:grid; grid-template-columns:1fr 1.3fr; gap:20px;}
+  .contrast-card{border-radius:var(--radius-m); overflow:hidden; border:1px solid var(--border-soft);}
+  .contrast-card.avoid{border-color:var(--fail-dim);}
+  .contrast-card.prefer{border-color:var(--pass-dim);}
+  .contrast-head{
+    display:flex; align-items:center; gap:8px; padding:13px 20px; font-family:'Space Grotesk',sans-serif;
+    font-size:14px; font-weight:600;
+  }
+  .contrast-card.avoid .contrast-head{background:rgba(255,107,122,0.08); color:var(--fail);}
+  .contrast-card.prefer .contrast-head{background:rgba(53,208,160,0.08); color:var(--pass);}
+  .contrast-body{padding:18px 20px; background:var(--panel);}
+  .contrast-card.avoid .contrast-body{font-size:14px; color:var(--text); font-style:italic;}
+  .contrast-reasons{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:9px;}
+  .contrast-reasons li{font-size:13.5px; color:var(--text-dim); display:flex; gap:9px; align-items:flex-start;}
+  .contrast-reasons li::before{content:"✓"; color:var(--pass); flex-shrink:0; font-size:12px; margin-top:2px;}
+
+  footer{padding:36px 48px 60px; color:var(--text-faint); font-size:12.5px; border-top:1px solid var(--border-soft);}
+
+  @media (max-width: 880px){
+    .shell{grid-template-columns:1fr;}
+    .sidebar{position:relative; height:auto; border-right:none; border-bottom:1px solid var(--border-soft); padding:24px;}
+    .navlist{flex-direction:row; overflow-x:auto; gap:4px;}
+    .navlist a{white-space:nowrap;}
+    main{padding:36px 22px 90px;}
+    .hero h1{font-size:28px;}
+    .contrast{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="tag">QA / SDET TRACK · HOUR 8</span>
+      <h1>Tool Landscape</h1>
+      <span class="sub">Comparison module</span>
+    </div>
+
+    <ul class="navlist" id="navlist">
+      <li><a href="#s81"><span class="n">8.1</span> Selenium</a></li>
+      <li><a href="#s82"><span class="n">8.2</span> Playwright</a></li>
+      <li><a href="#s83"><span class="n">8.3</span> Cypress</a></li>
+      <li><a href="#s84"><span class="n">8.4</span> Head-to-Head</a></li>
+      <li><a href="#s85"><span class="n">8.5</span> Teaching Point</a></li>
+    </ul>
+
+    <div class="sidebar-foot">
+      Trainer companion page · designed for classroom walkthrough
+    </div>
+  </aside>
+
+  <main>
+
+    <div class="hero">
+      <span class="kicker">Module 8 · Landscape</span>
+      <h1>Automation Tools + Selenium Comparison</h1>
+      <p class="lead">Selenium is not the only automation solution — and by this point students know it well enough to see where it fits next to Playwright and Cypress, rather than in isolation.</p>
+      <div class="hero-stats">
+        <div><span class="num">3</span><span class="lbl">Tools compared</span></div>
+        <div><span class="num">12</span><span class="lbl">Comparison dimensions</span></div>
+        <div><span class="num">6</span><span class="lbl">Factors that actually decide the choice</span></div>
+      </div>
+    </div>
+
+    <!-- 8.1 Selenium -->
+    <section id="s81">
+      <div class="sec-head"><span class="idx">8.1</span><h2>Selenium</h2></div>
+      <div class="tool-block sel">
+        <div class="tool-head"><span class="tool-dot" style="background:var(--sel);"></span><span class="tool-name">Selenium</span></div>
+        <p style="margin-top:10px;">Selenium officially supports browser automation through WebDriver, and its ecosystem includes components such as Selenium Grid for distributed execution across machines and browsers.</p>
+        <div class="chip-row">
+          <span class="chip-label">Best known for</span>
+          <span class="chip sel">Browser automation</span>
+          <span class="chip sel">Cross-browser testing</span>
+          <span class="chip sel">Large ecosystem</span>
+          <span class="chip sel">Multiple programming languages</span>
+          <span class="chip sel">Enterprise legacy suites</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8.2 Playwright -->
+    <section id="s82">
+      <div class="sec-head"><span class="idx">8.2</span><h2>Playwright</h2></div>
+      <div class="tool-block pw">
+        <div class="tool-head"><span class="tool-dot" style="background:var(--pw);"></span><span class="tool-name">Playwright</span></div>
+        <p style="margin-top:10px;">Built by Microsoft, with official support across JavaScript/TypeScript, Python, Java, and .NET.</p>
+        <div class="chip-row">
+          <span class="chip-label">Languages</span>
+          <span class="chip pw">JavaScript/TypeScript</span>
+          <span class="chip pw">Python</span>
+          <span class="chip pw">Java</span>
+          <span class="chip pw">.NET</span>
+        </div>
+        <div class="chip-row">
+          <span class="chip-label">Strong areas</span>
+          <span class="chip pw">Modern web applications</span>
+          <span class="chip pw">Auto-waiting</span>
+          <span class="chip pw">Browser contexts</span>
+          <span class="chip pw">Parallel execution</span>
+        </div>
+        <div class="chip-row">
+          <span class="chip-label">Browser engines</span>
+          <span class="chip pw">Chromium</span>
+          <span class="chip pw">Firefox</span>
+          <span class="chip pw">WebKit</span>
+        </div>
+
+        <div class="code-window">
+          <div class="cw-head">
+            <span class="dot" style="background:#FF6B6B;"></span>
+            <span class="dot" style="background:#FFC85B;"></span>
+            <span class="dot" style="background:#3DD68C;"></span>
+            <span class="fname">homepage.spec.js</span>
+          </div>
+          <pre><span class="c-kw">import</span> { test, expect } <span class="c-kw">from</span> <span class="c-str">'@playwright/test'</span>;
+
+<span class="c-fn">test</span>(<span class="c-str">'homepage test'</span>, <span class="c-kw">async</span> ({ page }) => {
+
+    <span class="c-kw">await</span> page.<span class="c-fn">goto</span>(<span class="c-str">'https://example.com'</span>);
+
+    <span class="c-kw">await</span> <span class="c-fn">expect</span>(
+        page.<span class="c-fn">locator</span>(<span class="c-str">'h1'</span>)
+    ).<span class="c-fn">toBeVisible</span>();
+
+});</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8.3 Cypress -->
+    <section id="s83">
+      <div class="sec-head"><span class="idx">8.3</span><h2>Cypress</h2></div>
+      <div class="tool-block cy">
+        <div class="tool-head"><span class="tool-dot" style="background:var(--cy);"></span><span class="tool-name">Cypress</span></div>
+        <p style="margin-top:10px;">Cypress is heavily focused on modern web application testing and supports both end-to-end and component testing. Its current documentation also covers accessibility testing and CI-oriented workflows.</p>
+
+        <div class="code-window">
+          <div class="cw-head">
+            <span class="dot" style="background:#FF6B6B;"></span>
+            <span class="dot" style="background:#FFC85B;"></span>
+            <span class="dot" style="background:#3DD68C;"></span>
+            <span class="fname">login.cy.js</span>
+          </div>
+          <pre><span class="c-fn">describe</span>(<span class="c-str">'Login Test'</span>, () => {
+
+    <span class="c-fn">it</span>(<span class="c-str">'should login successfully'</span>, () => {
+
+        cy.<span class="c-fn">visit</span>(<span class="c-str">'https://example.com'</span>);
+
+        cy.<span class="c-fn">get</span>(<span class="c-str">'#username'</span>)
+          .<span class="c-fn">type</span>(<span class="c-str">'student'</span>);
+
+        cy.<span class="c-fn">get</span>(<span class="c-str">'#password'</span>)
+          .<span class="c-fn">type</span>(<span class="c-str">'Password123'</span>);
+
+        cy.<span class="c-fn">get</span>(<span class="c-str">'#login'</span>)
+          .<span class="c-fn">click</span>();
+
+    });
+
+});</pre>
+        </div>
+
+        <div class="callout" style="margin-top:20px;">
+          <h4>The shape of a Cypress test</h4>
+          <p>Cypress tests commonly follow the same pattern: visit a page, query elements, interact with them, then assert the resulting state — the same Arrange–Act–Assert idea from Hour 2, expressed in Cypress's own vocabulary.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8.4 Head to head -->
+    <section id="s84">
+      <div class="sec-head"><span class="idx">8.4</span><h2>Selenium vs Playwright vs Cypress</h2></div>
+      <p>Twelve dimensions, side by side. Scroll horizontally on smaller screens.</p>
+
+      <div class="table-wrap">
+        <table class="tool-compare">
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th class="sel">Selenium</th>
+              <th class="pw">Playwright</th>
+              <th class="cy">Cypress</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Primary use</td><td>Browser automation</td><td>Modern web E2E</td><td>Web E2E / component</td></tr>
+            <tr><td>Languages</td><td>Java, Python, C#, JS, Ruby, etc.</td><td>JS/TS, Python, Java, .NET</td><td>JS/TS</td></tr>
+            <tr><td>Browser coverage</td><td>Very broad</td><td>Chromium, Firefox, WebKit</td><td>Strong modern browser coverage</td></tr>
+            <tr><td>Architecture</td><td>WebDriver</td><td>Browser automation APIs</td><td>In-browser + Node architecture</td></tr>
+            <tr><td>Auto waiting</td><td>Available through waits/expected conditions</td><td>Strong built-in auto-waiting</td><td>Strong retry/implicit waiting behavior</td></tr>
+            <tr><td>Parallel testing</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+            <tr><td>Enterprise adoption</td><td>Very strong</td><td>Growing rapidly</td><td>Strong</td></tr>
+            <tr><td>Learning curve</td><td>Moderate</td><td>Moderate</td><td>Beginner-friendly</td></tr>
+            <tr><td>Best for</td><td>Enterprise/cross-browser suites</td><td>Modern applications</td><td>JS-heavy frontend teams</td></tr>
+            <tr><td>Mobile browser testing</td><td>Via ecosystem/grid/device setup</td><td>Device emulation</td><td>Browser-focused</td></tr>
+            <tr><td>Grid/cloud ecosystem</td><td>Excellent</td><td>Excellent</td><td>Cypress Cloud</td></tr>
+            <tr><td>Legacy ecosystem</td><td>Excellent</td><td>Less suited</td><td>Less suited</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <h4>Architecture is the real dividing line</h4>
+        <p>Cypress itself explicitly contrasts its architecture with Selenium's: Cypress executes inside the application's own browser run loop, rather than driving the browser externally the way Selenium's WebDriver-style model does. That single difference explains most of the auto-waiting and speed behavior students will notice when they try both.</p>
+      </div>
+    </section>
+
+    <!-- 8.5 Teaching point -->
+    <section id="s85">
+      <div class="sec-head"><span class="idx">8.5</span><h2>Important Teaching Point</h2></div>
+      <p>This is the framing that matters more than any row in the table above.</p>
+
+      <div class="contrast">
+        <div class="contrast-card avoid">
+          <div class="contrast-head">✕ Don't tell students</div>
+          <div class="contrast-body">"Selenium is old and should not be used."</div>
+        </div>
+        <div class="contrast-card prefer">
+          <div class="contrast-head">✓ Instead teach</div>
+          <div class="contrast-body">
+            <p style="margin:0 0 12px; color:var(--text-dim); font-size:13.5px;">Tool selection depends on:</p>
+            <ul class="contrast-reasons">
+              <li>Application architecture</li>
+              <li>Team skills</li>
+              <li>Browser requirements</li>
+              <li>Existing framework</li>
+              <li>CI/CD environment</li>
+              <li>Organizational constraints</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer>
+  Automation Testing · Hour 8 companion page — built for classroom delivery and self-paced review.
+</footer>
+
+<script>
+  const links = Array.from(document.querySelectorAll('#navlist a'));
+  const sections = links.map(a => document.querySelector(a.getAttribute('href')));
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const id = '#' + entry.target.id;
+      const link = links.find(a => a.getAttribute('href') === id);
+      if (!link) return;
+      if (entry.isIntersecting) {
+        links.forEach(a => a.classList.remove('active'));
+        link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(s => s && io.observe(s));
+</script>
+
+</body>
+</html>

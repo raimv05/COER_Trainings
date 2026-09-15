@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Automation Testing — Hour 7 | Page Object Model + Data-Driven Testing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0E14;
+    --panel:#131720;
+    --panel-alt:#171C27;
+    --border:#232938;
+    --border-soft:#1B2130;
+    --text:#E7EAF0;
+    --text-dim:#8B93A7;
+    --text-faint:#5B6478;
+    --pass:#35D0A0;
+    --pass-dim:#1D5B49;
+    --fail:#FF6B7A;
+    --fail-dim:#5C2530;
+    --info:#6C8CFF;
+    --info-dim:#26305C;
+    --warn:#FFB454;
+    --warn-dim:#5C4520;
+    --radius-s:6px;
+    --radius-m:10px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:'Inter',sans-serif; font-size:16px; line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{font-family:'Space Grotesk',sans-serif; font-weight:600; color:#F4F6FA; line-height:1.25; margin:0;}
+  code, .mono{font-family:'JetBrains Mono',monospace;}
+  a{color:inherit;}
+  ::selection{background:var(--info-dim); color:#fff;}
+
+  .shell{display:grid; grid-template-columns:250px minmax(0,1fr); max-width:1280px; margin:0 auto;}
+  .sidebar{
+    position:sticky; top:0; height:100vh; padding:32px 20px 32px 32px;
+    border-right:1px solid var(--border-soft); display:flex; flex-direction:column; gap:28px;
+  }
+  .brand{display:flex; flex-direction:column; gap:4px;}
+  .brand .tag{font-size:12px; color:var(--info); font-weight:600; letter-spacing:.02em;}
+  .brand h1{font-size:19px;}
+  .brand .sub{font-size:13px;color:var(--text-dim);}
+
+  .navlist{list-style:none; margin:0;padding:0; display:flex; flex-direction:column; gap:2px; font-size:14px;}
+  .navlist a{
+    display:flex; gap:10px; align-items:baseline; text-decoration:none;
+    color:var(--text-dim); padding:7px 10px; border-radius:var(--radius-s);
+    border-left:2px solid transparent; transition:color .15s ease, background .15s ease, border-color .15s ease;
+  }
+  .navlist a .n{font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-faint); min-width:26px;}
+  .navlist a:hover{color:var(--text); background:var(--panel);}
+  .navlist a.active{color:#fff; background:var(--panel); border-left-color:var(--info);}
+  .navlist a.active .n{color:var(--info);}
+
+  .sidebar-foot{margin-top:auto; font-size:12px; color:var(--text-faint); border-top:1px solid var(--border-soft); padding-top:16px;}
+
+  main{padding:56px 48px 120px 48px; min-width:0;}
+  .hero{padding-bottom:44px; margin-bottom:44px; border-bottom:1px solid var(--border-soft);}
+  .hero .kicker{color:var(--info); font-weight:600; font-size:13px; margin-bottom:14px; display:block;}
+  .hero h1{font-size:38px; letter-spacing:-0.01em; max-width:660px;}
+  .hero p.lead{margin-top:16px; max-width:620px; color:var(--text-dim); font-size:16px;}
+  .hero-stats{display:flex; gap:32px; margin-top:32px; flex-wrap:wrap;}
+  .hero-stats div{display:flex; flex-direction:column; gap:2px;}
+  .hero-stats .num{font-family:'Space Grotesk',sans-serif; font-size:24px; font-weight:700; color:#fff;}
+  .hero-stats .lbl{font-size:12.5px; color:var(--text-faint);}
+
+  section{margin-bottom:72px; scroll-margin-top:24px;}
+  section .sec-head{display:flex; align-items:baseline; gap:14px; margin-bottom:18px;}
+  section .sec-head .idx{font-family:'JetBrains Mono',monospace; color:var(--info); font-size:15px; font-weight:600;}
+  section .sec-head h2{font-size:25px;}
+  section > p{color:var(--text-dim); max-width:680px;}
+  section > p + p{margin-top:14px;}
+
+  h3.sub-head{font-size:16px; color:#fff; margin-top:32px; margin-bottom:6px;}
+  p.sub-lead{color:var(--text-dim); font-size:14.5px; margin-top:6px; max-width:640px;}
+
+  .callout{background:var(--panel); border:1px solid var(--border-soft); border-radius:var(--radius-m); padding:22px 24px; margin-top:20px;}
+  .callout h4{font-size:15px; margin-bottom:12px; color:#fff;}
+  .callout p{color:var(--text-dim); font-size:14.5px;}
+
+  /* ---------- Code window ---------- */
+  .code-window{margin-top:20px; background:#0E1219; border:1px solid var(--border-soft); border-radius:var(--radius-m); overflow:hidden;}
+  .code-window .cw-head{
+    display:flex; align-items:center; gap:8px; padding:10px 14px; background:var(--panel-alt);
+    border-bottom:1px solid var(--border-soft); font-size:12.5px; color:var(--text-faint);
+  }
+  .code-window .cw-head .dot{width:8px;height:8px;border-radius:50%;}
+  .code-window .cw-head .fname{margin-left:6px; font-family:'JetBrains Mono',monospace;}
+  .code-window pre{margin:0; padding:20px 22px; font-family:'JetBrains Mono',monospace; font-size:13px; line-height:1.8; overflow-x:auto;}
+  .code-window .c-kw{color:#8AB4FF;}
+  .code-window .c-fn{color:#7EE0C8;}
+  .code-window .c-str{color:#FFC98B;}
+  .code-window .c-cm{color:var(--text-faint); font-style:italic;}
+  .code-window .c-cls{color:#FFD479;}
+  .code-window .c-ann{color:#D19FFF;}
+
+  /* ---------- avoid / prefer contrast ---------- */
+  .contrast{margin-top:26px; display:grid; grid-template-columns:1fr 1fr; gap:20px;}
+  .contrast-card{border-radius:var(--radius-m); overflow:hidden; border:1px solid var(--border-soft); display:flex; flex-direction:column;}
+  .contrast-card.avoid{border-color:var(--fail-dim);}
+  .contrast-card.prefer{border-color:var(--pass-dim);}
+  .contrast-head{
+    display:flex; align-items:center; gap:8px; padding:13px 20px; font-family:'Space Grotesk',sans-serif;
+    font-size:14px; font-weight:600;
+  }
+  .contrast-card.avoid .contrast-head{background:rgba(255,107,122,0.08); color:var(--fail);}
+  .contrast-card.prefer .contrast-head{background:rgba(53,208,160,0.08); color:var(--pass);}
+  .contrast-body{padding:18px 20px; background:var(--panel); font-size:13.5px; color:var(--text-dim); flex:1;}
+  .contrast-body .mono-list{display:flex; flex-direction:column; gap:6px; font-family:'JetBrains Mono',monospace; font-size:12.5px; color:var(--fail);}
+  .contrast-body .mono-list .more{color:var(--text-faint); font-style:italic;}
+  .contrast-card .code-window{margin:0; border:none; border-radius:0;}
+  .contrast-note{padding:14px 20px; background:var(--panel-alt); font-size:12.5px; color:var(--text-dim); border-top:1px dashed var(--border-soft);}
+
+  /* ---------- diff window (rename scenario) ---------- */
+  .diff-window{margin-top:20px; background:#0E1219; border:1px solid var(--border-soft); border-radius:var(--radius-m); overflow:hidden; font-family:'JetBrains Mono',monospace; font-size:13.5px;}
+  .diff-line{padding:10px 18px; display:flex; gap:10px;}
+  .diff-line.rm{background:rgba(255,107,122,0.08); color:var(--fail);}
+  .diff-line.add{background:rgba(53,208,160,0.08); color:var(--pass);}
+  .diff-line .sign{font-weight:700;}
+
+  /* ---------- benefits chip row (pass tone) ---------- */
+  .chip-row{display:flex; flex-wrap:wrap; gap:10px; margin-top:20px;}
+  .chip.pass{font-size:13.5px; color:var(--pass); background:rgba(53,208,160,0.08); border:1px solid rgba(53,208,160,0.3); padding:8px 16px; border-radius:20px;}
+
+  /* ---------- data table ---------- */
+  table.data-table{margin-top:18px; width:100%; max-width:420px; border-collapse:collapse; font-size:13.5px;}
+  table.data-table thead th{
+    text-align:left; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px;
+    padding:10px 16px; border-bottom:2px solid var(--border); color:#fff; background:var(--panel-alt);
+  }
+  table.data-table tbody td{padding:10px 16px; border-bottom:1px solid var(--border-soft); color:var(--text-dim); font-family:'JetBrains Mono',monospace; background:var(--panel);}
+  table.data-table tbody tr:last-child td{border-bottom:none;}
+
+  footer{padding:36px 48px 60px; color:var(--text-faint); font-size:12.5px; border-top:1px solid var(--border-soft);}
+
+  @media (max-width: 880px){
+    .shell{grid-template-columns:1fr;}
+    .sidebar{position:relative; height:auto; border-right:none; border-bottom:1px solid var(--border-soft); padding:24px;}
+    .navlist{flex-direction:row; overflow-x:auto; gap:4px;}
+    .navlist a{white-space:nowrap;}
+    main{padding:36px 22px 90px;}
+    .hero h1{font-size:28px;}
+    .contrast{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="tag">QA / SDET TRACK · HOUR 7</span>
+      <h1>POM + Data-Driven</h1>
+      <span class="sub">Design pattern module</span>
+    </div>
+
+    <ul class="navlist" id="navlist">
+      <li><a href="#s71"><span class="n">7.1</span> Why POM?</a></li>
+      <li><a href="#s72"><span class="n">7.2</span> LoginPage</a></li>
+      <li><a href="#s73"><span class="n">7.3</span> Login Test</a></li>
+      <li><a href="#s74"><span class="n">7.4</span> Benefits of POM</a></li>
+      <li><a href="#s75"><span class="n">7.5</span> Data-Driven Testing</a></li>
+    </ul>
+
+    <div class="sidebar-foot">
+      Trainer companion page · designed for classroom walkthrough
+    </div>
+  </aside>
+
+  <main>
+
+    <div class="hero">
+      <span class="kicker">Module 7 · Design pattern</span>
+      <h1>Page Object Model + Data-Driven Testing</h1>
+      <p class="lead">Two ideas that turn a pile of working scripts into a framework a team can actually maintain: keep every locator in exactly one place, and stop hard-coding the same test logic once per data value.</p>
+      <div class="hero-stats">
+        <div><span class="num">1</span><span class="lbl">Place a locator should live</span></div>
+        <div><span class="num">5</span><span class="lbl">Core benefits of POM</span></div>
+        <div><span class="num">3</span><span class="lbl">Users driven through one test</span></div>
+      </div>
+    </div>
+
+    <!-- 7.1 -->
+    <section id="s71">
+      <div class="sec-head"><span class="idx">7.1</span><h2>Why Page Object Model?</h2></div>
+      <p>Imagine 50 tests each contain their own copy of <code>By.id("username")</code>. Then the application changes: the field is renamed from <code>username</code> to <code>userEmail</code>.</p>
+
+      <div class="contrast">
+        <div class="contrast-card avoid">
+          <div class="contrast-head">✕ Without POM</div>
+          <div class="contrast-body">
+            <div class="mono-list">
+              <span>LoginTest1.java → By.id("username")</span>
+              <span>LoginTest2.java → By.id("username")</span>
+              <span>LoginTest3.java → By.id("username")</span>
+              <span class="more">…and 47 more files, each with the same locator hard-coded</span>
+            </div>
+          </div>
+          <div class="contrast-note">The rename means opening and editing all 50 files, one by one.</div>
+        </div>
+        <div class="contrast-card prefer">
+          <div class="contrast-head">✓ With Page Object Model</div>
+          <div class="contrast-body">
+            <p style="margin:0;">All 50 tests call <code>loginPage.enterUsername()</code>. None of them know or care what the underlying locator is — that knowledge lives in exactly one place:</p>
+            <p style="margin-top:14px; font-family:'JetBrains Mono',monospace; color:var(--pass); font-size:13.5px;">LoginPage.java</p>
+          </div>
+          <div class="contrast-note">The rename means editing one line, in one file.</div>
+        </div>
+      </div>
+
+      <h3 class="sub-head">The rename, either way</h3>
+      <div class="diff-window">
+        <div class="diff-line rm"><span class="sign">−</span> By.id("username")</div>
+        <div class="diff-line add"><span class="sign">+</span> By.id("userEmail")</div>
+      </div>
+    </section>
+
+    <!-- 7.2 -->
+    <section id="s72">
+      <div class="sec-head"><span class="idx">7.2</span><h2>LoginPage</h2></div>
+      <p>A page object: one class per screen, holding its locators privately and exposing only the actions a test actually needs.</p>
+
+      <div class="code-window">
+        <div class="cw-head">
+          <span class="dot" style="background:#FF6B6B;"></span>
+          <span class="dot" style="background:#FFC85B;"></span>
+          <span class="dot" style="background:#3DD68C;"></span>
+          <span class="fname">LoginPage.java</span>
+        </div>
+        <pre><span class="c-kw">import</span> org.openqa.selenium.By;
+<span class="c-kw">import</span> org.openqa.selenium.WebDriver;
+
+<span class="c-kw">public class</span> <span class="c-cls">LoginPage</span> {
+
+    <span class="c-kw">private</span> <span class="c-cls">WebDriver</span> driver;
+
+    <span class="c-kw">private</span> <span class="c-fn">By</span> username =
+            <span class="c-fn">By</span>.<span class="c-fn">id</span>(<span class="c-str">"username"</span>);
+
+    <span class="c-kw">private</span> <span class="c-fn">By</span> password =
+            <span class="c-fn">By</span>.<span class="c-fn">id</span>(<span class="c-str">"password"</span>);
+
+    <span class="c-kw">private</span> <span class="c-fn">By</span> loginButton =
+            <span class="c-fn">By</span>.<span class="c-fn">id</span>(<span class="c-str">"login"</span>);
+
+    <span class="c-kw">public</span> <span class="c-fn">LoginPage</span>(<span class="c-cls">WebDriver</span> driver) {
+
+        <span class="c-kw">this</span>.driver = driver;
+    }
+
+    <span class="c-kw">public void</span> <span class="c-fn">enterUsername</span>(<span class="c-cls">String</span> value) {
+
+        driver.<span class="c-fn">findElement</span>(username)
+              .<span class="c-fn">sendKeys</span>(value);
+    }
+
+    <span class="c-kw">public void</span> <span class="c-fn">enterPassword</span>(<span class="c-cls">String</span> value) {
+
+        driver.<span class="c-fn">findElement</span>(password)
+              .<span class="c-fn">sendKeys</span>(value);
+    }
+
+    <span class="c-kw">public void</span> <span class="c-fn">clickLogin</span>() {
+
+        driver.<span class="c-fn">findElement</span>(loginButton)
+              .<span class="c-fn">click</span>();
+    }
+
+    <span class="c-kw">public void</span> <span class="c-fn">login</span>(
+            <span class="c-cls">String</span> username,
+            <span class="c-cls">String</span> password) {
+
+        <span class="c-fn">enterUsername</span>(username);
+        <span class="c-fn">enterPassword</span>(password);
+        <span class="c-fn">clickLogin</span>();
+    }
+}</pre>
+      </div>
+    </section>
+
+    <!-- 7.3 -->
+    <section id="s73">
+      <div class="sec-head"><span class="idx">7.3</span><h2>Login Test</h2></div>
+      <p>With the page object built, the test itself reads almost like plain English — extending <code>BaseTest</code> from Hour 5 for its setup and teardown.</p>
+
+      <div class="code-window">
+        <div class="cw-head">
+          <span class="dot" style="background:#FF6B6B;"></span>
+          <span class="dot" style="background:#FFC85B;"></span>
+          <span class="dot" style="background:#3DD68C;"></span>
+          <span class="fname">LoginTest.java</span>
+        </div>
+        <pre><span class="c-kw">import</span> org.testng.annotations.Test;
+
+<span class="c-kw">public class</span> <span class="c-cls">LoginTest</span> <span class="c-kw">extends</span> <span class="c-cls">BaseTest</span> {
+
+    <span class="c-ann">@Test</span>
+    <span class="c-kw">public void</span> <span class="c-fn">validLogin</span>() {
+
+        driver.<span class="c-fn">get</span>(<span class="c-str">"https://example.com/login"</span>);
+
+        <span class="c-cls">LoginPage</span> loginPage =
+                <span class="c-kw">new</span> <span class="c-fn">LoginPage</span>(driver);
+
+        loginPage.<span class="c-fn">login</span>(
+                <span class="c-str">"student@example.com"</span>,
+                <span class="c-str">"Password123"</span>
+        );
+
+        <span class="c-fn">System</span>.out.<span class="c-fn">println</span>(
+                <span class="c-str">"Login executed successfully"</span>
+        );
+    }
+}</pre>
+      </div>
+    </section>
+
+    <!-- 7.4 -->
+    <section id="s74">
+      <div class="sec-head"><span class="idx">7.4</span><h2>Benefits of POM</h2></div>
+      <p>Every one of these traces back to the same root cause: locators live in one place instead of fifty.</p>
+
+      <div class="chip-row">
+        <span class="chip pass">Maintainability</span>
+        <span class="chip pass">Reusability</span>
+        <span class="chip pass">Readability</span>
+        <span class="chip pass">Reduced duplication</span>
+        <span class="chip pass">Easy debugging</span>
+      </div>
+    </section>
+
+    <!-- 7.5 -->
+    <section id="s75">
+      <div class="sec-head"><span class="idx">7.5</span><h2>Data-Driven Testing</h2></div>
+      <p>Page objects solve locator duplication. Data-driven testing solves the next duplication problem: the same test logic, copy-pasted once per data value.</p>
+
+      <div class="contrast">
+        <div class="contrast-card avoid">
+          <div class="contrast-head">✕ Instead of this</div>
+          <div class="code-window">
+            <div class="cw-head">
+              <span class="dot" style="background:#FF6B6B;"></span>
+              <span class="dot" style="background:#FFC85B;"></span>
+              <span class="dot" style="background:#3DD68C;"></span>
+              <span class="fname">Repeated.java</span>
+            </div>
+            <pre><span class="c-fn">login</span>(<span class="c-str">"user1"</span>, <span class="c-str">"pass1"</span>);
+<span class="c-fn">login</span>(<span class="c-str">"user2"</span>, <span class="c-str">"pass2"</span>);
+<span class="c-fn">login</span>(<span class="c-str">"user3"</span>, <span class="c-str">"pass3"</span>);</pre>
+          </div>
+          <div class="contrast-note">Adding a fourth user means writing a fourth near-identical line — and a fourth place to fix bugs.</div>
+        </div>
+        <div class="contrast-card prefer">
+          <div class="contrast-head">✓ We use test data</div>
+          <div class="contrast-body">
+            <p style="margin:0;">One test method, driven by a <code>@DataProvider</code>. The logic is written once; only the data changes.</p>
+          </div>
+          <div class="contrast-note">Adding a fourth user means adding one row to the data array — zero new logic.</div>
+        </div>
+      </div>
+
+      <h3 class="sub-head">TestNG DataProvider</h3>
+      <div class="code-window">
+        <div class="cw-head">
+          <span class="dot" style="background:#FF6B6B;"></span>
+          <span class="dot" style="background:#FFC85B;"></span>
+          <span class="dot" style="background:#3DD68C;"></span>
+          <span class="fname">LoginDataTest.java</span>
+        </div>
+        <pre><span class="c-kw">import</span> org.testng.annotations.DataProvider;
+<span class="c-kw">import</span> org.testng.annotations.Test;
+
+<span class="c-kw">public class</span> <span class="c-cls">LoginDataTest</span> {
+
+    <span class="c-ann">@DataProvider</span>(name = <span class="c-str">"loginData"</span>)
+    <span class="c-kw">public</span> <span class="c-cls">Object</span>[][] <span class="c-fn">loginData</span>() {
+
+        <span class="c-kw">return new</span> <span class="c-cls">Object</span>[][] {
+
+                {<span class="c-str">"user1"</span>, <span class="c-str">"password1"</span>},
+                {<span class="c-str">"user2"</span>, <span class="c-str">"password2"</span>},
+                {<span class="c-str">"user3"</span>, <span class="c-str">"password3"</span>}
+
+        };
+    }
+
+    <span class="c-ann">@Test</span>(dataProvider = <span class="c-str">"loginData"</span>)
+    <span class="c-kw">public void</span> <span class="c-fn">loginTest</span>(
+            <span class="c-cls">String</span> username,
+            <span class="c-cls">String</span> password) {
+
+        <span class="c-fn">System</span>.out.<span class="c-fn">println</span>(
+                <span class="c-str">"Testing: "</span>
+                + username
+                + <span class="c-str">" / "</span>
+                + password
+        );
+    }
+}</pre>
+      </div>
+
+      <h3 class="sub-head">What that array actually represents</h3>
+      <table class="data-table">
+        <thead><tr><th>Username</th><th>Password</th></tr></thead>
+        <tbody>
+          <tr><td>user1</td><td>password1</td></tr>
+          <tr><td>user2</td><td>password2</td></tr>
+          <tr><td>user3</td><td>password3</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+  </main>
+</div>
+
+<footer>
+  Automation Testing · Hour 7 companion page — built for classroom delivery and self-paced review.
+</footer>
+
+<script>
+  const links = Array.from(document.querySelectorAll('#navlist a'));
+  const sections = links.map(a => document.querySelector(a.getAttribute('href')));
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const id = '#' + entry.target.id;
+      const link = links.find(a => a.getAttribute('href') === id);
+      if (!link) return;
+      if (entry.isIntersecting) {
+        links.forEach(a => a.classList.remove('active'));
+        link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(s => s && io.observe(s));
+</script>
+
+</body>
+</html>

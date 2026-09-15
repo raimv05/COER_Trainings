@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hour 2 — Links, Images, Lists, Tables, Div &amp; Iframe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0D0F14;
+    --panel: #12151D;
+    --panel-2: #171B26;
+    --border: #242A3A;
+    --text: #E7E9F2;
+    --muted: #8C93A8;
+    --muted-2: #5D6479;
+    --tag: #FF9457;
+    --tag-dim: #7A4E2E;
+    --attr: #5FE0C7;
+    --string: #9FE07A;
+    --punc: #6B7285;
+    --accent: #7C8CFF;
+    --accent-soft: rgba(124,140,255,0.12);
+    --amber-soft: rgba(255,148,87,0.10);
+    --radius: 10px;
+    --maxw: 1180px;
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg: #0D0F14; --panel:#12151D; --panel-2:#171B26; --text:#E7E9F2; --muted:#8C93A8;
+    }
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth; scroll-padding-top: calc(84px + env(safe-area-inset-top,0px));}
+  body{
+    background:
+      radial-gradient(1100px 600px at 85% -10%, rgba(124,140,255,0.10), transparent 60%),
+      radial-gradient(900px 500px at -10% 10%, rgba(255,148,87,0.08), transparent 55%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Inter', system-ui, sans-serif;
+    line-height:1.65;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{font-family:'Sora', system-ui, sans-serif; letter-spacing:-0.01em; color:#F5F6FA;}
+  a{color:inherit;}
+  code, pre, .mono{font-family:'IBM Plex Mono', 'Courier New', monospace;}
+  ::selection{background:var(--accent-soft); color:#fff;}
+
+  .topbar{
+    position:sticky; top:0; z-index:40;
+    padding-top:env(safe-area-inset-top,0px);
+    background:rgba(13,15,20,0.85);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border);
+  }
+  .topbar-inner{
+    max-width:var(--maxw); margin:0 auto; padding:14px 28px;
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+  }
+  .brand{display:flex; align-items:center; gap:10px; font-family:'Sora'; font-weight:700; font-size:15px;}
+  .brand .mark{
+    width:26px; height:26px; border-radius:7px;
+    background:linear-gradient(135deg, var(--tag), #FFB98A);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'IBM Plex Mono'; font-weight:600; font-size:12px; color:#20140B;
+  }
+  .brand small{display:block; color:var(--muted); font-weight:500; font-size:11px; margin-top:1px; font-family:'Inter';}
+  .progress-pill{
+    font-family:'IBM Plex Mono'; font-size:11px; color:var(--muted);
+    border:1px solid var(--border); padding:6px 12px; border-radius:999px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .progress-pill .dot{width:6px; height:6px; border-radius:50%; background:var(--tag);}
+  .menu-btn{display:none; background:none; border:1px solid var(--border); color:var(--text); border-radius:8px; padding:8px 10px; font-size:18px; line-height:1;}
+
+  .shell{max-width:var(--maxw); margin:0 auto; padding:0 28px; display:grid; grid-template-columns:230px 1fr; gap:44px;}
+  nav.sidebar{
+    position:sticky; top:64px; align-self:start;
+    max-height:calc(100vh - 90px); overflow-y:auto;
+    padding:28px 0 40px;
+  }
+  nav.sidebar .navgroup-label{font-size:11px; text-transform:none; color:var(--muted-2); font-family:'IBM Plex Mono'; margin:18px 0 8px; letter-spacing:0.02em;}
+  nav.sidebar .navgroup-label:first-child{margin-top:0;}
+  nav.sidebar a{
+    display:flex; align-items:center; gap:9px;
+    font-size:13.5px; color:var(--muted); text-decoration:none;
+    padding:6px 10px; border-radius:7px; margin:1px 0;
+    border-left:2px solid transparent;
+    transition:color .15s ease, background .15s ease;
+  }
+  nav.sidebar a .n{font-family:'IBM Plex Mono'; font-size:10.5px; color:var(--muted-2); width:16px; flex:none;}
+  nav.sidebar a:hover{color:var(--text); background:var(--panel-2);}
+  nav.sidebar a.active{color:#fff; background:var(--amber-soft); border-left:2px solid var(--tag);}
+  nav.sidebar a.active .n{color:var(--tag);}
+
+  main{padding:28px 0 100px; min-width:0;}
+
+  .hero{padding:26px 0 46px; border-bottom:1px solid var(--border); margin-bottom:46px;}
+  .hero .eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:'IBM Plex Mono'; font-size:12px; color:var(--tag);
+    background:var(--amber-soft); border:1px solid var(--tag-dim);
+    padding:5px 11px; border-radius:999px; margin-bottom:20px;
+  }
+  .hero h1{font-size:clamp(28px,4.2vw,44px); font-weight:800; line-height:1.14; max-width:20ch;}
+  .hero p.lede{color:var(--muted); font-size:16px; max-width:58ch; margin-top:16px;}
+  .hero-meta{display:flex; flex-wrap:wrap; gap:10px; margin-top:26px;}
+  .hero-meta span{
+    font-family:'IBM Plex Mono'; font-size:12px; color:var(--muted);
+    border:1px solid var(--border); background:var(--panel); padding:7px 12px; border-radius:8px;
+  }
+  .hero-meta span b{color:var(--text); font-weight:600;}
+
+  section.block{padding:10px 0 56px; border-bottom:1px solid var(--border); scroll-margin-top:84px;}
+  section.block:last-of-type{border-bottom:none;}
+  .kicker{font-family:'IBM Plex Mono'; font-size:12px; color:var(--accent); margin-bottom:10px; display:flex; align-items:center; gap:8px;}
+  .kicker .ix{color:var(--muted-2);}
+  h2.htitle{font-size:26px; font-weight:700; margin-bottom:14px;}
+  h3.stitle{font-size:17px; font-weight:600; margin:26px 0 10px; color:#F0F1F7;}
+  p{color:#C7CBDA; font-size:15px; max-width:72ch;}
+  p + p{margin-top:12px;}
+  .lead{color:#DADDE9; font-size:16px;}
+  .kbd{color:var(--attr); background:var(--panel-2); padding:2px 6px; border-radius:5px; font-family:'IBM Plex Mono'; font-size:13px;}
+  .kbd-tag{color:var(--tag); background:var(--panel-2); padding:2px 6px; border-radius:5px; font-family:'IBM Plex Mono'; font-size:13px;}
+  .kbd-str{color:var(--string); background:var(--panel-2); padding:2px 6px; border-radius:5px; font-family:'IBM Plex Mono'; font-size:13px;}
+
+  .card{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:20px 22px;}
+  .callout{
+    display:flex; gap:12px; background:var(--panel-2); border:1px solid var(--border);
+    border-left:3px solid var(--accent); border-radius:8px; padding:14px 16px; margin:18px 0;
+  }
+  .callout.warn{border-left-color:var(--tag);}
+  .callout .ic{font-family:'IBM Plex Mono'; font-size:13px; color:var(--accent); flex:none;}
+  .callout.warn .ic{color:var(--tag);}
+  .callout p{font-size:13.5px; color:var(--muted); margin:0;}
+
+  .editor{
+    background:#0B0D13; border:1px solid var(--border); border-radius:var(--radius);
+    overflow:hidden; margin:18px 0; box-shadow:0 12px 30px -18px rgba(0,0,0,0.6);
+  }
+  .editor .titlebar{
+    display:flex; align-items:center; gap:10px; padding:10px 14px;
+    background:var(--panel-2); border-bottom:1px solid var(--border);
+  }
+  .editor .dots{display:flex; gap:6px;}
+  .editor .dots i{width:9px; height:9px; border-radius:50%; display:block;}
+  .editor .dots i{background:#4A4F60;}
+  .editor .fname{font-family:'IBM Plex Mono'; font-size:12px; color:var(--muted); margin-left:2px;}
+  .editor .lang{margin-left:auto; font-family:'IBM Plex Mono'; font-size:10.5px; color:var(--muted-2); border:1px solid var(--border); padding:2px 8px; border-radius:999px;}
+  .editor pre{margin:0; padding:16px 0; overflow-x:auto; font-size:13px; line-height:1.7;}
+  .editor .lines{display:grid; grid-template-columns:44px 1fr;}
+  .editor .lno{color:#3A3F52; text-align:right; padding-right:14px; user-select:none; font-size:12.5px;}
+  .editor .lcode{padding-right:20px; white-space:pre;}
+  .tok-tag{color:var(--tag);}
+  .tok-attr{color:var(--attr);}
+  .tok-str{color:var(--string);}
+  .tok-punc{color:var(--punc);}
+  .tok-com{color:#5A6178; font-style:italic;}
+  .tok-doctype{color:#8B92A8;}
+
+  .preview-wrap{border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin:18px 0;}
+  .preview-wrap .pv-bar{
+    display:flex; align-items:center; gap:8px; padding:9px 14px; background:var(--panel-2);
+    border-bottom:1px solid var(--border); font-family:'IBM Plex Mono'; font-size:11px; color:var(--muted-2);
+  }
+  .preview-wrap .pv-bar .url{background:var(--panel); border:1px solid var(--border); border-radius:6px; padding:3px 10px; color:var(--muted); flex:1;}
+  .preview-wrap iframe{width:100%; height:260px; border:none; background:#fff; display:block;}
+  .preview-wrap iframe.tall{height:420px;}
+
+  .diagram{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:26px 22px; margin:20px 0;}
+  .diagram .dcap{font-family:'IBM Plex Mono'; font-size:11px; color:var(--muted-2); margin-bottom:16px; text-align:center;}
+  svg{max-width:100%; height:auto; display:block; margin:0 auto;}
+  .svg-label{font-family:'IBM Plex Mono'; font-size:12px;}
+  .svg-sub{font-family:'Inter'; font-size:11px;}
+
+  table.ttable{width:100%; border-collapse:collapse; margin:18px 0; font-size:13.5px;}
+  table.ttable th{
+    text-align:left; font-family:'IBM Plex Mono'; font-size:11px; color:var(--muted-2);
+    font-weight:500; padding:10px 14px; border-bottom:1px solid var(--border);
+  }
+  table.ttable td{padding:11px 14px; border-bottom:1px solid var(--border); color:#CDD0DE; vertical-align:top;}
+  table.ttable tr:last-child td{border-bottom:none;}
+  table.ttable td code, table.ttable td .chip{
+    font-family:'IBM Plex Mono'; font-size:12px; background:var(--panel-2); color:var(--attr);
+    padding:2px 7px; border-radius:5px; border:1px solid var(--border); display:inline-block; margin:2px 4px 2px 0;
+  }
+
+  .steps{position:relative; margin:22px 0 6px; padding-left:2px;}
+  .step{display:grid; grid-template-columns:38px 1fr; gap:16px; position:relative; padding-bottom:26px;}
+  .step:last-child{padding-bottom:0;}
+  .step .line{position:absolute; left:18px; top:38px; bottom:0; width:1px; background:var(--border);}
+  .step:last-child .line{display:none;}
+  .step .num{
+    width:36px; height:36px; border-radius:9px; background:var(--panel-2); border:1px solid var(--border);
+    display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono'; font-weight:600;
+    font-size:13px; color:var(--tag); flex:none; z-index:1;
+  }
+  .step .body h4{font-size:14.5px; font-weight:600; color:#F0F1F7; margin-bottom:5px;}
+  .step .body p{font-size:13.5px; color:var(--muted); margin:0;}
+  .step .body .mini-code{
+    margin-top:9px; font-family:'IBM Plex Mono'; font-size:12.5px; color:var(--attr);
+    background:var(--panel-2); border:1px solid var(--border); padding:7px 11px; border-radius:6px; display:inline-block;
+  }
+
+  .checklist{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:10px; margin-top:18px;}
+  .checklist .item{
+    display:flex; align-items:center; gap:10px; background:var(--panel); border:1px solid var(--border);
+    border-radius:8px; padding:11px 14px; font-size:13.5px; color:#D6D9E6;
+  }
+  .checklist .item .chk{
+    width:18px; height:18px; border-radius:5px; background:var(--amber-soft); border:1px solid var(--tag-dim);
+    display:flex; align-items:center; justify-content:center; color:var(--tag); font-size:11px; flex:none;
+  }
+
+  .end-card{
+    background:linear-gradient(135deg, var(--panel-2), var(--panel)); border:1px solid var(--border);
+    border-radius:14px; padding:32px; margin-top:20px; text-align:center;
+  }
+  .end-card h3{font-size:20px; margin-bottom:8px;}
+  .end-card p{color:var(--muted); font-size:14px; max-width:50ch; margin:0 auto;}
+
+  footer.page-footer{max-width:var(--maxw); margin:0 auto; padding:30px 28px 60px; color:var(--muted-2); font-size:12px; font-family:'IBM Plex Mono';}
+
+  nav.sidebar::-webkit-scrollbar{width:5px;}
+  nav.sidebar::-webkit-scrollbar-thumb{background:var(--border); border-radius:10px;}
+
+  /* comparison split */
+  .split{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:18px 0;}
+  .split .editor{margin:0;}
+  .split .cap{font-family:'IBM Plex Mono'; font-size:11px; margin-bottom:8px; display:flex; align-items:center; gap:6px;}
+  .split .cap.bad{color:#FF8080;}
+  .split .cap.good{color:var(--string);}
+
+  @media (max-width:900px){
+    .shell{grid-template-columns:1fr;}
+    nav.sidebar{
+      position:fixed; top:calc(58px + env(safe-area-inset-top,0px)); left:0; right:0; bottom:0;
+      background:rgba(10,12,17,0.98); backdrop-filter:blur(12px);
+      z-index:35; padding:20px 24px; transform:translateY(-8px); opacity:0; pointer-events:none;
+      transition:opacity .18s ease, transform .18s ease; max-height:none;
+    }
+    nav.sidebar.open{opacity:1; pointer-events:auto; transform:translateY(0);}
+    .menu-btn{display:block;}
+    .shell{padding:0 18px;}
+    .hero h1{max-width:none;}
+    .split{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="mark">&lt;/&gt;</span>
+      <div>
+        Web Fundamentals Track
+        <small>Hour 2 of 12 · HTML</small>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div class="progress-pill"><span class="dot"></span> Hour 2 · In session</div>
+      <button class="menu-btn" id="menuBtn" aria-label="Toggle menu">☰</button>
+    </div>
+  </div>
+</div>
+
+<div class="shell">
+  <nav class="sidebar" id="sidebar">
+    <div class="navgroup-label">Navigation</div>
+    <a href="#anchor"><span class="n">01</span>Anchor Tag</a>
+    <a href="#internal-links"><span class="n">02</span>Internal Links</a>
+    <div class="navgroup-label">Media</div>
+    <a href="#images"><span class="n">03</span>Images</a>
+    <a href="#img-dimensions"><span class="n">04</span>Image Dimensions</a>
+    <div class="navgroup-label">Grouping data</div>
+    <a href="#lists"><span class="n">05</span>Lists</a>
+    <a href="#nested-lists"><span class="n">06</span>Nested Lists</a>
+    <a href="#tables"><span class="n">07</span>HTML Tables</a>
+    <a href="#pro-tables"><span class="n">08</span>Professional Tables</a>
+    <div class="navgroup-label">Layout &amp; embeds</div>
+    <a href="#div"><span class="n">09</span>&lt;div&gt;</a>
+    <a href="#semantic"><span class="n">10</span>Semantic HTML</a>
+    <a href="#iframe"><span class="n">11</span>Frame vs Iframe</a>
+    <div class="navgroup-label">Practical</div>
+    <a href="#capstone"><span class="n">12</span>Hour 2 Project</a>
+    <a href="#outcomes"><span class="n">13</span>Learning Outcomes</a>
+  </nav>
+
+  <main>
+    <div class="hero">
+      <div class="eyebrow">● HOUR 2 — CORE MODULE</div>
+      <h1>Links, Images, Lists, Tables, Div &amp; Iframe</h1>
+      <p class="lede">Hour 1 gave you a single static page. This hour connects pages together, brings in media, organizes real data, and introduces the layout containers every website is built from — finishing with a full multi-section student portfolio.</p>
+      <div class="hero-meta">
+        <span><b>Builds on</b> · Hour 1 skeleton</span>
+        <span><b>Format</b> · Lecture + hands-on build</span>
+        <span><b>Tools</b> · VS Code + Chrome DevTools</span>
+        <span><b>Outcome</b> · A working portfolio page</span>
+      </div>
+    </div>
+
+    <!-- 01 Anchor -->
+    <section class="block" id="anchor">
+      <div class="kicker"><span class="ix">01</span> Navigation</div>
+      <h2 class="htitle">Anchor Tag</h2>
+      <p class="lead">The <span class="kbd-tag">&lt;a&gt;</span> element creates hyperlinks — the mechanism behind every "click here to go there" on the web.</p>
+
+      <h3 class="stitle">Syntax</h3>
+      <div class="editor">
+        <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="fname">syntax.html</span><span class="lang">HTML</span></div>
+        <div class="lines" id="code-1"></div>
+      </div>
+
+      <div class="diagram">
+        <div class="dcap">ANCHOR ANATOMY</div>
+        <svg viewBox="0 0 640 120" xmlns="http://www.w3.org/2000/svg">
+          <text x="20" y="55" class="mono" font-size="20" fill="#FF9457" font-weight="600">&lt;a</text>
+          <text x="52" y="55" class="mono" font-size="20" fill="#5FE0C7" font-weight="600">href</text>
+          <text x="108" y="55" class="mono" font-size="20" fill="#6B7285">=</text>
+          <text x="120" y="55" class="mono" font-size="20" fill="#9FE07A">"https://google.com"</text>
+          <text x="400" y="55" class="mono" font-size="20" fill="#FF9457" font-weight="600">&gt;</text>
+          <text x="420" y="55" class="mono" font-size="20" fill="#E7E9F2">Visit Google</text>
+          <text x="576" y="55" class="mono" font-size="20" fill="#FF9457" font-weight="600">&lt;/a&gt;</text>
+
+          <line x1="68" y1="66" x2="68" y2="84" stroke="#5D6479"/>
+          <text x="68" y="100" text-anchor="middle" class="svg-sub" fill="#5FE0C7" font-size="11">the attribute</text>
+          <line x1="240" y1="66" x2="240" y2="84" stroke="#5D6479"/>
+          <text x="240" y="100" text-anchor="middle" class="svg-sub" fill="#9FE07A" font-size="11">destination URL</text>
+          <line x1="480" y1="66" x2="480" y2="84" stroke="#5D6479"/>
+          <text x="480" y="100" text-anchor="middle" class="svg-sub" fill="#8C93A8" font-size="11">visible, clickable text</text>
+        </svg>
+      </div>
+
+      <h3 class="stitle">Opening a link in a new tab, safely</h3>
+      <div class="editor">
+        <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="fname">new-tab.html</span><span class="lang">HTML</span></div>
+        <div class="lines" id="code-2"></div>
+      </div>
+      <div class="callout warn">
+        <span class="ic">!</span>
+        <p><span class="kbd">target="_blank"</span> alone leaves the new page with partial access back to your original tab via <span class="kbd">window.opener</span>. Modern, security-conscious practice pairs it with <span class="kbd">rel="noopener"</span> on every external link that opens in a new tab.</p>
+      </div>
+    </section>
+
+    <!-- 02 Internal Links -->
+    <section class="block" id="internal-links">
+      <div class="kicker"><span class="ix">02</span> Navigation</div>
+      <h2 class="htitle">Internal Links</h2>
+      <p class="lead">This is how multiple pages of one website connect into a single navigable site — by linking file names relative to each other.</p>
+
+      <div class="diagram">
+        <div class="dcap">HOW PAGES CONNECT — index.html · about.html · contact.html</div>
+        <svg viewBox="0 0 700 160" xmlns="http://www.w3.org/2000/svg">
+          <rect x="30" y="55" width="140" height="50" rx="8" fill="#171B26" stroke="#FF9457"/>
+          <text x="100" y="85" text-anchor="middle" class="mono" font-size="13" fill="#FF9457" font-weight="600">index.html</text>
+
+          <rect x="280" y="10" width="140" height="50" rx="8" fill="#171B26" stroke="#7C8CFF"/>
+          <text x="350" y="40" text-anchor="middle" class="mono" font-size="13" fill="#7C8CFF" font-weight="600">about.html</text>
+
+          <rect x="280" y="100" width="140" height="50" rx="8" fill="#171B26" stroke="#9FE07A"/>
+          <text x="350" y="130" text-anchor="middle" class="mono" font-size="13" fill="#9FE07A" font-weight="600">contact.html</text>
+
+          <rect x="530" y="55" width="140" height="50" rx="8" fill="#12151D" stroke="#3A3F52"/>
+          <text x="600" y="80" text-anchor="middle" class="svg-sub" fill="#C9CCDA" font-size="11">links back to</text>
+          <text x="600" y="95" text-anchor="middle" class="mono" font-size="11" fill="#8C93A8">index.html</text>
+
+          <line x1="170" y1="70" x2="280" y2="35" stroke="#3A3F52" marker-end="url(#arrow)"/>
+          <line x1="170" y1="90" x2="280" y2="125" stroke="#3A3F52" marker-end="url(#arrow)"/>
+          <line x1="420" y1="35" x2="530" y2="72" stroke="#3A3F52" marker-end="url(#arrow)"/>
+          <line x1="420" y1="125" x2="530" y2="88" stroke="#3A3F52" marker-end="url(#arrow)"/>
+          <defs>
+            <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L6,3 L0,6 Z" fill="#3A3F52"/>
+            </marker>
+          </defs>
+        </svg>
+      </div>
+
+      <div class="editor">
+        <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="fname">index.html — nav links</span><span class="lang">HTML</span></div>
+        <div class="lines" id="code-3"></div>
+      </div>
+      <p>Relative file names like <span class="kbd-str">"about.html"</span> only work when both files live in the same project — this is the foundation multi-page sites are built on, before any routing framework gets involved.</p>
+    </section>
+
+    <!-- 03 Images -->
+    <section class="block" id="images">
+      <div class="kicker"><span class="ix">03</span> Media</div>
+      <h2 class="htitle">Images</h2>
+      <p class="lead">The <span class="kbd-tag">&lt;img&gt;</span> tag is a <b style="color:#F0F1F7">void element</b> — no closing tag, no wrapped content. Everything about it is configured through attributes.</p>
+
+      <div class="editor">
+        <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="fname">image.html</span><span class="lang">HTML</span></div>
+        <div class="lines" id="code-4"></div>
+      </div>
+
+      <table class="ttable">
+        <tr><th>Attribute</th><th>Purpose</th></tr>
+        <tr><td><span class="chip">src</span></td><td>Where the image file lives.</td></tr>
+        <tr><td><span class="chip">alt</span></td><td>Alternative text — read by screen readers, shown if the image fails to load, and important for accessibility.</td></tr>
+      </table>
+
+      <h3 class="stitle">Real-life example: an e-commerce product</h3>
+      <div class="editor">
+        <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="fname">product.html</span><span class="lang">HTML</span></div>
+        <div class="lines" id="code-5"></div>
+      </div>
+      <div class="callout">
+        <span class="ic">i</span>
+        <p>Write <span class="kbd">alt</span> text the way you'd describe the image over the phone — specific and useful, like "Black laptop with 15 inch display," not "image1" or "laptop.jpg."</p>
+      </div>
+    </section>
+
+    <!-- 04 Image dimensions -->
+    <section class="block" id="img-dimensions">
+      <div class="kicker"><span class="ix">04</span> Media</div>
+      <h2 class="htitle">Image Dimensions</h2>
+      <div class="editor">
+        <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="fname">sized-image.html</span><span class="lang">HTML</span></div>
+        <div class="lines" id="code-6"></div>
+      </div>
+      <div class="callout warn">
+        <span class="ic">!</span>
+        <p>In professional projects, <b style="color:#F0F1F7">responsive sizing is usually handled with CSS</b>, not hardcoded HTML width/height. Reach for these attributes when you need a fixed layout reservation (to prevent content jumping while an image loads); reach for CSS when the image needs to adapt to screen size.</p>
+      </div>
+    </section>
+
+    <!-- 05 Lists -->
+    <section class="block" id="lists">
+      <div class="kicker"><span class="ix">05</span> Grouping data</div>
+      <h2 class="htitle">Lists</h2>
+      <p class="lead">HTML gives you two list types, chosen by whether order carries meaning.</p>
+
+      <div class="split">
+        <div>
+          <div class="cap bad">✕ order doesn't matter</div>
+          <div class="editor">
+            <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="fname">unordered.html</span><span class="lang">HTML</span></div>
+            <div class="lines" id="code-7"></div>
+          </div>
+        </div>
+        <div>
+          <div class="cap good">✓ sequence matters</div>
+          <div class="editor">
+            <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="fname">ordered.html</span><span class="lang">HTML</span></div>
+            <div class="lines" id="code-8"></div>
+          </div>
+        </div>
+      </div>
+      <div class="preview-wrap">
+        <div class="pv-bar"><span>●</span><span class="url">lists.html — rendered in browser</span></div>
+        <iframe id="preview-lists" title="Lists preview"></iframe>
+      </div>
+    </section>
+
+    <!-- 06 Nested lists -->
+    <section class="block" id="nested-lists">
+      <div class="kicker"><span class="ix">06</span> Grouping data</div>
+      <h2 class="htitle">Nested Lists</h2>
+      <p class="lead">A list item can contain its own list — this is how navigation menus, course structures, and product categories are built.</p>
+      <div class="editor">
+        <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="fname">nested.html</span><span class="lang">HTML</span></div>
+        <div class="lines" id="code-9"></div>
+      </div>
+
+      <div class="diagram">
+        <div class="dcap">WHERE NESTED LISTS SHOW UP</div>
+        <svg viewBox="0 0 700 100" xmlns="http://www.w3.org/2000/svg">
+          <g transform="translate(30,20)">
+            <rect width="150" height="56" rx="8" fill="#171B26" stroke="#242A3A"/>
+            <text x="75" y="24" text-anchor="middle" class="svg-label" fill="#E7E9F2" font-size="12">Navigation menus</text>
+            <text x="75" y="42" text-anchor="middle" class="svg-sub" fill="#5D6479" font-size="10">Products ▸ Laptops</text>
+          </g>
+          <g transform="translate(200,20)">
+            <rect width="150" height="56" rx="8" fill="#171B26" stroke="#242A3A"/>
+            <text x="75" y="24" text-anchor="middle" class="svg-label" fill="#E7E9F2" font-size="12">Course structures</text>
+            <text x="75" y="42" text-anchor="middle" class="svg-sub" fill="#5D6479" font-size="10">Module ▸ Lesson</text>
+          </g>
+          <g transform="translate(370,20)">
+            <rect width="150" height="56" rx="8" fill="#171B26" stroke="#242A3A"/>
+            <text x="75" y="24" text-anchor="middle" class="svg-label" fill="#E7E9F2" font-size="12">Categories</text>
+            <text x="75" y="42" text-anchor="middle" class="svg-sub" fill="#5D6479" font-size="10">Electronics ▸ Phones</text>
+          </g>
+          <g transform="translate(540,20)">
+            <rect width="130" height="56" rx="8" fill="#171B26" stroke="#242A3A"/>
+            <text x="65" y="24" text-anchor="middle" class="svg-label" fill="#E7E9F2" font-size="12">Product filters</text>
+            <text x="65" y="42" text-anchor="middle" class="svg-sub" fill="#5D6479" font-size="10">Brand ▸ Model</text>
+          </g>
+        </svg>
+      </div>
+    </section>
+
+    <!-- 07 Tables -->
+    <section class="block" id="tables">
+      <div class="kicker"><span class="ix">07</span> Grouping data</div>
+      <h2 class="htitle">HTML Tables</h2>
+      <p class="lead">Tables represent <b style="color:#F0F1F7">tabular data</b> — rows and columns with a real relationship, like a spreadsheet.</p>
+      <div class="editor">
+        <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="fname">table.html</span><span class="lang">HTML</span></div>
+        <div class="lines" id="code-10"></div>
+      </div>
+
+      <h3 class="stitle">Core tags</h3>
+      <table class="ttable">
+        <tr><th>Tag</th><th>Purpose</th></tr>
+        <tr><td><span class="chip">table</span></td><td>Creates the table.</td></tr>
+        <tr><td><span class="chip">tr</span></td><td>Table row.</td></tr>
+        <tr><td><span class="chip">th</span></td><td>Header cell.</td></tr>
+        <tr><td><span class="chip">td</span></td><td>Data cell.</td></tr>
+      </table>
+    </section>
+
+    <!-- 08 Professional tables -->
+    <section class="block" id="pro-tables">
+      <div class="kicker"><span class="ix">08</span> Grouping data</div>
+      <h2 class="htitle">Professional Table Structure</h2>
+      <p class="lead">Real tables add <span class="kbd-tag">&lt;caption&gt;</span>, <span class="kbd-tag">&lt;thead&gt;</span> and <span class="kbd-tag">&lt;tbody&gt;</span> to separate the header from the data, plus <span class="kbd">scope</span> for accessibility.</p>
+      <div class="editor">
+        <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="fname">student-marks.html</span><span class="lang">HTML</span></div>
+        <div class="lines" id="code-11"></div>
+      </div>
+      <div class="preview-wrap">
+        <div class="pv-bar"><span>●</span><span class="url">student-marks.html — rendered in browser</span></div>
+        <iframe id="preview-table" title="Table preview"></iframe>
+      </div>
+      <div class="callout">
+        <span class="ic">i</span>
+        <p>A table is for <b style="color:#F0F1F7">data</b>, never for page layout. If you're reaching for a table to position boxes on a page, that's a signal to use CSS instead.</p>
+      </div>
+    </section>
+
+    <!-- 09 div -->
+    <section class="block" id="div">
+      <div class="kicker"><span class="ix">09</span> Layout &amp; embeds</div>
+      <h2 class="htitle">&lt;div&gt;</h2>
+      <p class="lead">A generic block-level container used to group content that has no more specific meaning of its own.</p>
+      <div class="editor">
+        <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="fname">div-group.html</span><span class="lang">HTML</span></div>
+        <div class="lines" id="code-12"></div>
+      </div>
+      <p>Historically, developers used <span class="kbd-tag">&lt;div&gt;</span> for nearly all page layout. Modern HTML gives you purpose-built alternatives — covered next.</p>
+    </section>
+
+    <!-- 10 Semantic HTML -->
+    <section class="block" id="semantic">
+      <div class="kicker"><span class="ix">10</span> Layout &amp; embeds</div>
+      <h2 class="htitle">Semantic HTML</h2>
+      <p class="lead">Semantic elements communicate <b style="color:#F0F1F7">what content is</b>, not just where it sits — improving machine-readable meaning, accessibility, and SEO.</p>
+
+      <div class="split">
+        <div>
+          <div class="cap bad">✕ div soup — no meaning</div>
+          <div class="editor">
+            <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="fname">before.html</span><span class="lang">HTML</span></div>
+            <div class="lines" id="code-13"></div>
+          </div>
+        </div>
+        <div>
+          <div class="cap good">✓ semantic — meaning built in</div>
+          <div class="editor">
+            <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="fname">after.html</span><span class="lang">HTML</span></div>
+            <div class="lines" id="code-14"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="diagram">
+        <div class="dcap">COMMON SEMANTIC ELEMENTS ON A TYPICAL PAGE</div>
+        <svg viewBox="0 0 620 300" xmlns="http://www.w3.org/2000/svg">
+          <rect x="10" y="10" width="600" height="40" rx="6" fill="#171B26" stroke="#FF9457"/>
+          <text x="300" y="35" text-anchor="middle" class="mono" font-size="13" fill="#FF9457" font-weight="600">&lt;header&gt;</text>
+
+          <rect x="10" y="58" width="600" height="30" rx="6" fill="#12151D" stroke="#3A3F52"/>
+          <text x="300" y="78" text-anchor="middle" class="mono" font-size="12" fill="#8C93A8">&lt;nav&gt;</text>
+
+          <rect x="10" y="96" width="600" height="150" rx="6" fill="#171B26" stroke="#7C8CFF"/>
+          <text x="300" y="118" text-anchor="middle" class="mono" font-size="13" fill="#7C8CFF" font-weight="600">&lt;main&gt;</text>
+
+          <rect x="30" y="130" width="270" height="100" rx="6" fill="#12151D" stroke="#3A3F52"/>
+          <text x="165" y="150" text-anchor="middle" class="mono" font-size="12" fill="#9FE07A">&lt;section&gt;</text>
+          <text x="165" y="168" text-anchor="middle" class="mono" font-size="11" fill="#C9CCDA">&lt;article&gt;</text>
+
+          <rect x="320" y="130" width="270" height="100" rx="6" fill="#12151D" stroke="#3A3F52"/>
+          <text x="455" y="150" text-anchor="middle" class="mono" font-size="12" fill="#5FE0C7">&lt;aside&gt;</text>
+          <text x="455" y="168" text-anchor="middle" class="svg-sub" fill="#5D6479" font-size="10">related links, tags</text>
+
+          <rect x="10" y="256" width="600" height="34" rx="6" fill="#171B26" stroke="#9FE07A"/>
+          <text x="300" y="278" text-anchor="middle" class="mono" font-size="13" fill="#9FE07A" font-weight="600">&lt;footer&gt;</text>
+        </svg>
+      </div>
+    </section>
+
+    <!-- 11 Iframe -->
+    <section class="block" id="iframe">
+      <div class="kicker"><span class="ix">11</span> Layout &amp; embeds</div>
+      <h2 class="htitle">Frame vs Iframe</h2>
+      <div class="callout warn">
+        <span class="ic">!</span>
+        <p><b style="color:#F0F1F7">Industry-standard correction:</b> the old <span class="kbd-tag">&lt;frameset&gt;</span>/<span class="kbd-tag">&lt;frame&gt;</span> approach is obsolete and should not be used in modern HTML projects.</p>
+      </div>
+
+      <div class="split">
+        <div>
+          <div class="cap bad">✕ obsolete — do not use</div>
+          <div class="editor">
+            <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="fname">old-frames.html</span><span class="lang">HTML</span></div>
+            <div class="lines" id="code-15"></div>
+          </div>
+        </div>
+        <div>
+          <div class="cap good">✓ modern — iframe</div>
+          <div class="editor">
+            <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="fname">modern.html</span><span class="lang">HTML</span></div>
+            <div class="lines" id="code-16"></div>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="stitle">Real-world iframe use cases</h3>
+      <div class="checklist" style="margin-top:8px;">
+        <div class="item"><span class="chk">✓</span>Maps</div>
+        <div class="item"><span class="chk">✓</span>Videos</div>
+        <div class="item"><span class="chk">✓</span>External documents</div>
+        <div class="item"><span class="chk">✓</span>Third-party widgets</div>
+      </div>
+
+      <div class="editor" style="margin-top:18px;">
+        <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="fname">embed-video.html</span><span class="lang">HTML</span></div>
+        <div class="lines" id="code-17"></div>
+      </div>
+    </section>
+
+    <!-- 12 Capstone -->
+    <section class="block" id="capstone">
+      <div class="kicker"><span class="ix">12</span> Capstone</div>
+      <h2 class="htitle">Hour 2 — Complete Practical Project</h2>
+      <p class="lead">Everything from this hour combined: navigation, an embedded image, a skills list, and an education table — organized with semantic layout instead of div soup. Build this one fully — it's your Hour 2 deliverable.</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="line"></div><div class="num">1</div>
+          <div class="body"><h4>Create a project folder</h4><p>Make a folder for this project.</p><span class="mini-code">portfolio</span></div>
+        </div>
+        <div class="step">
+          <div class="line"></div><div class="num">2</div>
+          <div class="body"><h4>Create the HTML file</h4><p>Inside the folder, create:</p><span class="mini-code">portfolio.html</span></div>
+        </div>
+        <div class="step">
+          <div class="line"></div><div class="num">3</div>
+          <div class="body"><h4>Add a profile photo</h4><p>Place an image file in the same folder.</p><span class="mini-code">profile.jpg</span></div>
+        </div>
+        <div class="step">
+          <div class="line"></div><div class="num">4</div>
+          <div class="body"><h4>Paste and personalize</h4><p>Paste the code below, then replace the student information with your own details.</p></div>
+        </div>
+        <div class="step">
+          <div class="line"></div><div class="num">5</div>
+          <div class="body"><h4>Save</h4><p>Save the file inside the project folder.</p></div>
+        </div>
+        <div class="step">
+          <div class="line"></div><div class="num">6</div>
+          <div class="body"><h4>Open in Chrome</h4><p>Double-click <code style="color:var(--attr)">portfolio.html</code> to view it in the browser.</p></div>
+        </div>
+        <div class="step">
+          <div class="line"></div><div class="num">7</div>
+          <div class="body"><h4>Click the navigation links</h4><p>Confirm each link jumps to the right section of the page.</p></div>
+        </div>
+        <div class="step">
+          <div class="num">8</div>
+          <div class="body"><h4>Inspect with DevTools</h4><p>Open browser Developer Tools and examine how the semantic tags appear in the rendered DOM.</p></div>
+        </div>
+      </div>
+
+      <div class="editor">
+        <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="fname">portfolio.html</span><span class="lang">HTML</span></div>
+        <div class="lines" id="code-18"></div>
+      </div>
+
+      <div class="preview-wrap">
+        <div class="pv-bar"><span>●</span><span class="url">portfolio.html — rendered in browser</span></div>
+        <iframe id="preview-18" class="tall" title="Student portfolio preview"></iframe>
+      </div>
+    </section>
+
+    <!-- 13 Outcomes -->
+    <section class="block" id="outcomes" style="border-bottom:none;">
+      <div class="kicker"><span class="ix">13</span> Wrap-up</div>
+      <h2 class="htitle">Learning Outcomes</h2>
+      <p class="lead">By the end of Hour 2, students should be able to explain and use each of the following without notes:</p>
+      <div class="checklist">
+        <div class="item"><span class="chk">✓</span>&lt;a&gt; and href</div>
+        <div class="item"><span class="chk">✓</span>target="_blank" + rel="noopener"</div>
+        <div class="item"><span class="chk">✓</span>Internal page linking</div>
+        <div class="item"><span class="chk">✓</span>&lt;img&gt;, src, alt</div>
+        <div class="item"><span class="chk">✓</span>Unordered vs ordered lists</div>
+        <div class="item"><span class="chk">✓</span>Nested lists</div>
+        <div class="item"><span class="chk">✓</span>Tables: tr / th / td</div>
+        <div class="item"><span class="chk">✓</span>thead / tbody / caption</div>
+        <div class="item"><span class="chk">✓</span>&lt;div&gt; as a generic container</div>
+        <div class="item"><span class="chk">✓</span>Semantic layout elements</div>
+        <div class="item"><span class="chk">✓</span>Why &lt;frameset&gt; is obsolete</div>
+        <div class="item"><span class="chk">✓</span>&lt;iframe&gt; embeds</div>
+      </div>
+
+      <div class="end-card">
+        <h3>Hour 2 complete.</h3>
+        <p>Next hour moves into CSS — selectors, the box model, and turning this structural portfolio into a styled one.</p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<footer class="page-footer">Web Fundamentals Track — Hour 2 · Links, Images, Lists, Tables, Div &amp; Iframe</footer>
+
+<script>
+function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function highlightHTML(raw){
+  let s = esc(raw);
+  s = s.replace(/(&lt;!--[\s\S]*?--&gt;)/g, '<span class="tok-com">$1</span>');
+  s = s.replace(/(&lt;!DOCTYPE[^&]*?&gt;)/gi, '<span class="tok-doctype">$1</span>');
+  s = s.replace(/(&lt;\/?)([a-zA-Z][a-zA-Z0-9]*)([^&]*?)(\/?&gt;)/g, function(m, open, name, attrs, close){
+    if(m.indexOf('tok-com')>-1 || m.indexOf('tok-doctype')>-1) return m;
+    let attrsHi = attrs.replace(/([a-zA-Z-]+)(=)(&quot;.*?&quot;)/g,
+      '<span class="tok-attr">$1</span><span class="tok-punc">$2</span><span class="tok-str">$3</span>');
+    return '<span class="tok-punc">'+open+'</span><span class="tok-tag">'+name+'</span>'+attrsHi+'<span class="tok-punc">'+close+'</span>';
+  });
+  return s;
+}
+function renderCode(id, code){
+  const container = document.getElementById(id);
+  if(!container) return;
+  const lines = code.replace(/^\n/,'').replace(/\n$/,'').split('\n');
+  let html = '';
+  lines.forEach((line, i) => {
+    const hi = highlightHTML(line) || '&nbsp;';
+    html += '<div class="lno">'+(i+1)+'</div><div class="lcode">'+hi+'</div>';
+  });
+  container.innerHTML = html;
+}
+
+const PLACEHOLDER_IMG = "data:image/svg+xml;utf8," + encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="%23D8DCE6"/><text x="100" y="104" font-family="sans-serif" font-size="14" fill="%23888" text-anchor="middle">profile.jpg</text></svg>'
+);
+
+const SNIPPETS = {
+  'code-1': `<a href="URL">Link Text</a>
+
+<a href="https://www.google.com">
+  Visit Google
+</a>`,
+
+  'code-2': `<a href="https://example.com"
+   target="_blank"
+   rel="noopener">
+   Visit Website
+</a>`,
+
+  'code-3': `<a href="about.html">About Us</a>
+<a href="contact.html">Contact</a>`,
+
+  'code-4': `<img src="image.jpg"
+     alt="Student working on laptop">`,
+
+  'code-5': `<img src="laptop.jpg"
+     alt="Black laptop with 15 inch display">`,
+
+  'code-6': `<img src="laptop.jpg"
+     alt="Laptop"
+     width="300"
+     height="200">`,
+
+  'code-7': `<ul>
+  <li>HTML</li>
+  <li>CSS</li>
+  <li>JavaScript</li>
+  <li>React</li>
+</ul>`,
+
+  'code-8': `<ol>
+  <li>Open VS Code</li>
+  <li>Create index.html</li>
+  <li>Write HTML</li>
+  <li>Open in Browser</li>
+</ol>`,
+
+  'code-9': `<ul>
+  <li>
+    Frontend
+    <ul>
+      <li>HTML</li>
+      <li>CSS</li>
+      <li>JavaScript</li>
+    </ul>
+  </li>
+  <li>
+    Backend
+    <ul>
+      <li>Node.js</li>
+      <li>Express.js</li>
+    </ul>
+  </li>
+</ul>`,
+
+  'code-10': `<table>
+  <tr>
+    <th>Name</th>
+    <th>Course</th>
+    <th>Marks</th>
+  </tr>
+  <tr>
+    <td>Rahul</td>
+    <td>BCA</td>
+    <td>85</td>
+  </tr>
+  <tr>
+    <td>Priya</td>
+    <td>BCA</td>
+    <td>90</td>
+  </tr>
+</table>`,
+
+  'code-11': `<table>
+  <caption>Student Marks</caption>
+  <thead>
+    <tr>
+      <th scope="col">Name</th>
+      <th scope="col">Course</th>
+      <th scope="col">Marks</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Rahul</td>
+      <td>BCA</td>
+      <td>85</td>
+    </tr>
+    <tr>
+      <td>Priya</td>
+      <td>BCA</td>
+      <td>90</td>
+    </tr>
+  </tbody>
+</table>`,
+
+  'code-12': `<div>
+  <h2>Student Information</h2>
+  <p>Name: Rahul</p>
+  <p>Course: BCA</p>
+</div>`,
+
+  'code-13': `<div>
+  Website Header
+</div>
+
+<div>
+  Website Content
+</div>
+
+<div>
+  Website Footer
+</div>`,
+
+  'code-14': `<header>
+  Website Header
+</header>
+
+<main>
+  Website Content
+</main>
+
+<footer>
+  Website Footer
+</footer>`,
+
+  'code-15': `<frameset>
+  <frame src="page1.html">
+</frameset>`,
+
+  'code-16': `<iframe
+  src="https://example.com"
+  title="Example website">
+</iframe>`,
+
+  'code-17': `<iframe
+  src="https://www.youtube.com/embed/VIDEO_ID"
+  title="HTML Tutorial"
+  width="560"
+  height="315"
+  allowfullscreen>
+</iframe>`,
+
+  'code-18': `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Portfolio</title>
+</head>
+<body>
+
+  <header>
+    <h1>Rahul Sharma</h1>
+    <p>Full Stack Development Student</p>
+    <nav>
+      <a href="#about">About</a> |
+      <a href="#skills">Skills</a> |
+      <a href="#education">Education</a> |
+      <a href="#contact">Contact</a>
+    </nav>
+  </header>
+
+  <main>
+    <section id="about">
+      <h2>About Me</h2>
+      <img
+        src="profile.jpg"
+        alt="Rahul Sharma profile photo"
+        width="200">
+      <p>
+        I am a BCA student interested in
+        web development and software engineering.
+      </p>
+    </section>
+
+    <section id="skills">
+      <h2>Technical Skills</h2>
+      <ul>
+        <li>HTML</li>
+        <li>CSS</li>
+        <li>JavaScript</li>
+        <li>React</li>
+        <li>Node.js</li>
+      </ul>
+    </section>
+
+    <section id="education">
+      <h2>Education</h2>
+      <table>
+        <caption>Education Details</caption>
+        <thead>
+          <tr>
+            <th scope="col">Course</th>
+            <th scope="col">Institute</th>
+            <th scope="col">Year</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>BCA</td>
+            <td>ABC University</td>
+            <td>2026</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2026 Rahul Sharma</p>
+  </footer>
+
+</body>
+</html>`
+};
+
+Object.keys(SNIPPETS).forEach(id => renderCode(id, SNIPPETS[id]));
+
+function fillPreview(id, code){
+  const el = document.getElementById(id);
+  if(el) el.srcdoc = code.split('profile.jpg').join(PLACEHOLDER_IMG);
+}
+fillPreview('preview-lists', `<div style="font-family:sans-serif; padding:16px; display:flex; gap:40px;">
+  <div>${SNIPPETS['code-7']}</div>
+  <div>${SNIPPETS['code-8']}</div>
+</div>`);
+fillPreview('preview-table', `<div style="font-family:sans-serif; padding:16px;">
+<style>table{border-collapse:collapse;width:100%;} th,td{border:1px solid #ccc;padding:8px 12px;text-align:left;} th{background:#f4f4f4;} caption{text-align:left;font-weight:600;margin-bottom:8px;}</style>
+${SNIPPETS['code-11']}
+</div>`);
+fillPreview('preview-18', `<div style="font-family:sans-serif; padding:0 16px 16px;">
+<style>
+  body{margin:0;}
+  header{padding:16px 0; border-bottom:1px solid #eee;}
+  nav a{margin-right:6px; color:#3355dd; text-decoration:none;}
+  section{margin:22px 0;}
+  table{border-collapse:collapse;} th,td{border:1px solid #ccc;padding:6px 10px;text-align:left;}
+  th{background:#f4f4f4;}
+  footer{border-top:1px solid #eee; padding:12px 0; color:#888; font-size:13px;}
+  img{border-radius:6px;}
+</style>
+${SNIPPETS['code-18'].replace('<!DOCTYPE html>','').replace(/<html[^>]*>|<\/html>|<head>[\s\S]*?<\/head>|<body>|<\/body>/g,'')}
+</div>`);
+
+const links = Array.from(document.querySelectorAll('nav.sidebar a'));
+const targets = links.map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+function onScroll(){
+  let idx = 0;
+  const y = window.scrollY + 110;
+  targets.forEach((t, i) => { if(t.offsetTop <= y) idx = i; });
+  links.forEach(l => l.classList.remove('active'));
+  if(links[idx]) links[idx].classList.add('active');
+}
+window.addEventListener('scroll', onScroll, {passive:true});
+onScroll();
+
+const menuBtn = document.getElementById('menuBtn');
+const sidebar = document.getElementById('sidebar');
+if(menuBtn){
+  menuBtn.addEventListener('click', () => sidebar.classList.toggle('open'));
+  links.forEach(l => l.addEventListener('click', () => sidebar.classList.remove('open')));
+}
+</script>
+</body>
+</html>

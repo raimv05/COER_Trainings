@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Automation Testing — Hour 5 | Automation Framework</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0E14;
+    --panel:#131720;
+    --panel-alt:#171C27;
+    --border:#232938;
+    --border-soft:#1B2130;
+    --text:#E7EAF0;
+    --text-dim:#8B93A7;
+    --text-faint:#5B6478;
+    --pass:#35D0A0;
+    --pass-dim:#1D5B49;
+    --fail:#FF6B7A;
+    --fail-dim:#5C2530;
+    --info:#6C8CFF;
+    --info-dim:#26305C;
+    --warn:#FFB454;
+    --warn-dim:#5C4520;
+    --radius-s:6px;
+    --radius-m:10px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:'Inter',sans-serif; font-size:16px; line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{font-family:'Space Grotesk',sans-serif; font-weight:600; color:#F4F6FA; line-height:1.25; margin:0;}
+  code, .mono{font-family:'JetBrains Mono',monospace;}
+  a{color:inherit;}
+  ::selection{background:var(--info-dim); color:#fff;}
+
+  .shell{display:grid; grid-template-columns:250px minmax(0,1fr); max-width:1280px; margin:0 auto;}
+  .sidebar{
+    position:sticky; top:0; height:100vh; padding:32px 20px 32px 32px;
+    border-right:1px solid var(--border-soft); display:flex; flex-direction:column; gap:28px;
+  }
+  .brand{display:flex; flex-direction:column; gap:4px;}
+  .brand .tag{font-size:12px; color:var(--info); font-weight:600; letter-spacing:.02em;}
+  .brand h1{font-size:19px;}
+  .brand .sub{font-size:13px;color:var(--text-dim);}
+
+  .navlist{list-style:none; margin:0;padding:0; display:flex; flex-direction:column; gap:2px; font-size:14px;}
+  .navlist a{
+    display:flex; gap:10px; align-items:baseline; text-decoration:none;
+    color:var(--text-dim); padding:7px 10px; border-radius:var(--radius-s);
+    border-left:2px solid transparent; transition:color .15s ease, background .15s ease, border-color .15s ease;
+  }
+  .navlist a .n{font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-faint); min-width:26px;}
+  .navlist a:hover{color:var(--text); background:var(--panel);}
+  .navlist a.active{color:#fff; background:var(--panel); border-left-color:var(--info);}
+  .navlist a.active .n{color:var(--info);}
+
+  .sidebar-foot{margin-top:auto; font-size:12px; color:var(--text-faint); border-top:1px solid var(--border-soft); padding-top:16px;}
+
+  main{padding:56px 48px 120px 48px; min-width:0;}
+  .hero{padding-bottom:44px; margin-bottom:44px; border-bottom:1px solid var(--border-soft);}
+  .hero .kicker{color:var(--info); font-weight:600; font-size:13px; margin-bottom:14px; display:block;}
+  .hero h1{font-size:40px; letter-spacing:-0.01em; max-width:640px;}
+  .hero p.lead{margin-top:16px; max-width:600px; color:var(--text-dim); font-size:16px;}
+  .hero-stats{display:flex; gap:32px; margin-top:32px; flex-wrap:wrap;}
+  .hero-stats div{display:flex; flex-direction:column; gap:2px;}
+  .hero-stats .num{font-family:'Space Grotesk',sans-serif; font-size:24px; font-weight:700; color:#fff;}
+  .hero-stats .lbl{font-size:12.5px; color:var(--text-faint);}
+
+  section{margin-bottom:72px; scroll-margin-top:24px;}
+  section .sec-head{display:flex; align-items:baseline; gap:14px; margin-bottom:18px;}
+  section .sec-head .idx{font-family:'JetBrains Mono',monospace; color:var(--info); font-size:15px; font-weight:600;}
+  section .sec-head h2{font-size:25px;}
+  section > p{color:var(--text-dim); max-width:680px;}
+  section > p + p{margin-top:14px;}
+
+  h3.sub-head{font-size:16px; color:#fff; margin-top:36px; margin-bottom:6px;}
+  p.sub-lead{color:var(--text-dim); font-size:14.5px; margin-top:6px; max-width:640px;}
+
+  .callout{background:var(--panel); border:1px solid var(--border-soft); border-radius:var(--radius-m); padding:22px 24px; margin-top:20px;}
+  .callout h4{font-size:15px; margin-bottom:12px; color:#fff;}
+  .callout p{color:var(--text-dim); font-size:14.5px;}
+  .callout.info{border-color:var(--info-dim); background:linear-gradient(180deg, rgba(108,140,255,0.06), transparent);}
+  .callout.info h4{color:var(--info);}
+  .callout.fail{border-color:var(--fail-dim); background:linear-gradient(180deg, rgba(255,107,122,0.06), transparent);}
+  .callout.fail h4{color:var(--fail);}
+
+  /* ---------- advantage-style grid (reused for "what it organizes") ---------- */
+  .adv-grid{
+    margin-top:24px; display:grid; grid-template-columns:1fr 1fr; gap:2px;
+    background:var(--border-soft); border:1px solid var(--border-soft); border-radius:var(--radius-m); overflow:hidden;
+  }
+  .adv-item{background:var(--panel); padding:18px 22px; display:flex; gap:14px;}
+  .adv-item svg{flex-shrink:0; margin-top:2px;}
+  .adv-item h4{font-size:14px; margin-bottom:4px;}
+  .adv-item p{font-size:13px; color:var(--text-dim); margin:0;}
+
+  /* ---------- unstructured example panel ---------- */
+  .messy-panel{
+    margin-top:20px; background:rgba(255,107,122,0.05); border:1px solid var(--fail-dim);
+    border-radius:var(--radius-m); padding:20px 24px;
+  }
+  .messy-panel .files{font-family:'JetBrains Mono',monospace; font-size:13.5px; color:var(--fail); display:flex; flex-direction:column; gap:5px;}
+  .messy-panel .note{margin-top:14px; font-size:13px; color:var(--text-dim);}
+
+  /* ---------- file tree ---------- */
+  .file-tree{
+    margin-top:18px; background:var(--panel); border:1px solid var(--border-soft); border-radius:var(--radius-m);
+    padding:20px 24px; font-family:'JetBrains Mono',monospace; font-size:13.5px; line-height:2; color:var(--text-dim); max-width:460px;
+  }
+  .file-tree .folder{color:var(--text); font-weight:600;}
+  .file-tree .file{color:var(--info);}
+  .file-tree .file.res{color:var(--pass);}
+  .file-tree .connector{color:var(--text-faint);}
+
+  /* ---------- Pipeline / flow diagrams ---------- */
+  .pipeline{margin-top:24px; display:flex; flex-direction:column;}
+  .p-node{
+    background:var(--panel); border:1px solid var(--border-soft); border-radius:var(--radius-m);
+    padding:13px 18px; font-size:14px; display:flex; align-items:center; gap:10px; color:var(--text);
+  }
+  .pipeline .p-node{align-self:flex-start; min-width:260px;}
+  .p-connector{align-self:flex-start; margin-left:29px; width:1px; height:22px; background:var(--border); position:relative;}
+  .p-connector::after{
+    content:""; position:absolute; bottom:-1px; left:50%; transform:translateX(-50%);
+    border-left:4px solid transparent; border-right:4px solid transparent; border-top:5px solid var(--border);
+  }
+  .p-node .tag-small{margin-left:auto; font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--text-faint);}
+  .p-node.tone-info{border-color:var(--info); color:var(--info);}
+  .p-node.tone-warn{border-color:var(--warn); color:var(--warn);}
+
+  /* ---------- Code window ---------- */
+  .code-window{margin-top:22px; background:#0E1219; border:1px solid var(--border-soft); border-radius:var(--radius-m); overflow:hidden;}
+  .code-window .cw-head{
+    display:flex; align-items:center; gap:8px; padding:10px 14px; background:var(--panel-alt);
+    border-bottom:1px solid var(--border-soft); font-size:12.5px; color:var(--text-faint);
+  }
+  .code-window .cw-head .dot{width:8px;height:8px;border-radius:50%;}
+  .code-window .cw-head .fname{margin-left:6px; font-family:'JetBrains Mono',monospace;}
+  .code-window pre{margin:0; padding:20px 22px; font-family:'JetBrains Mono',monospace; font-size:13px; line-height:1.8; overflow-x:auto;}
+  .code-window .c-kw{color:#8AB4FF;}
+  .code-window .c-fn{color:#7EE0C8;}
+  .code-window .c-str{color:#FFC98B;}
+  .code-window .c-cm{color:var(--text-faint); font-style:italic;}
+  .code-window .c-cls{color:#FFD479;}
+  .code-window .c-ann{color:#D19FFF;}
+
+  footer{padding:36px 48px 60px; color:var(--text-faint); font-size:12.5px; border-top:1px solid var(--border-soft);}
+
+  @media (max-width: 880px){
+    .shell{grid-template-columns:1fr;}
+    .sidebar{position:relative; height:auto; border-right:none; border-bottom:1px solid var(--border-soft); padding:24px;}
+    .navlist{flex-direction:row; overflow-x:auto; gap:4px;}
+    .navlist a{white-space:nowrap;}
+    main{padding:36px 22px 90px;}
+    .hero h1{font-size:30px;}
+    .adv-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="tag">QA / SDET TRACK · HOUR 5</span>
+      <h1>Automation Framework</h1>
+      <span class="sub">Structure &amp; TestNG module</span>
+    </div>
+
+    <ul class="navlist" id="navlist">
+      <li><a href="#s51"><span class="n">5.1</span> What is a Framework?</a></li>
+      <li><a href="#s52"><span class="n">5.2</span> Framework Structure</a></li>
+      <li><a href="#s53"><span class="n">5.3</span> TestNG</a></li>
+      <li><a href="#s54"><span class="n">5.4</span> TestNG Lifecycle</a></li>
+      <li><a href="#s55"><span class="n">5.5</span> BaseTest</a></li>
+    </ul>
+
+    <div class="sidebar-foot">
+      Trainer companion page · designed for classroom walkthrough
+    </div>
+  </aside>
+
+  <main>
+
+    <div class="hero">
+      <span class="kicker">Module 5 · Structure</span>
+      <h1>Automation Framework</h1>
+      <p class="lead">Scripts that work are easy. Scripts that stay maintainable across hundreds of test cases and a dozen contributors require structure. This is where individual Selenium scripts become an actual framework.</p>
+      <div class="hero-stats">
+        <div><span class="num">8</span><span class="lbl">Things a framework organizes</span></div>
+        <div><span class="num">9</span><span class="lbl">TestNG lifecycle annotations</span></div>
+        <div><span class="num">4</span><span class="lbl">Core framework packages</span></div>
+      </div>
+    </div>
+
+    <!-- 5.1 -->
+    <section id="s51">
+      <div class="sec-head"><span class="idx">5.1</span><h2>What is an Automation Framework?</h2></div>
+      <p>An automation framework is a structured way of organizing everything a test suite depends on — so that adding test #200 is exactly as manageable as adding test #2.</p>
+
+      <div class="adv-grid">
+        <div class="adv-item">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6C8CFF" stroke-width="1.8"><path d="M9 12h6M9 16h6M9 8h2" stroke-linecap="round"/><rect x="4" y="3" width="16" height="18" rx="2"/></svg>
+          <div><h4>Test scripts</h4><p>The actual @Test methods that drive assertions.</p></div>
+        </div>
+        <div class="adv-item">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6C8CFF" stroke-width="1.8"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3" stroke-linecap="round"/></svg>
+          <div><h4>Test data</h4><p>Inputs kept separate from logic so scripts don't hard-code values.</p></div>
+        </div>
+        <div class="adv-item">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6C8CFF" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.7 9a1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div><h4>Configuration</h4><p>Environment URLs, browser choice, timeouts — kept out of test logic.</p></div>
+        </div>
+        <div class="adv-item">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6C8CFF" stroke-width="1.8"><path d="m12 2 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5M3 17l9 5 9-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div><h4>Page objects</h4><p>One class per screen, isolating locators from test logic.</p></div>
+        </div>
+        <div class="adv-item">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6C8CFF" stroke-width="1.8"><path d="m14.7 6.3 3 3M9 15l-4.5 4.5a1.5 1.5 0 0 1-2.1-2.1L7 12.5M11.5 4.5 15 8l-6 6-3.5-3.5 6-6Z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div><h4>Utilities</h4><p>Shared helpers — readers, waits, formatters — reused across tests.</p></div>
+        </div>
+        <div class="adv-item">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6C8CFF" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 15v-3M12 15V9M17 15v-5" stroke-linecap="round"/></svg>
+          <div><h4>Reports</h4><p>Pass/fail output stakeholders can actually read after a run.</p></div>
+        </div>
+        <div class="adv-item">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6C8CFF" stroke-width="1.8"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+          <div><h4>Test execution</h4><p>How and in what order suites actually run.</p></div>
+        </div>
+        <div class="adv-item">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6C8CFF" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="m7 9 3 3-3 3M13 15h4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div><h4>Logging</h4><p>A trail of what actually happened, for when a test fails at 2am.</p></div>
+        </div>
+      </div>
+
+      <h3 class="sub-head">Without a framework</h3>
+      <p class="sub-lead">This is where most beginner projects start — and where they stop scaling.</p>
+      <div class="messy-panel">
+        <div class="files">
+          <span>Test1.java</span>
+          <span>Test2.java</span>
+          <span>Test3.java</span>
+          <span>Test4.java</span>
+        </div>
+        <div class="note">No shared structure, no reusable page logic, no separation between data and code. Every new test duplicates setup and teardown by hand — and every small UI change means editing locators in four different places instead of one.</div>
+      </div>
+    </section>
+
+    <!-- 5.2 -->
+    <section id="s52">
+      <div class="sec-head"><span class="idx">5.2</span><h2>Professional Framework Structure</h2></div>
+      <p>The same project, organized. Each folder has exactly one job — tests contain assertions, pages contain locators, base handles setup/teardown, and utils holds shared helpers.</p>
+
+      <div class="file-tree">
+        <div><span class="folder">automation-framework</span></div>
+        <div>│</div>
+        <div><span class="connector">├──</span> <span class="file">pom.xml</span></div>
+        <div>│</div>
+        <div><span class="connector">├──</span> <span class="folder">src/test/java</span></div>
+        <div>│&nbsp;&nbsp;&nbsp;│</div>
+        <div>│&nbsp;&nbsp;&nbsp;<span class="connector">├──</span> <span class="folder">tests</span></div>
+        <div>│&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;<span class="connector">└──</span> <span class="file">LoginTest.java</span></div>
+        <div>│&nbsp;&nbsp;&nbsp;│</div>
+        <div>│&nbsp;&nbsp;&nbsp;<span class="connector">├──</span> <span class="folder">pages</span></div>
+        <div>│&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;<span class="connector">└──</span> <span class="file">LoginPage.java</span></div>
+        <div>│&nbsp;&nbsp;&nbsp;│</div>
+        <div>│&nbsp;&nbsp;&nbsp;<span class="connector">├──</span> <span class="folder">base</span></div>
+        <div>│&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;<span class="connector">└──</span> <span class="file">BaseTest.java</span></div>
+        <div>│&nbsp;&nbsp;&nbsp;│</div>
+        <div>│&nbsp;&nbsp;&nbsp;<span class="connector">└──</span> <span class="folder">utils</span></div>
+        <div>│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="connector">└──</span> <span class="file">ConfigReader.java</span></div>
+        <div>│</div>
+        <div><span class="connector">└──</span> <span class="folder">src/test/resources</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="connector">└──</span> <span class="file res">config.properties</span></div>
+      </div>
+    </section>
+
+    <!-- 5.3 -->
+    <section id="s53">
+      <div class="sec-head"><span class="idx">5.3</span><h2>TestNG</h2></div>
+      <p>TestNG is the test framework that lets us organize and execute tests — grouping them, ordering them, and controlling what happens before and after each one runs.</p>
+
+      <div class="code-window">
+        <div class="cw-head">
+          <span class="dot" style="background:#FF6B6B;"></span>
+          <span class="dot" style="background:#FFC85B;"></span>
+          <span class="dot" style="background:#3DD68C;"></span>
+          <span class="fname">LoginTest.java</span>
+        </div>
+        <pre><span class="c-kw">import</span> org.testng.annotations.Test;
+
+<span class="c-kw">public class</span> <span class="c-cls">LoginTest</span> {
+
+    <span class="c-ann">@Test</span>
+    <span class="c-kw">public void</span> <span class="c-fn">validLoginTest</span>() {
+
+        <span class="c-fn">System</span>.out.<span class="c-fn">println</span>(<span class="c-str">"Executing login test"</span>);
+
+    }
+}</pre>
+      </div>
+    </section>
+
+    <!-- 5.4 -->
+    <section id="s54">
+      <div class="sec-head"><span class="idx">5.4</span><h2>TestNG Lifecycle</h2></div>
+      <p>Every TestNG run follows a fixed order of annotations — this is what lets setup and cleanup happen automatically around every single test.</p>
+
+      <div class="pipeline">
+        <div class="p-node tone-info">@BeforeSuite</div>
+        <div class="p-connector"></div>
+        <div class="p-node tone-info">@BeforeTest</div>
+        <div class="p-connector"></div>
+        <div class="p-node tone-info">@BeforeClass</div>
+        <div class="p-connector"></div>
+        <div class="p-node tone-info">@BeforeMethod</div>
+        <div class="p-connector"></div>
+        <div class="p-node" style="border-color:var(--pass); color:var(--pass); font-weight:600;">@Test</div>
+        <div class="p-connector"></div>
+        <div class="p-node tone-warn">@AfterMethod</div>
+        <div class="p-connector"></div>
+        <div class="p-node tone-warn">@AfterClass</div>
+        <div class="p-connector"></div>
+        <div class="p-node tone-warn">@AfterTest</div>
+        <div class="p-connector"></div>
+        <div class="p-node tone-warn">@AfterSuite</div>
+      </div>
+
+      <div class="code-window">
+        <div class="cw-head">
+          <span class="dot" style="background:#FF6B6B;"></span>
+          <span class="dot" style="background:#FFC85B;"></span>
+          <span class="dot" style="background:#3DD68C;"></span>
+          <span class="fname">TestNGDemo.java</span>
+        </div>
+        <pre><span class="c-kw">import</span> org.testng.annotations.*;
+
+<span class="c-kw">public class</span> <span class="c-cls">TestNGDemo</span> {
+
+    <span class="c-ann">@BeforeMethod</span>
+    <span class="c-kw">public void</span> <span class="c-fn">setup</span>() {
+        <span class="c-fn">System</span>.out.<span class="c-fn">println</span>(<span class="c-str">"Browser setup"</span>);
+    }
+
+    <span class="c-ann">@Test</span>
+    <span class="c-kw">public void</span> <span class="c-fn">loginTest</span>() {
+        <span class="c-fn">System</span>.out.<span class="c-fn">println</span>(<span class="c-str">"Login test"</span>);
+    }
+
+    <span class="c-ann">@AfterMethod</span>
+    <span class="c-kw">public void</span> <span class="c-fn">tearDown</span>() {
+        <span class="c-fn">System</span>.out.<span class="c-fn">println</span>(<span class="c-str">"Browser closed"</span>);
+    }
+}</pre>
+      </div>
+    </section>
+
+    <!-- 5.5 -->
+    <section id="s55">
+      <div class="sec-head"><span class="idx">5.5</span><h2>BaseTest</h2></div>
+      <p>BaseTest centralizes the setup and teardown every test needs, so individual test classes only contain test logic — not repeated browser boilerplate.</p>
+
+      <div class="code-window">
+        <div class="cw-head">
+          <span class="dot" style="background:#FF6B6B;"></span>
+          <span class="dot" style="background:#FFC85B;"></span>
+          <span class="dot" style="background:#3DD68C;"></span>
+          <span class="fname">BaseTest.java</span>
+        </div>
+        <pre><span class="c-kw">import</span> org.openqa.selenium.WebDriver;
+<span class="c-kw">import</span> org.openqa.selenium.chrome.ChromeDriver;
+<span class="c-kw">import</span> org.testng.annotations.AfterMethod;
+<span class="c-kw">import</span> org.testng.annotations.BeforeMethod;
+
+<span class="c-kw">public class</span> <span class="c-cls">BaseTest</span> {
+
+    <span class="c-kw">protected</span> <span class="c-cls">WebDriver</span> driver;
+
+    <span class="c-ann">@BeforeMethod</span>
+    <span class="c-kw">public void</span> <span class="c-fn">setup</span>() {
+
+        driver = <span class="c-kw">new</span> <span class="c-fn">ChromeDriver</span>();
+
+        driver.<span class="c-fn">manage</span>().<span class="c-fn">window</span>().<span class="c-fn">maximize</span>();
+
+    }
+
+    <span class="c-ann">@AfterMethod</span>
+    <span class="c-kw">public void</span> <span class="c-fn">tearDown</span>() {
+
+        <span class="c-kw">if</span> (driver != <span class="c-kw">null</span>) {
+            driver.<span class="c-fn">quit</span>();
+        }
+    }
+}</pre>
+      </div>
+
+      <div class="callout info">
+        <h4>Why this matters at scale</h4>
+        <p>Every test class that extends <code>BaseTest</code> inherits this setup and teardown for free — a fresh, maximized browser before each @Test method, and a guaranteed quit() afterward, even if the earlier tests in a class failed. That reliability is exactly what a hand-written Test1.java / Test2.java pile from 5.1 doesn't give you.</p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer>
+  Automation Testing · Hour 5 companion page — built for classroom delivery and self-paced review.
+</footer>
+
+<script>
+  const links = Array.from(document.querySelectorAll('#navlist a'));
+  const sections = links.map(a => document.querySelector(a.getAttribute('href')));
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const id = '#' + entry.target.id;
+      const link = links.find(a => a.getAttribute('href') === id);
+      if (!link) return;
+      if (entry.isIntersecting) {
+        links.forEach(a => a.classList.remove('active'));
+        link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(s => s && io.observe(s));
+</script>
+
+</body>
+</html>

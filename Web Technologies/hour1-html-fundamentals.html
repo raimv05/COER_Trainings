@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hour 1 — HTML Fundamentals &amp; Basic Webpage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0D0F14;
+    --panel: #12151D;
+    --panel-2: #171B26;
+    --border: #242A3A;
+    --text: #E7E9F2;
+    --muted: #8C93A8;
+    --muted-2: #5D6479;
+    --tag: #FF9457;
+    --tag-dim: #7A4E2E;
+    --attr: #5FE0C7;
+    --string: #9FE07A;
+    --punc: #6B7285;
+    --accent: #7C8CFF;
+    --accent-soft: rgba(124,140,255,0.12);
+    --amber-soft: rgba(255,148,87,0.10);
+    --radius: 10px;
+    --maxw: 1180px;
+  }
+  :root:not([data-theme="light"]){ }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg: #0D0F14; --panel:#12151D; --panel-2:#171B26; --text:#E7E9F2; --muted:#8C93A8;
+    }
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth; scroll-padding-top: calc(84px + env(safe-area-inset-top,0px));}
+  body{
+    background:
+      radial-gradient(1100px 600px at 85% -10%, rgba(124,140,255,0.10), transparent 60%),
+      radial-gradient(900px 500px at -10% 10%, rgba(255,148,87,0.08), transparent 55%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Inter', system-ui, sans-serif;
+    line-height:1.65;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{font-family:'Sora', system-ui, sans-serif; letter-spacing:-0.01em; color:#F5F6FA;}
+  a{color:inherit;}
+  code, pre, .mono{font-family:'IBM Plex Mono', 'Courier New', monospace;}
+  ::selection{background:var(--accent-soft); color:#fff;}
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    position:sticky; top:0; z-index:40;
+    padding-top:env(safe-area-inset-top,0px);
+    background:rgba(13,15,20,0.85);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border);
+  }
+  .topbar-inner{
+    max-width:var(--maxw); margin:0 auto; padding:14px 28px;
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+  }
+  .brand{display:flex; align-items:center; gap:10px; font-family:'Sora'; font-weight:700; font-size:15px;}
+  .brand .mark{
+    width:26px; height:26px; border-radius:7px;
+    background:linear-gradient(135deg, var(--tag), #FFB98A);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'IBM Plex Mono'; font-weight:600; font-size:12px; color:#20140B;
+  }
+  .brand small{display:block; color:var(--muted); font-weight:500; font-size:11px; margin-top:1px; font-family:'Inter';}
+  .progress-pill{
+    font-family:'IBM Plex Mono'; font-size:11px; color:var(--muted);
+    border:1px solid var(--border); padding:6px 12px; border-radius:999px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .progress-pill .dot{width:6px; height:6px; border-radius:50%; background:var(--tag);}
+  .menu-btn{display:none; background:none; border:1px solid var(--border); color:var(--text); border-radius:8px; padding:8px 10px; font-size:18px; line-height:1;}
+
+  /* ---------- Layout ---------- */
+  .shell{max-width:var(--maxw); margin:0 auto; padding:0 28px; display:grid; grid-template-columns:230px 1fr; gap:44px;}
+  nav.sidebar{
+    position:sticky; top:64px; align-self:start;
+    max-height:calc(100vh - 90px); overflow-y:auto;
+    padding:28px 0 40px;
+  }
+  nav.sidebar .navgroup-label{font-size:11px; text-transform:none; color:var(--muted-2); font-family:'IBM Plex Mono'; margin:18px 0 8px; letter-spacing:0.02em;}
+  nav.sidebar .navgroup-label:first-child{margin-top:0;}
+  nav.sidebar a{
+    display:flex; align-items:center; gap:9px;
+    font-size:13.5px; color:var(--muted); text-decoration:none;
+    padding:6px 10px; border-radius:7px; margin:1px 0;
+    border-left:2px solid transparent;
+    transition:color .15s ease, background .15s ease;
+  }
+  nav.sidebar a .n{font-family:'IBM Plex Mono'; font-size:10.5px; color:var(--muted-2); width:16px; flex:none;}
+  nav.sidebar a:hover{color:var(--text); background:var(--panel-2);}
+  nav.sidebar a.active{color:#fff; background:var(--amber-soft); border-left:2px solid var(--tag);}
+  nav.sidebar a.active .n{color:var(--tag);}
+
+  main{padding:28px 0 100px; min-width:0;}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:26px 0 46px; border-bottom:1px solid var(--border); margin-bottom:46px;}
+  .hero .eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:'IBM Plex Mono'; font-size:12px; color:var(--tag);
+    background:var(--amber-soft); border:1px solid var(--tag-dim);
+    padding:5px 11px; border-radius:999px; margin-bottom:20px;
+  }
+  .hero h1{font-size:clamp(30px,4.4vw,46px); font-weight:800; line-height:1.12; max-width:16ch;}
+  .hero h1 .braces{color:var(--tag); font-weight:700;}
+  .hero p.lede{color:var(--muted); font-size:16px; max-width:56ch; margin-top:16px;}
+  .hero-meta{display:flex; flex-wrap:wrap; gap:10px; margin-top:26px;}
+  .hero-meta span{
+    font-family:'IBM Plex Mono'; font-size:12px; color:var(--muted);
+    border:1px solid var(--border); background:var(--panel); padding:7px 12px; border-radius:8px;
+  }
+  .hero-meta span b{color:var(--text); font-weight:600;}
+
+  /* ---------- Sections ---------- */
+  section.block{padding:10px 0 56px; border-bottom:1px solid var(--border); scroll-margin-top:84px;}
+  section.block:last-of-type{border-bottom:none;}
+  .kicker{font-family:'IBM Plex Mono'; font-size:12px; color:var(--accent); margin-bottom:10px; display:flex; align-items:center; gap:8px;}
+  .kicker .ix{color:var(--muted-2);}
+  h2.htitle{font-size:26px; font-weight:700; margin-bottom:14px;}
+  h3.stitle{font-size:17px; font-weight:600; margin:26px 0 10px; color:#F0F1F7;}
+  p{color:#C7CBDA; font-size:15px; max-width:72ch;}
+  p + p{margin-top:12px;}
+  .lead{color:#DADDE9; font-size:16px;}
+
+  /* ---------- Cards / panels ---------- */
+  .card{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:20px 22px;}
+  .callout{
+    display:flex; gap:12px; background:var(--panel-2); border:1px solid var(--border);
+    border-left:3px solid var(--accent); border-radius:8px; padding:14px 16px; margin:18px 0;
+  }
+  .callout .ic{font-family:'IBM Plex Mono'; font-size:13px; color:var(--accent); flex:none;}
+  .callout p{font-size:13.5px; color:var(--muted); margin:0;}
+
+  /* ---------- Code editor block ---------- */
+  .editor{
+    background:#0B0D13; border:1px solid var(--border); border-radius:var(--radius);
+    overflow:hidden; margin:18px 0; box-shadow:0 12px 30px -18px rgba(0,0,0,0.6);
+  }
+  .editor .titlebar{
+    display:flex; align-items:center; gap:10px; padding:10px 14px;
+    background:var(--panel-2); border-bottom:1px solid var(--border);
+  }
+  .editor .dots{display:flex; gap:6px;}
+  .editor .dots i{width:9px; height:9px; border-radius:50%; display:block;}
+  .editor .dots i:nth-child(1){background:#4A4F60;}
+  .editor .dots i:nth-child(2){background:#4A4F60;}
+  .editor .dots i:nth-child(3){background:#4A4F60;}
+  .editor .fname{font-family:'IBM Plex Mono'; font-size:12px; color:var(--muted); margin-left:2px;}
+  .editor .lang{margin-left:auto; font-family:'IBM Plex Mono'; font-size:10.5px; color:var(--muted-2); border:1px solid var(--border); padding:2px 8px; border-radius:999px;}
+  .editor pre{
+    margin:0; padding:16px 0; overflow-x:auto; font-size:13px; line-height:1.7;
+  }
+  .editor pre code{display:block;}
+  .editor .lines{display:grid; grid-template-columns:44px 1fr;}
+  .editor .lno{color:#3A3F52; text-align:right; padding-right:14px; user-select:none; font-size:12.5px;}
+  .editor .lcode{padding-right:20px; white-space:pre;}
+  .tok-tag{color:var(--tag);}
+  .tok-attr{color:var(--attr);}
+  .tok-str{color:var(--string);}
+  .tok-punc{color:var(--punc);}
+  .tok-com{color:#5A6178; font-style:italic;}
+  .tok-text{color:#C9CCDA;}
+  .tok-doctype{color:#8B92A8;}
+
+  /* live preview */
+  .preview-wrap{border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin:18px 0;}
+  .preview-wrap .pv-bar{
+    display:flex; align-items:center; gap:8px; padding:9px 14px; background:var(--panel-2);
+    border-bottom:1px solid var(--border); font-family:'IBM Plex Mono'; font-size:11px; color:var(--muted-2);
+  }
+  .preview-wrap .pv-bar .url{background:var(--panel); border:1px solid var(--border); border-radius:6px; padding:3px 10px; color:var(--muted); flex:1;}
+  .preview-wrap iframe{width:100%; height:230px; border:none; background:#fff; display:block;}
+
+  /* ---------- Tag anatomy diagram ---------- */
+  .diagram{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:26px 22px; margin:20px 0;}
+  .diagram .dcap{font-family:'IBM Plex Mono'; font-size:11px; color:var(--muted-2); margin-bottom:16px; text-align:center;}
+  svg{max-width:100%; height:auto; display:block; margin:0 auto;}
+  .svg-label{font-family:'IBM Plex Mono'; font-size:12px;}
+  .svg-sub{font-family:'Inter'; font-size:11px;}
+
+  /* ---------- Tables ---------- */
+  table.ttable{width:100%; border-collapse:collapse; margin:18px 0; font-size:13.5px;}
+  table.ttable th{
+    text-align:left; font-family:'IBM Plex Mono'; font-size:11px; color:var(--muted-2);
+    font-weight:500; padding:10px 14px; border-bottom:1px solid var(--border);
+  }
+  table.ttable td{padding:11px 14px; border-bottom:1px solid var(--border); color:#CDD0DE; vertical-align:top;}
+  table.ttable tr:last-child td{border-bottom:none;}
+  table.ttable td code, table.ttable td .chip{
+    font-family:'IBM Plex Mono'; font-size:12px; background:var(--panel-2); color:var(--attr);
+    padding:2px 7px; border-radius:5px; border:1px solid var(--border); display:inline-block; margin:2px 4px 2px 0;
+  }
+
+  /* ---------- Steps ---------- */
+  .steps{position:relative; margin:22px 0 6px; padding-left:2px;}
+  .step{display:grid; grid-template-columns:38px 1fr; gap:16px; position:relative; padding-bottom:26px;}
+  .step:last-child{padding-bottom:0;}
+  .step .line{position:absolute; left:18px; top:38px; bottom:0; width:1px; background:var(--border);}
+  .step:last-child .line{display:none;}
+  .step .num{
+    width:36px; height:36px; border-radius:9px; background:var(--panel-2); border:1px solid var(--border);
+    display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono'; font-weight:600;
+    font-size:13px; color:var(--tag); flex:none; z-index:1;
+  }
+  .step .body h4{font-size:14.5px; font-weight:600; color:#F0F1F7; margin-bottom:5px;}
+  .step .body p{font-size:13.5px; color:var(--muted); margin:0;}
+  .step .body .mini-code{
+    margin-top:9px; font-family:'IBM Plex Mono'; font-size:12.5px; color:var(--attr);
+    background:var(--panel-2); border:1px solid var(--border); padding:7px 11px; border-radius:6px; display:inline-block;
+  }
+
+  /* ---------- Heading hierarchy ---------- */
+  .hstack{display:flex; flex-direction:column; gap:8px; margin:18px 0;}
+  .hstack .hrow{display:flex; align-items:center; gap:14px;}
+  .hstack .hbar{
+    background:linear-gradient(90deg, var(--amber-soft), transparent); border:1px solid var(--tag-dim);
+    border-left:3px solid var(--tag); border-radius:6px; padding:8px 14px;
+    font-family:'IBM Plex Mono'; color:var(--text); display:flex; align-items:center; gap:10px;
+  }
+  .hstack .htag{color:var(--tag); font-weight:600;}
+  .hstack .hlabel{color:var(--muted); font-size:12px; font-family:'Inter';}
+
+  /* ---------- Outcome checklist ---------- */
+  .checklist{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:10px; margin-top:18px;}
+  .checklist .item{
+    display:flex; align-items:center; gap:10px; background:var(--panel); border:1px solid var(--border);
+    border-radius:8px; padding:11px 14px; font-size:13.5px; color:#D6D9E6;
+  }
+  .checklist .item .chk{
+    width:18px; height:18px; border-radius:5px; background:var(--amber-soft); border:1px solid var(--tag-dim);
+    display:flex; align-items:center; justify-content:center; color:var(--tag); font-size:11px; flex:none;
+  }
+
+  /* ---------- Footer nav ---------- */
+  .end-card{
+    background:linear-gradient(135deg, var(--panel-2), var(--panel)); border:1px solid var(--border);
+    border-radius:14px; padding:32px; margin-top:20px; text-align:center;
+  }
+  .end-card h3{font-size:20px; margin-bottom:8px;}
+  .end-card p{color:var(--muted); font-size:14px; max-width:50ch; margin:0 auto;}
+
+  footer.page-footer{max-width:var(--maxw); margin:0 auto; padding:30px 28px 60px; color:var(--muted-2); font-size:12px; font-family:'IBM Plex Mono';}
+
+  /* ---------- Scrollbar ---------- */
+  nav.sidebar::-webkit-scrollbar{width:5px;}
+  nav.sidebar::-webkit-scrollbar-thumb{background:var(--border); border-radius:10px;}
+
+  /* ---------- Responsive ---------- */
+  @media (max-width:900px){
+    .shell{grid-template-columns:1fr;}
+    nav.sidebar{
+      position:fixed; top:calc(58px + env(safe-area-inset-top,0px)); left:0; right:0; bottom:0;
+      background:rgba(10,12,17,0.98); backdrop-filter:blur(12px);
+      z-index:35; padding:20px 24px; transform:translateY(-8px); opacity:0; pointer-events:none;
+      transition:opacity .18s ease, transform .18s ease; max-height:none;
+    }
+    nav.sidebar.open{opacity:1; pointer-events:auto; transform:translateY(0);}
+    .menu-btn{display:block;}
+    .shell{padding:0 18px;}
+    .hero h1{max-width:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="mark">&lt;/&gt;</span>
+      <div>
+        Web Fundamentals Track
+        <small>Hour 1 of 12 · HTML</small>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div class="progress-pill"><span class="dot"></span> Hour 1 · In session</div>
+      <button class="menu-btn" id="menuBtn" aria-label="Toggle menu">☰</button>
+    </div>
+  </div>
+</div>
+
+<div class="shell">
+  <nav class="sidebar" id="sidebar">
+    <div class="navgroup-label">Foundations</div>
+    <a href="#what-is-html"><span class="n">01</span>What is HTML?</a>
+    <a href="#hypertext"><span class="n">02</span>What is HyperText?</a>
+    <a href="#markup"><span class="n">03</span>Markup Language</a>
+    <div class="navgroup-label">Anatomy</div>
+    <a href="#element"><span class="n">04</span>HTML Element</a>
+    <a href="#tags"><span class="n">05</span>HTML Tags</a>
+    <a href="#attributes"><span class="n">06</span>HTML Attributes</a>
+    <div class="navgroup-label">Structure</div>
+    <a href="#doc-structure"><span class="n">07</span>Document Structure</a>
+    <a href="#editors"><span class="n">08</span>HTML Editors</a>
+    <div class="navgroup-label">Practical</div>
+    <a href="#practical"><span class="n">09</span>Build Your First Page</a>
+    <a href="#headings"><span class="n">10</span>Headings</a>
+    <a href="#text-basics"><span class="n">11</span>Paragraphs, Breaks &amp; Comments</a>
+    <a href="#capstone"><span class="n">12</span>Hour 1 Project</a>
+    <a href="#outcomes"><span class="n">13</span>Learning Outcomes</a>
+  </nav>
+
+  <main>
+    <div class="hero">
+      <div class="eyebrow">● HOUR 1 — CORE MODULE</div>
+      <h1>HTML Fundamentals <span class="braces">&amp;</span> Your First Webpage</h1>
+      <p class="lede">The structural language every website is built on. By the end of this hour you'll understand what HTML actually is, how browsers read it, and you'll have written and run your first real webpage.</p>
+      <div class="hero-meta">
+        <span><b>Format</b> · Lecture + hands-on build</span>
+        <span><b>Prerequisite</b> · None</span>
+        <span><b>Tools</b> · VS Code + Browser</span>
+        <span><b>Outcome</b> · A working student profile page</span>
+      </div>
+    </div>
+
+    <!-- 01 What is HTML -->
+    <section class="block" id="what-is-html">
+      <div class="kicker"><span class="ix">01</span> Foundations</div>
+      <h2 class="htitle">What is HTML?</h2>
+      <p class="lead"><b style="color:#F0F1F7">HyperText Markup Language</b> is the standard markup language used to define the <b style="color:#F0F1F7">structure and meaning</b> of content on a web page. It is <b>not</b> a programming language — it has no loops, conditions, or functions. It only describes what content <i>is</i>, not what it <i>does</i>.</p>
+
+      <h3 class="stitle">The house analogy</h3>
+      <p>Think of building a website like building a house. HTML is the walls and rooms, CSS is the paint and furniture, and JavaScript is the wiring and automation. Each layer has one job.</p>
+
+      <div class="diagram">
+        <div class="dcap">HTML · CSS · JAVASCRIPT — THE THREE LAYERS OF A WEBPAGE</div>
+        <svg viewBox="0 0 720 210" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="gTag" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#FF9457" stop-opacity="0.20"/>
+              <stop offset="100%" stop-color="#FF9457" stop-opacity="0.02"/>
+            </linearGradient>
+            <linearGradient id="gAcc" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#7C8CFF" stop-opacity="0.20"/>
+              <stop offset="100%" stop-color="#7C8CFF" stop-opacity="0.02"/>
+            </linearGradient>
+            <linearGradient id="gStr" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#9FE07A" stop-opacity="0.20"/>
+              <stop offset="100%" stop-color="#9FE07A" stop-opacity="0.02"/>
+            </linearGradient>
+          </defs>
+          <!-- HTML column -->
+          <rect x="20" y="20" width="215" height="170" rx="10" fill="url(#gTag)" stroke="#7A4E2E" stroke-width="1"/>
+          <text x="127" y="52" text-anchor="middle" class="svg-label" fill="#FF9457" font-weight="600" font-size="14">HTML</text>
+          <text x="127" y="70" text-anchor="middle" class="svg-sub" fill="#8C93A8" font-size="10.5">Structure</text>
+          <g transform="translate(60,86)">
+            <rect x="0" y="0" width="135" height="16" rx="3" fill="#242A3A"/>
+            <rect x="0" y="24" width="95" height="16" rx="3" fill="#242A3A"/>
+            <rect x="0" y="48" width="115" height="16" rx="3" fill="#242A3A"/>
+            <rect x="0" y="72" width="60" height="16" rx="3" fill="#242A3A"/>
+          </g>
+          <text x="127" y="196" text-anchor="middle" class="svg-sub" fill="#5D6479" font-size="10">walls &amp; rooms</text>
+
+          <!-- CSS column -->
+          <rect x="252" y="20" width="215" height="170" rx="10" fill="url(#gAcc)" stroke="#3A3F6E" stroke-width="1"/>
+          <text x="359" y="52" text-anchor="middle" class="svg-label" fill="#7C8CFF" font-weight="600" font-size="14">CSS</text>
+          <text x="359" y="70" text-anchor="middle" class="svg-sub" fill="#8C93A8" font-size="10.5">Design</text>
+          <g transform="translate(300,90)">
+            <circle cx="10" cy="10" r="10" fill="#7C8CFF" opacity="0.55"/>
+            <circle cx="40" cy="10" r="10" fill="#FF9457" opacity="0.4"/>
+            <circle cx="70" cy="10" r="10" fill="#9FE07A" opacity="0.4"/>
+            <rect x="0" y="34" width="132" height="14" rx="3" fill="#242A3A"/>
+            <rect x="0" y="54" width="90" height="14" rx="3" fill="#242A3A"/>
+          </g>
+          <text x="359" y="196" text-anchor="middle" class="svg-sub" fill="#5D6479" font-size="10">paint &amp; furniture</text>
+
+          <!-- JS column -->
+          <rect x="484" y="20" width="216" height="170" rx="10" fill="url(#gStr)" stroke="#3E5E2E" stroke-width="1"/>
+          <text x="592" y="52" text-anchor="middle" class="svg-label" fill="#9FE07A" font-weight="600" font-size="14">JavaScript</text>
+          <text x="592" y="70" text-anchor="middle" class="svg-sub" fill="#8C93A8" font-size="10.5">Behavior</text>
+          <g transform="translate(534,88)">
+            <path d="M0 24 L15 8 L30 24 L45 4" fill="none" stroke="#9FE07A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.8"/>
+            <circle cx="0" cy="24" r="3" fill="#9FE07A"/>
+            <circle cx="15" cy="8" r="3" fill="#9FE07A"/>
+            <circle cx="30" cy="24" r="3" fill="#9FE07A"/>
+            <circle cx="45" cy="4" r="3" fill="#9FE07A"/>
+            <rect x="0" y="46" width="115" height="14" rx="3" fill="#242A3A"/>
+          </g>
+          <text x="592" y="196" text-anchor="middle" class="svg-sub" fill="#5D6479" font-size="10">wiring &amp; automation</text>
+        </svg>
+      </div>
+
+      <h3 class="stitle">What the browser sees</h3>
+      <p>When HTML says <code style="color:var(--tag); background:var(--panel-2); padding:2px 6px; border-radius:5px;">&lt;h1&gt;</code>, it's telling the browser <i>"this is a heading"</i> — not how big, what color, or what font. Presentation is CSS's job; HTML only declares meaning.</p>
+
+      <div class="editor">
+        <div class="titlebar">
+          <div class="dots"><i></i><i></i><i></i></div>
+          <span class="fname">example.html</span>
+          <span class="lang">HTML</span>
+        </div>
+        <div class="lines" id="code-1"></div>
+      </div>
+
+      <div class="callout">
+        <span class="ic">i</span>
+        <p>HTML has no logic. There's no "if the user is logged in, show this" in HTML — that reasoning belongs to JavaScript. Keep this distinction sharp: it's the most common early confusion for new developers.</p>
+      </div>
+    </section>
+
+    <!-- 02 HyperText -->
+    <section class="block" id="hypertext">
+      <div class="kicker"><span class="ix">02</span> Foundations</div>
+      <h2 class="htitle">What is HyperText?</h2>
+      <p class="lead">HyperText is text that can contain <b style="color:#F0F1F7">links</b> to other resources or pages. It's "hyper" because it breaks the linear flow of a document — a reader can jump anywhere with a click.</p>
+
+      <div class="editor">
+        <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="fname">link.html</span><span class="lang">HTML</span></div>
+        <div class="lines" id="code-2"></div>
+      </div>
+      <p>Clicking the visible text <code style="color:var(--string); background:var(--panel-2); padding:2px 6px; border-radius:5px;">Visit Website</code> navigates the user to <code style="color:var(--string); background:var(--panel-2); padding:2px 6px; border-radius:5px;">https://example.com</code> — the link's destination is stored as an attribute, not shown directly.</p>
+    </section>
+
+    <!-- 03 Markup Language -->
+    <section class="block" id="markup">
+      <div class="kicker"><span class="ix">03</span> Foundations</div>
+      <h2 class="htitle">What is a Markup Language?</h2>
+      <p class="lead">A markup language uses <b style="color:#F0F1F7">tags</b> to describe content — wrapping raw text with labels that tell the browser what role that text plays.</p>
+
+      <div class="diagram">
+        <div class="dcap">TAG ANATOMY — HOW A MARKUP TAG WRAPS CONTENT</div>
+        <svg viewBox="0 0 620 130" xmlns="http://www.w3.org/2000/svg">
+          <text x="20" y="58" class="mono" font-size="22" fill="#FF9457" font-weight="600">&lt;p&gt;</text>
+          <text x="70" y="58" class="mono" font-size="22" fill="#E7E9F2">Hello Students</text>
+          <text x="255" y="58" class="mono" font-size="22" fill="#FF9457" font-weight="600">&lt;/p&gt;</text>
+
+          <line x1="30" y1="72" x2="30" y2="92" stroke="#5D6479" stroke-width="1"/>
+          <text x="30" y="108" text-anchor="middle" class="svg-sub" fill="#FF9457" font-size="11">Opening tag</text>
+
+          <line x1="160" y1="72" x2="160" y2="92" stroke="#5D6479" stroke-width="1"/>
+          <text x="160" y="108" text-anchor="middle" class="svg-sub" fill="#8C93A8" font-size="11">Content</text>
+
+          <line x1="290" y1="72" x2="290" y2="92" stroke="#5D6479" stroke-width="1"/>
+          <text x="290" y="108" text-anchor="middle" class="svg-sub" fill="#FF9457" font-size="11">Closing tag</text>
+        </svg>
+      </div>
+      <p>Opening tag + content + closing tag together form a single <b style="color:#F0F1F7">HTML element</b> — the next topic.</p>
+    </section>
+
+    <!-- 04 HTML Element -->
+    <section class="block" id="element">
+      <div class="kicker"><span class="ix">04</span> Anatomy</div>
+      <h2 class="htitle">HTML Element</h2>
+      <p class="lead">An element is the complete unit: <b style="color:#F0F1F7">opening tag + content + closing tag</b>. "Tag" and "element" are related but not identical — the tags are the markers, the element is the whole package.</p>
+      <div class="editor">
+        <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="fname">elements.html</span><span class="lang">HTML</span></div>
+        <div class="lines" id="code-3"></div>
+      </div>
+    </section>
+
+    <!-- 05 HTML Tags -->
+    <section class="block" id="tags">
+      <div class="kicker"><span class="ix">05</span> Anatomy</div>
+      <h2 class="htitle">HTML Tags</h2>
+      <p class="lead">Tags tell the browser what <b style="color:#F0F1F7">type</b> of content an element represents. Different tags exist for text, structure, links, media, lists, tables, and forms.</p>
+
+      <div class="editor">
+        <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="fname">tags.html</span><span class="lang">HTML</span></div>
+        <div class="lines" id="code-4"></div>
+      </div>
+
+      <h3 class="stitle">Tag categories you'll use constantly</h3>
+      <table class="ttable">
+        <tr><th>Category</th><th>Common tags</th></tr>
+        <tr><td>Text</td><td><span class="chip">h1</span><span class="chip">h2</span><span class="chip">p</span></td></tr>
+        <tr><td>Structure</td><td><span class="chip">div</span><span class="chip">section</span><span class="chip">header</span><span class="chip">footer</span></td></tr>
+        <tr><td>Links</td><td><span class="chip">a</span></td></tr>
+        <tr><td>Images</td><td><span class="chip">img</span></td></tr>
+        <tr><td>Lists</td><td><span class="chip">ul</span><span class="chip">ol</span><span class="chip">li</span></td></tr>
+        <tr><td>Tables</td><td><span class="chip">table</span><span class="chip">tr</span><span class="chip">th</span><span class="chip">td</span></td></tr>
+        <tr><td>Forms</td><td><span class="chip">form</span><span class="chip">input</span><span class="chip">textarea</span><span class="chip">select</span><span class="chip">button</span></td></tr>
+      </table>
+      <div class="callout">
+        <span class="ic">i</span>
+        <p>MDN's HTML reference groups elements the same way — by functionality (document structure, text, media, tables, forms, interactivity) rather than alphabetically. Thinking in categories, not memorized tag lists, is what makes markup choices fast later.</p>
+      </div>
+    </section>
+
+    <!-- 06 Attributes -->
+    <section class="block" id="attributes">
+      <div class="kicker"><span class="ix">06</span> Anatomy</div>
+      <h2 class="htitle">HTML Attributes</h2>
+      <p class="lead">Attributes add extra information or configuration to an element — they live inside the opening tag as <code style="color:var(--attr); background:var(--panel-2); padding:2px 6px; border-radius:5px;">name="value"</code> pairs.</p>
+
+      <div class="diagram">
+        <div class="dcap">ATTRIBUTE ANATOMY</div>
+        <svg viewBox="0 0 620 120" xmlns="http://www.w3.org/2000/svg">
+          <text x="20" y="55" class="mono" font-size="21" fill="#FF9457" font-weight="600">&lt;a</text>
+          <text x="55" y="55" class="mono" font-size="21" fill="#5FE0C7" font-weight="600">href</text>
+          <text x="118" y="55" class="mono" font-size="21" fill="#6B7285">=</text>
+          <text x="130" y="55" class="mono" font-size="21" fill="#9FE07A">"https://google.com"</text>
+          <text x="430" y="55" class="mono" font-size="21" fill="#FF9457" font-weight="600">&gt;</text>
+
+          <line x1="70" y1="66" x2="70" y2="84" stroke="#5D6479"/>
+          <text x="70" y="100" text-anchor="middle" class="svg-sub" fill="#5FE0C7" font-size="11">attribute</text>
+          <line x1="230" y1="66" x2="230" y2="84" stroke="#5D6479"/>
+          <text x="230" y="100" text-anchor="middle" class="svg-sub" fill="#9FE07A" font-size="11">value (in quotes)</text>
+        </svg>
+      </div>
+
+      <div class="editor">
+        <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="fname">attributes.html</span><span class="lang">HTML</span></div>
+        <div class="lines" id="code-5"></div>
+      </div>
+      <p><code style="color:var(--attr); background:var(--panel-2); padding:2px 6px; border-radius:5px;">src</code> and <code style="color:var(--attr); background:var(--panel-2); padding:2px 6px; border-radius:5px;">alt</code> are the attributes on <code style="color:var(--tag); background:var(--panel-2); padding:2px 6px; border-radius:5px;">&lt;img&gt;</code> above — general syntax is always <code style="color:var(--muted); background:var(--panel-2); padding:2px 6px; border-radius:5px;">&lt;tag attribute="value"&gt;</code>.</p>
+    </section>
+
+    <!-- 07 Document Structure -->
+    <section class="block" id="doc-structure">
+      <div class="kicker"><span class="ix">07</span> Structure</div>
+      <h2 class="htitle">HTML Document Structure</h2>
+      <p class="lead">Every professional page starts from the same skeleton. Getting this right by habit — before content is even written — is what separates trained developers from copy-paste beginners.</p>
+
+      <div class="editor">
+        <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="fname">index.html</span><span class="lang">HTML</span></div>
+        <div class="lines" id="code-6"></div>
+      </div>
+
+      <div class="diagram">
+        <div class="dcap">DOCUMENT TREE — HOW THE SKELETON BRANCHES</div>
+        <svg viewBox="0 0 700 300" xmlns="http://www.w3.org/2000/svg">
+          <!-- root -->
+          <rect x="300" y="10" width="100" height="34" rx="7" fill="#171B26" stroke="#FF9457"/>
+          <text x="350" y="32" text-anchor="middle" class="mono" font-size="13" fill="#FF9457" font-weight="600">&lt;html&gt;</text>
+
+          <line x1="350" y1="44" x2="350" y2="64" stroke="#242A3A"/>
+          <line x1="180" y1="64" x2="520" y2="64" stroke="#242A3A"/>
+          <line x1="180" y1="64" x2="180" y2="80" stroke="#242A3A"/>
+          <line x1="520" y1="64" x2="520" y2="80" stroke="#242A3A"/>
+
+          <!-- head -->
+          <rect x="120" y="80" width="120" height="34" rx="7" fill="#171B26" stroke="#7C8CFF"/>
+          <text x="180" y="102" text-anchor="middle" class="mono" font-size="13" fill="#7C8CFF" font-weight="600">&lt;head&gt;</text>
+
+          <!-- body -->
+          <rect x="460" y="80" width="120" height="34" rx="7" fill="#171B26" stroke="#9FE07A"/>
+          <text x="520" y="102" text-anchor="middle" class="mono" font-size="13" fill="#9FE07A" font-weight="600">&lt;body&gt;</text>
+
+          <!-- head children -->
+          <line x1="180" y1="114" x2="180" y2="134" stroke="#242A3A"/>
+          <line x1="70" y1="134" x2="290" y2="134" stroke="#242A3A"/>
+          <line x1="70" y1="134" x2="70" y2="150" stroke="#242A3A"/>
+          <line x1="180" y1="134" x2="180" y2="150" stroke="#242A3A"/>
+          <line x1="290" y1="134" x2="290" y2="150" stroke="#242A3A"/>
+
+          <rect x="10" y="150" width="120" height="30" rx="6" fill="#12151D" stroke="#3A3F52"/>
+          <text x="70" y="170" text-anchor="middle" class="mono" font-size="11" fill="#C9CCDA">&lt;meta charset&gt;</text>
+
+          <rect x="130" y="150" width="100" height="30" rx="6" fill="#12151D" stroke="#3A3F52"/>
+          <text x="180" y="170" text-anchor="middle" class="mono" font-size="10.5" fill="#C9CCDA">&lt;meta viewport&gt;</text>
+
+          <rect x="240" y="150" width="100" height="30" rx="6" fill="#12151D" stroke="#3A3F52"/>
+          <text x="290" y="170" text-anchor="middle" class="mono" font-size="11" fill="#C9CCDA">&lt;title&gt;</text>
+
+          <!-- body children -->
+          <line x1="520" y1="114" x2="520" y2="134" stroke="#242A3A"/>
+          <line x1="450" y1="134" x2="590" y2="134" stroke="#242A3A"/>
+          <line x1="450" y1="134" x2="450" y2="150" stroke="#242A3A"/>
+          <line x1="590" y1="134" x2="590" y2="150" stroke="#242A3A"/>
+
+          <rect x="390" y="150" width="120" height="30" rx="6" fill="#12151D" stroke="#3A3F52"/>
+          <text x="450" y="170" text-anchor="middle" class="mono" font-size="11" fill="#C9CCDA">&lt;h1&gt; heading</text>
+
+          <rect x="530" y="150" width="120" height="30" rx="6" fill="#12151D" stroke="#3A3F52"/>
+          <text x="590" y="170" text-anchor="middle" class="mono" font-size="11" fill="#C9CCDA">&lt;p&gt; paragraph</text>
+
+          <text x="180" y="205" text-anchor="middle" class="svg-sub" fill="#5D6479" font-size="10.5">metadata &amp; browser resources</text>
+          <text x="520" y="205" text-anchor="middle" class="svg-sub" fill="#5D6479" font-size="10.5">visible page content</text>
+        </svg>
+      </div>
+
+      <h3 class="stitle">What each piece does</h3>
+      <table class="ttable">
+        <tr><th>Line</th><th>Purpose</th></tr>
+        <tr><td><code>&lt;!DOCTYPE html&gt;</code></td><td>Tells the browser this document uses modern HTML.</td></tr>
+        <tr><td><code>&lt;html lang="en"&gt;</code></td><td>Root element of the document; <code>lang</code> sets the primary language.</td></tr>
+        <tr><td><code>&lt;head&gt;</code></td><td>Holds metadata and resources the browser uses — not visible content.</td></tr>
+        <tr><td><code>&lt;meta charset="UTF-8"&gt;</code></td><td>Specifies character encoding.</td></tr>
+        <tr><td><code>viewport meta</code></td><td>Required for correct responsive behavior on mobile devices.</td></tr>
+        <tr><td><code>&lt;title&gt;</code></td><td>Text shown in the browser tab.</td></tr>
+        <tr><td><code>&lt;body&gt;</code></td><td>Contains everything the visitor actually sees on the page.</td></tr>
+      </table>
+    </section>
+
+    <!-- 08 Editors -->
+    <section class="block" id="editors">
+      <div class="kicker"><span class="ix">08</span> Tooling</div>
+      <h2 class="htitle">HTML Editors</h2>
+      <p class="lead">Any text editor can write HTML — the difference is in workflow speed and error-catching.</p>
+      <table class="ttable">
+        <tr><th>Level</th><th>Editor</th></tr>
+        <tr><td>Beginner</td><td><span class="chip">Notepad</span><span class="chip">Notepad++</span></td></tr>
+        <tr><td>Industry-oriented</td><td><span class="chip">Visual Studio Code</span><span class="chip">WebStorm</span></td></tr>
+      </table>
+      <div class="callout"><span class="ic">✓</span><p><b style="color:#F0F1F7">Recommended for this course:</b> Visual Studio Code — free, fast, and the closest to what you'll use professionally.</p></div>
+    </section>
+
+    <!-- 09 Practical -->
+    <section class="block" id="practical">
+      <div class="kicker"><span class="ix">09</span> Practical</div>
+      <h2 class="htitle">Build Your First HTML Project</h2>
+      <p class="lead">Follow these five steps exactly once, by hand — muscle memory here pays off for the rest of the course.</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="line"></div>
+          <div class="num">1</div>
+          <div class="body">
+            <h4>Create a project folder</h4>
+            <p>Make a folder to hold this project's files.</p>
+            <span class="mini-code">html-training</span>
+          </div>
+        </div>
+        <div class="step">
+          <div class="line"></div>
+          <div class="num">2</div>
+          <div class="body">
+            <h4>Open the folder in VS Code</h4>
+            <p>Use File → Open Folder, and select the folder you just created.</p>
+            <span class="mini-code">File → Open Folder → html-training</span>
+          </div>
+        </div>
+        <div class="step">
+          <div class="line"></div>
+          <div class="num">3</div>
+          <div class="body">
+            <h4>Create your file</h4>
+            <p>Add a new file inside the folder, named exactly:</p>
+            <span class="mini-code">index.html</span>
+          </div>
+        </div>
+        <div class="step">
+          <div class="line"></div>
+          <div class="num">4</div>
+          <div class="body">
+            <h4>Write the starter code</h4>
+            <p>Type out the Student Profile markup shown below — typing it (not pasting it) builds tag-recall much faster.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="num">5</div>
+          <div class="body">
+            <h4>Run it</h4>
+            <p>Save the file, then double-click <code style="color:var(--attr)">index.html</code> — it opens directly in your browser. No server, no build step.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="editor">
+        <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="fname">index.html</span><span class="lang">HTML</span></div>
+        <div class="lines" id="code-7"></div>
+      </div>
+
+      <div class="preview-wrap">
+        <div class="pv-bar"><span>●</span><span class="url">index.html — rendered in browser</span></div>
+        <iframe id="preview-7" title="Student profile preview"></iframe>
+      </div>
+    </section>
+
+    <!-- 10 Headings -->
+    <section class="block" id="headings">
+      <div class="kicker"><span class="ix">10</span> Content</div>
+      <h2 class="htitle">Headings</h2>
+      <p class="lead">HTML gives you six heading levels — <code style="color:var(--tag)">h1</code> through <code style="color:var(--tag)">h6</code>. Choose them by <b style="color:#F0F1F7">document hierarchy</b>, never by how big or small you want text to look — that's CSS's job.</p>
+
+      <div class="hstack">
+        <div class="hrow"><div class="hbar" style="font-size:22px; padding:12px 18px;"><span class="htag">h1</span> Online Shopping</div><span class="hlabel">Page title — one per page</span></div>
+        <div class="hrow" style="padding-left:22px;"><div class="hbar" style="font-size:18px; padding:10px 16px;"><span class="htag">h2</span> Electronics</div><span class="hlabel">Major section</span></div>
+        <div class="hrow" style="padding-left:44px;"><div class="hbar" style="font-size:15px; padding:8px 14px;"><span class="htag">h3</span> Mobile Phones</div><span class="hlabel">Subsection</span></div>
+        <div class="hrow" style="padding-left:44px;"><div class="hbar" style="font-size:15px; padding:8px 14px;"><span class="htag">h3</span> Laptops</div><span class="hlabel">Subsection</span></div>
+        <div class="hrow" style="padding-left:22px;"><div class="hbar" style="font-size:18px; padding:10px 16px;"><span class="htag">h2</span> Clothing</div><span class="hlabel">Major section</span></div>
+        <div class="hrow" style="padding-left:44px;"><div class="hbar" style="font-size:15px; padding:8px 14px;"><span class="htag">h3</span> Men's Clothing</div><span class="hlabel">Subsection</span></div>
+      </div>
+      <p>The nesting above gives the document a logical outline — the same one screen readers and search engines rely on.</p>
+    </section>
+
+    <!-- 11 Paragraphs / breaks / comments -->
+    <section class="block" id="text-basics">
+      <div class="kicker"><span class="ix">11</span> Content</div>
+      <h2 class="htitle">Paragraphs, Line Breaks &amp; Comments</h2>
+
+      <h3 class="stitle">Paragraph</h3>
+      <div class="editor">
+        <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="fname">paragraph.html</span><span class="lang">HTML</span></div>
+        <div class="lines" id="code-8"></div>
+      </div>
+
+      <h3 class="stitle">Line break</h3>
+      <div class="editor">
+        <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="fname">linebreak.html</span><span class="lang">HTML</span></div>
+        <div class="lines" id="code-9"></div>
+      </div>
+      <div class="callout"><span class="ic">i</span><p><code style="color:var(--tag)">&lt;br&gt;</code> is a <b style="color:#F0F1F7">void element</b> — it never has a closing tag. It represents a single action (break the line), not a container of content.</p></div>
+
+      <h3 class="stitle">Comments</h3>
+      <div class="editor">
+        <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="fname">comments.html</span><span class="lang">HTML</span></div>
+        <div class="lines" id="code-10"></div>
+      </div>
+      <p>Comments are ignored entirely by the browser — they exist only to explain code to other developers (including future you).</p>
+    </section>
+
+    <!-- 12 Capstone -->
+    <section class="block" id="capstone">
+      <div class="kicker"><span class="ix">12</span> Capstone</div>
+      <h2 class="htitle">Hour 1 — Complete Practical Project</h2>
+      <p class="lead">Everything from this hour combined into one page: document structure, headings, paragraphs. Build this one fully — it's your Hour 1 deliverable.</p>
+
+      <div class="editor">
+        <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="fname">student-introduction.html</span><span class="lang">HTML</span></div>
+        <div class="lines" id="code-11"></div>
+      </div>
+
+      <div class="preview-wrap">
+        <div class="pv-bar"><span>●</span><span class="url">student-introduction.html — rendered in browser</span></div>
+        <iframe id="preview-11" title="Student introduction preview"></iframe>
+      </div>
+    </section>
+
+    <!-- 13 Outcomes -->
+    <section class="block" id="outcomes" style="border-bottom:none;">
+      <div class="kicker"><span class="ix">13</span> Wrap-up</div>
+      <h2 class="htitle">Learning Outcomes</h2>
+      <p class="lead">By the end of Hour 1, students should be able to explain and use each of the following without notes:</p>
+      <div class="checklist">
+        <div class="item"><span class="chk">✓</span>What HTML is</div>
+        <div class="item"><span class="chk">✓</span>Tags</div>
+        <div class="item"><span class="chk">✓</span>Elements</div>
+        <div class="item"><span class="chk">✓</span>Attributes</div>
+        <div class="item"><span class="chk">✓</span>DOCTYPE</div>
+        <div class="item"><span class="chk">✓</span>&lt;html&gt;</div>
+        <div class="item"><span class="chk">✓</span>&lt;head&gt;</div>
+        <div class="item"><span class="chk">✓</span>&lt;body&gt;</div>
+        <div class="item"><span class="chk">✓</span>&lt;title&gt;</div>
+        <div class="item"><span class="chk">✓</span>Headings (h1–h6)</div>
+        <div class="item"><span class="chk">✓</span>Paragraphs</div>
+        <div class="item"><span class="chk">✓</span>Comments</div>
+      </div>
+
+      <div class="end-card">
+        <h3>Hour 1 complete.</h3>
+        <p>Next hour builds directly on this skeleton — lists, links, images, and tables. Keep <code style="color:var(--tag)">index.html</code> from today; you'll extend it.</p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<footer class="page-footer">Web Fundamentals Track — Hour 1 · HTML Fundamentals &amp; Basic Webpage</footer>
+
+<script>
+// ---------- Syntax highlighter for HTML code panels ----------
+function esc(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function highlightHTML(raw){
+  let s = esc(raw);
+  // comments
+  s = s.replace(/(&lt;!--[\s\S]*?--&gt;)/g, '<span class="tok-com">$1</span>');
+  // doctype
+  s = s.replace(/(&lt;!DOCTYPE[^&]*?&gt;)/gi, '<span class="tok-doctype">$1</span>');
+  // tags (with attributes), skip ones already wrapped
+  s = s.replace(/(&lt;\/?)([a-zA-Z][a-zA-Z0-9]*)([^&]*?)(\/?&gt;)/g, function(m, open, name, attrs, close){
+    if(m.indexOf('tok-com')>-1 || m.indexOf('tok-doctype')>-1) return m;
+    let attrsHi = attrs.replace(/([a-zA-Z-]+)(=)(&quot;.*?&quot;)/g,
+      '<span class="tok-attr">$1</span><span class="tok-punc">$2</span><span class="tok-str">$3</span>');
+    return '<span class="tok-punc">'+open+'</span><span class="tok-tag">'+name+'</span>'+attrsHi+'<span class="tok-punc">'+close+'</span>';
+  });
+  return s;
+}
+function renderCode(id, code, opts){
+  opts = opts || {};
+  const container = document.getElementById(id);
+  if(!container) return;
+  const lines = code.replace(/^\n/,'').replace(/\n$/,'').split('\n');
+  let html = '';
+  lines.forEach((line, i) => {
+    const hi = highlightHTML(line) || '&nbsp;';
+    html += '<div class="lno">'+(i+1)+'</div><div class="lcode">'+hi+'</div>';
+  });
+  container.innerHTML = html;
+}
+
+const SNIPPETS = {
+  'code-1': `<h1>Welcome to My Website</h1>
+<p>This is my first webpage.</p>`,
+
+  'code-2': `<a href="https://example.com">Visit Website</a>`,
+
+  'code-3': `<h1>Welcome</h1>
+
+<p>HTML is easy to learn.</p>`,
+
+  'code-4': `<h1>Heading</h1>
+<p>Paragraph</p>
+<div>Container</div>
+<a href="#">Link</a>
+<button>Click Me</button>`,
+
+  'code-5': `<a href="https://google.com">Google</a>
+
+<img src="profile.jpg" alt="Student Profile">
+
+<input type="text" placeholder="Enter your name">`,
+
+  'code-6': `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My First Website</title>
+</head>
+<body>
+  <h1>Welcome to My Website</h1>
+  <p>This is my first HTML webpage.</p>
+</body>
+</html>`,
+
+  'code-7': `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Profile</title>
+</head>
+<body>
+  <h1>Student Profile</h1>
+  <h2>Personal Information</h2>
+  <p>Name: Rahul Sharma</p>
+  <p>Course: BCA</p>
+  <p>Specialization: Full Stack Development</p>
+</body>
+</html>`,
+
+  'code-8': `<p>
+  HTML is used to structure content
+  on web pages.
+</p>`,
+
+  'code-9': `<p>
+  Hello Students<br>
+  Welcome to HTML Training
+</p>`,
+
+  'code-10': `<!-- Student Information -->
+
+<h2>Student Information</h2>`,
+
+  'code-11': `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Introduction</title>
+</head>
+<body>
+  <h1>Student Introduction</h1>
+
+  <h2>About Me</h2>
+  <p>
+    Hello! My name is Rahul Sharma.
+    I am a BCA student learning Full Stack Development.
+  </p>
+
+  <h2>My Education</h2>
+  <p>
+    Bachelor of Computer Applications
+  </p>
+
+  <h2>My Goal</h2>
+  <p>
+    My goal is to become a professional
+    Full Stack Developer.
+  </p>
+</body>
+</html>`
+};
+
+Object.keys(SNIPPETS).forEach(id => renderCode(id, SNIPPETS[id]));
+
+// live previews
+function fillPreview(id, code){
+  const el = document.getElementById(id);
+  if(el) el.srcdoc = code;
+}
+fillPreview('preview-7', SNIPPETS['code-7']);
+fillPreview('preview-11', SNIPPETS['code-11']);
+
+// ---------- Scrollspy ----------
+const links = Array.from(document.querySelectorAll('nav.sidebar a'));
+const targets = links.map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+function onScroll(){
+  let idx = 0;
+  const y = window.scrollY + 110;
+  targets.forEach((t, i) => { if(t.offsetTop <= y) idx = i; });
+  links.forEach(l => l.classList.remove('active'));
+  if(links[idx]) links[idx].classList.add('active');
+}
+window.addEventListener('scroll', onScroll, {passive:true});
+onScroll();
+
+// ---------- Mobile menu ----------
+const menuBtn = document.getElementById('menuBtn');
+const sidebar = document.getElementById('sidebar');
+if(menuBtn){
+  menuBtn.addEventListener('click', () => sidebar.classList.toggle('open'));
+  links.forEach(l => l.addEventListener('click', () => sidebar.classList.remove('open')));
+}
+</script>
+</body>
+</html>

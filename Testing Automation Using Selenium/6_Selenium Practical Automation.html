@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Automation Testing — Hour 6 | Practical Selenium Automation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0E14;
+    --panel:#131720;
+    --panel-alt:#171C27;
+    --border:#232938;
+    --border-soft:#1B2130;
+    --text:#E7EAF0;
+    --text-dim:#8B93A7;
+    --text-faint:#5B6478;
+    --pass:#35D0A0;
+    --pass-dim:#1D5B49;
+    --fail:#FF6B7A;
+    --fail-dim:#5C2530;
+    --info:#6C8CFF;
+    --info-dim:#26305C;
+    --warn:#FFB454;
+    --warn-dim:#5C4520;
+    --radius-s:6px;
+    --radius-m:10px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:'Inter',sans-serif; font-size:16px; line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{font-family:'Space Grotesk',sans-serif; font-weight:600; color:#F4F6FA; line-height:1.25; margin:0;}
+  code, .mono{font-family:'JetBrains Mono',monospace;}
+  a{color:inherit;}
+  ::selection{background:var(--info-dim); color:#fff;}
+
+  .shell{display:grid; grid-template-columns:250px minmax(0,1fr); max-width:1280px; margin:0 auto;}
+  .sidebar{
+    position:sticky; top:0; height:100vh; padding:32px 20px 32px 32px;
+    border-right:1px solid var(--border-soft); display:flex; flex-direction:column; gap:28px;
+  }
+  .brand{display:flex; flex-direction:column; gap:4px;}
+  .brand .tag{font-size:12px; color:var(--info); font-weight:600; letter-spacing:.02em;}
+  .brand h1{font-size:19px;}
+  .brand .sub{font-size:13px;color:var(--text-dim);}
+
+  .navlist{list-style:none; margin:0;padding:0; display:flex; flex-direction:column; gap:2px; font-size:14px;}
+  .navlist a{
+    display:flex; gap:10px; align-items:baseline; text-decoration:none;
+    color:var(--text-dim); padding:7px 10px; border-radius:var(--radius-s);
+    border-left:2px solid transparent; transition:color .15s ease, background .15s ease, border-color .15s ease;
+  }
+  .navlist a .n{font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-faint); min-width:26px;}
+  .navlist a:hover{color:var(--text); background:var(--panel);}
+  .navlist a.active{color:#fff; background:var(--panel); border-left-color:var(--info);}
+  .navlist a.active .n{color:var(--info);}
+
+  .sidebar-foot{margin-top:auto; font-size:12px; color:var(--text-faint); border-top:1px solid var(--border-soft); padding-top:16px;}
+
+  main{padding:56px 48px 120px 48px; min-width:0;}
+  .hero{padding-bottom:44px; margin-bottom:44px; border-bottom:1px solid var(--border-soft);}
+  .hero .kicker{color:var(--info); font-weight:600; font-size:13px; margin-bottom:14px; display:block;}
+  .hero h1{font-size:40px; letter-spacing:-0.01em; max-width:640px;}
+  .hero p.lead{margin-top:16px; max-width:600px; color:var(--text-dim); font-size:16px;}
+  .hero-stats{display:flex; gap:32px; margin-top:32px; flex-wrap:wrap;}
+  .hero-stats div{display:flex; flex-direction:column; gap:2px;}
+  .hero-stats .num{font-family:'Space Grotesk',sans-serif; font-size:24px; font-weight:700; color:#fff;}
+  .hero-stats .lbl{font-size:12.5px; color:var(--text-faint);}
+
+  section{margin-bottom:72px; scroll-margin-top:24px;}
+  section .sec-head{display:flex; align-items:baseline; gap:14px; margin-bottom:18px;}
+  section .sec-head .idx{font-family:'JetBrains Mono',monospace; color:var(--info); font-size:15px; font-weight:600;}
+  section .sec-head h2{font-size:25px;}
+  section > p{color:var(--text-dim); max-width:680px;}
+  section > p + p{margin-top:14px;}
+
+  h3.sub-head{font-size:16px; color:#fff; margin-top:32px; margin-bottom:6px;}
+  p.sub-lead{color:var(--text-dim); font-size:14.5px; margin-top:6px; max-width:640px;}
+
+  .callout{background:var(--panel); border:1px solid var(--border-soft); border-radius:var(--radius-m); padding:22px 24px; margin-top:20px;}
+  .callout h4{font-size:15px; margin-bottom:12px; color:#fff;}
+  .callout p{color:var(--text-dim); font-size:14.5px;}
+  .callout.info{border-color:var(--info-dim); background:linear-gradient(180deg, rgba(108,140,255,0.06), transparent);}
+  .callout.info h4{color:var(--info);}
+  .callout.warn{border-color:var(--warn-dim); background:linear-gradient(180deg, rgba(255,180,84,0.06), transparent);}
+  .callout.warn h4{color:var(--warn);}
+
+  /* ---------- locator grid ---------- */
+  .locator-grid{margin-top:22px; display:grid; grid-template-columns:repeat(4,1fr); gap:10px;}
+  .locator-chip{
+    background:var(--panel); border:1px solid var(--border-soft); border-radius:var(--radius-s);
+    padding:12px 14px; text-align:center; font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--info);
+  }
+
+  /* ---------- Code window ---------- */
+  .code-window{margin-top:22px; background:#0E1219; border:1px solid var(--border-soft); border-radius:var(--radius-m); overflow:hidden;}
+  .code-window .cw-head{
+    display:flex; align-items:center; gap:8px; padding:10px 14px; background:var(--panel-alt);
+    border-bottom:1px solid var(--border-soft); font-size:12.5px; color:var(--text-faint);
+  }
+  .code-window .cw-head .dot{width:8px;height:8px;border-radius:50%;}
+  .code-window .cw-head .fname{margin-left:6px; font-family:'JetBrains Mono',monospace;}
+  .code-window pre{margin:0; padding:20px 22px; font-family:'JetBrains Mono',monospace; font-size:13px; line-height:1.8; overflow-x:auto;}
+  .code-window .c-kw{color:#8AB4FF;}
+  .code-window .c-fn{color:#7EE0C8;}
+  .code-window .c-str{color:#FFC98B;}
+  .code-window .c-cm{color:var(--text-faint); font-style:italic;}
+  .code-window .c-cls{color:#FFD479;}
+  .code-window .c-ann{color:#D19FFF;}
+
+  /* ---------- assertion pair ---------- */
+  .split-2{margin-top:22px; display:grid; grid-template-columns:1fr 1fr; gap:20px;}
+  .split-2 .code-window{margin-top:0;}
+  .mini-label{font-size:12.5px; color:var(--text-faint); margin-bottom:8px; font-weight:600;}
+
+  /* ---------- avoid / prefer contrast ---------- */
+  .contrast{margin-top:26px; display:grid; grid-template-columns:1fr 1fr; gap:20px;}
+  .contrast-card{border-radius:var(--radius-m); overflow:hidden; border:1px solid var(--border-soft);}
+  .contrast-card.avoid{border-color:var(--fail-dim);}
+  .contrast-card.prefer{border-color:var(--pass-dim);}
+  .contrast-head{
+    display:flex; align-items:center; gap:8px; padding:13px 20px; font-family:'Space Grotesk',sans-serif;
+    font-size:14px; font-weight:600;
+  }
+  .contrast-card.avoid .contrast-head{background:rgba(255,107,122,0.08); color:var(--fail);}
+  .contrast-card.prefer .contrast-head{background:rgba(53,208,160,0.08); color:var(--pass);}
+  .contrast-card .code-window{margin-top:0; border:none; border-radius:0;}
+  .contrast-reasons{list-style:none; margin:0; padding:14px 20px 18px; display:flex; flex-direction:column; gap:8px; background:var(--panel);}
+  .contrast-reasons li{font-size:13px; color:var(--text-dim); display:flex; gap:8px; align-items:flex-start;}
+  .contrast-reasons li::before{content:"✕"; color:var(--fail); flex-shrink:0; font-size:11px; margin-top:3px;}
+
+  footer{padding:36px 48px 60px; color:var(--text-faint); font-size:12.5px; border-top:1px solid var(--border-soft);}
+
+  @media (max-width: 880px){
+    .shell{grid-template-columns:1fr;}
+    .sidebar{position:relative; height:auto; border-right:none; border-bottom:1px solid var(--border-soft); padding:24px;}
+    .navlist{flex-direction:row; overflow-x:auto; gap:4px;}
+    .navlist a{white-space:nowrap;}
+    main{padding:36px 22px 90px;}
+    .hero h1{font-size:30px;}
+    .locator-grid{grid-template-columns:repeat(2,1fr);}
+    .split-2, .contrast{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="tag">QA / SDET TRACK · HOUR 6</span>
+      <h1>Practical Selenium</h1>
+      <span class="sub">Hands-on automation module</span>
+    </div>
+
+    <ul class="navlist" id="navlist">
+      <li><a href="#s61"><span class="n">6.1</span> Locators</a></li>
+      <li><a href="#s62"><span class="n">6.2</span> Basic Form Automation</a></li>
+      <li><a href="#s63"><span class="n">6.3</span> Assertions</a></li>
+      <li><a href="#s64"><span class="n">6.4</span> Explicit Waits</a></li>
+      <li><a href="#s65"><span class="n">6.5</span> Complete Test</a></li>
+    </ul>
+
+    <div class="sidebar-foot">
+      Trainer companion page · designed for classroom walkthrough
+    </div>
+  </aside>
+
+  <main>
+
+    <div class="hero">
+      <span class="kicker">Module 6 · Hands-on</span>
+      <h1>Practical Selenium Automation</h1>
+      <p class="lead">Everything so far has been building toward this: automating a real, running website. From here on, students should point every exercise at a public demo application — never a production site.</p>
+      <div class="hero-stats">
+        <div><span class="num">8</span><span class="lbl">Locator strategies</span></div>
+        <div><span class="num">2</span><span class="lbl">Assertion patterns</span></div>
+        <div><span class="num">1</span><span class="lbl">Rule: never Thread.sleep()</span></div>
+      </div>
+    </div>
+
+    <div class="callout info">
+      <h4>Before students touch a keyboard</h4>
+      <p>For training, automate a public demo application rather than a production website. Production sites can change layout without notice, may prohibit automated traffic in their terms of service, and give students no stable, known set of credentials or selectors to work against.</p>
+    </div>
+
+    <!-- 6.1 -->
+    <section id="s61">
+      <div class="sec-head"><span class="idx">6.1</span><h2>Locators</h2></div>
+      <p>A locator is how WebDriver finds an element on the page. Selenium supports eight strategies:</p>
+
+      <div class="locator-grid">
+        <div class="locator-chip">id</div>
+        <div class="locator-chip">name</div>
+        <div class="locator-chip">className</div>
+        <div class="locator-chip">tagName</div>
+        <div class="locator-chip">linkText</div>
+        <div class="locator-chip">partialLinkText</div>
+        <div class="locator-chip">cssSelector</div>
+        <div class="locator-chip">xpath</div>
+      </div>
+
+      <div class="code-window">
+        <div class="cw-head">
+          <span class="dot" style="background:#FF6B6B;"></span>
+          <span class="dot" style="background:#FFC85B;"></span>
+          <span class="dot" style="background:#3DD68C;"></span>
+          <span class="fname">Locator.java</span>
+        </div>
+        <pre>driver.<span class="c-fn">findElement</span>(<span class="c-fn">By</span>.<span class="c-fn">id</span>(<span class="c-str">"username"</span>));</pre>
+      </div>
+    </section>
+
+    <!-- 6.2 -->
+    <section id="s62">
+      <div class="sec-head"><span class="idx">6.2</span><h2>Basic Form Automation</h2></div>
+      <p>The same locate → interact pattern repeats for every field on a form.</p>
+
+      <div class="code-window">
+        <div class="cw-head">
+          <span class="dot" style="background:#FF6B6B;"></span>
+          <span class="dot" style="background:#FFC85B;"></span>
+          <span class="dot" style="background:#3DD68C;"></span>
+          <span class="fname">FormAutomation.java</span>
+        </div>
+        <pre>driver.<span class="c-fn">findElement</span>(<span class="c-fn">By</span>.<span class="c-fn">id</span>(<span class="c-str">"username"</span>))
+      .<span class="c-fn">sendKeys</span>(<span class="c-str">"student"</span>);
+
+driver.<span class="c-fn">findElement</span>(<span class="c-fn">By</span>.<span class="c-fn">id</span>(<span class="c-str">"password"</span>))
+      .<span class="c-fn">sendKeys</span>(<span class="c-str">"Password123"</span>);
+
+driver.<span class="c-fn">findElement</span>(<span class="c-fn">By</span>.<span class="c-fn">id</span>(<span class="c-str">"login"</span>))
+      .<span class="c-fn">click</span>();</pre>
+      </div>
+    </section>
+
+    <!-- 6.3 -->
+    <section id="s63">
+      <div class="sec-head"><span class="idx">6.3</span><h2>Assertions</h2></div>
+      <p>An action without an assertion isn't a test — it's just automation of clicks. Assertions are what turn a script into a verifiable check.</p>
+
+      <div class="split-2">
+        <div>
+          <div class="mini-label">Title assertion</div>
+          <div class="code-window">
+            <div class="cw-head">
+              <span class="dot" style="background:#FF6B6B;"></span>
+              <span class="dot" style="background:#FFC85B;"></span>
+              <span class="dot" style="background:#3DD68C;"></span>
+              <span class="fname">TitleAssert.java</span>
+            </div>
+            <pre><span class="c-cls">String</span> title = driver.<span class="c-fn">getTitle</span>();
+
+<span class="c-fn">Assert</span>.<span class="c-fn">assertTrue</span>(
+    title.<span class="c-fn">contains</span>(<span class="c-str">"Dashboard"</span>),
+    <span class="c-str">"Dashboard was not displayed"</span>
+);</pre>
+          </div>
+        </div>
+        <div>
+          <div class="mini-label">Text assertion</div>
+          <div class="code-window">
+            <div class="cw-head">
+              <span class="dot" style="background:#FF6B6B;"></span>
+              <span class="dot" style="background:#FFC85B;"></span>
+              <span class="dot" style="background:#3DD68C;"></span>
+              <span class="fname">TextAssert.java</span>
+            </div>
+            <pre><span class="c-cls">String</span> actualMessage =
+        driver.<span class="c-fn">findElement</span>(<span class="c-fn">By</span>.<span class="c-fn">id</span>(<span class="c-str">"message"</span>))
+              .<span class="c-fn">getText</span>();
+
+<span class="c-fn">Assert</span>.<span class="c-fn">assertEquals</span>(
+        actualMessage,
+        <span class="c-str">"Login successful"</span>
+);</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6.4 -->
+    <section id="s64">
+      <div class="sec-head"><span class="idx">6.4</span><h2>Explicit Waits</h2></div>
+      <p>This is an important professional concept — the line between a script that merely "works on my machine" and one that survives real-world timing variance.</p>
+
+      <div class="contrast">
+        <div class="contrast-card avoid">
+          <div class="contrast-head">✕ Avoid</div>
+          <div class="code-window">
+            <div class="cw-head">
+              <span class="dot" style="background:#FF6B6B;"></span>
+              <span class="dot" style="background:#FFC85B;"></span>
+              <span class="dot" style="background:#3DD68C;"></span>
+              <span class="fname">Avoid.java</span>
+            </div>
+            <pre><span class="c-fn">Thread</span>.<span class="c-fn">sleep</span>(<span class="c-num" style="color:#D19FFF;">5000</span>);</pre>
+          </div>
+          <ul class="contrast-reasons">
+            <li>Wastes time — waits the full duration even if the page was ready instantly</li>
+            <li>Creates flaky tests — too short on a slow day, too long on a fast one</li>
+            <li>Doesn't adapt to application state — it's a guess, not a check</li>
+          </ul>
+        </div>
+        <div class="contrast-card prefer">
+          <div class="contrast-head">✓ Prefer</div>
+          <div class="code-window">
+            <div class="cw-head">
+              <span class="dot" style="background:#FF6B6B;"></span>
+              <span class="dot" style="background:#FFC85B;"></span>
+              <span class="dot" style="background:#3DD68C;"></span>
+              <span class="fname">Prefer.java</span>
+            </div>
+            <pre><span class="c-cls">WebDriverWait</span> wait =
+        <span class="c-kw">new</span> <span class="c-fn">WebDriverWait</span>(driver, <span class="c-cls">Duration</span>.<span class="c-fn">ofSeconds</span>(<span class="c-num" style="color:#D19FFF;">10</span>));
+
+<span class="c-cls">WebElement</span> loginButton =
+        wait.<span class="c-fn">until</span>(
+            <span class="c-fn">ExpectedConditions</span>.<span class="c-fn">elementToBeClickable</span>(
+                <span class="c-fn">By</span>.<span class="c-fn">id</span>(<span class="c-str">"login"</span>)
+            )
+        );
+
+loginButton.<span class="c-fn">click</span>();</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6.5 -->
+    <section id="s65">
+      <div class="sec-head"><span class="idx">6.5</span><h2>Complete Selenium Test</h2></div>
+      <p>Everything from this hour, combined into one runnable test: a maximized browser, an explicit wait, a real assertion, and a guaranteed <code>quit()</code> — even if the assertion fails.</p>
+
+      <div class="code-window">
+        <div class="cw-head">
+          <span class="dot" style="background:#FF6B6B;"></span>
+          <span class="dot" style="background:#FFC85B;"></span>
+          <span class="dot" style="background:#3DD68C;"></span>
+          <span class="fname">LoginAutomationTest.java</span>
+        </div>
+        <pre><span class="c-kw">import</span> org.openqa.selenium.By;
+<span class="c-kw">import</span> org.openqa.selenium.WebDriver;
+<span class="c-kw">import</span> org.openqa.selenium.chrome.ChromeDriver;
+<span class="c-kw">import</span> org.openqa.selenium.support.ui.ExpectedConditions;
+<span class="c-kw">import</span> org.openqa.selenium.support.ui.WebDriverWait;
+<span class="c-kw">import</span> org.testng.Assert;
+<span class="c-kw">import</span> org.testng.annotations.Test;
+
+<span class="c-kw">import</span> java.time.Duration;
+
+<span class="c-kw">public class</span> <span class="c-cls">LoginAutomationTest</span> {
+
+    <span class="c-ann">@Test</span>
+    <span class="c-kw">public void</span> <span class="c-fn">loginTest</span>() {
+
+        <span class="c-cls">WebDriver</span> driver = <span class="c-kw">new</span> <span class="c-fn">ChromeDriver</span>();
+
+        <span class="c-kw">try</span> {
+
+            driver.<span class="c-fn">manage</span>().<span class="c-fn">window</span>().<span class="c-fn">maximize</span>();
+
+            driver.<span class="c-fn">get</span>(<span class="c-str">"https://example.com"</span>);
+
+            <span class="c-cls">WebDriverWait</span> wait =
+                    <span class="c-kw">new</span> <span class="c-fn">WebDriverWait</span>(
+                            driver,
+                            <span class="c-cls">Duration</span>.<span class="c-fn">ofSeconds</span>(<span class="c-num" style="color:#D19FFF;">10</span>)
+                    );
+
+            <span class="c-cls">WebElement</span> element =
+                    wait.<span class="c-fn">until</span>(
+                            <span class="c-fn">ExpectedConditions</span>.<span class="c-fn">visibilityOfElementLocated</span>(
+                                    <span class="c-fn">By</span>.<span class="c-fn">tagName</span>(<span class="c-str">"h1"</span>)
+                            )
+                    );
+
+            <span class="c-cls">String</span> heading = element.<span class="c-fn">getText</span>();
+
+            <span class="c-fn">Assert</span>.<span class="c-fn">assertFalse</span>(
+                    heading.<span class="c-fn">isEmpty</span>(),
+                    <span class="c-str">"Heading was not displayed"</span>
+            );
+
+        } <span class="c-kw">finally</span> {
+
+            driver.<span class="c-fn">quit</span>();
+        }
+    }
+}</pre>
+      </div>
+
+      <div class="callout warn">
+        <h4>Trainer note</h4>
+        <p><code>example.com</code> is used here only to demonstrate the mechanics — the wait, the assertion, the guaranteed cleanup. For actual login automation, substitute a dedicated QA/demo application with known, stable selectors and credentials.</p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer>
+  Automation Testing · Hour 6 companion page — built for classroom delivery and self-paced review.
+</footer>
+
+<script>
+  const links = Array.from(document.querySelectorAll('#navlist a'));
+  const sections = links.map(a => document.querySelector(a.getAttribute('href')));
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const id = '#' + entry.target.id;
+      const link = links.find(a => a.getAttribute('href') === id);
+      if (!link) return;
+      if (entry.isIntersecting) {
+        links.forEach(a => a.classList.remove('active'));
+        link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(s => s && io.observe(s));
+</script>
+
+</body>
+</html>

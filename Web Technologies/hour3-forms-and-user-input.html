@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hour 3 — HTML Forms and User Input</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0D0F14;
+    --panel: #12151D;
+    --panel-2: #171B26;
+    --border: #242A3A;
+    --text: #E7E9F2;
+    --muted: #8C93A8;
+    --muted-2: #5D6479;
+    --tag: #FF9457;
+    --tag-dim: #7A4E2E;
+    --attr: #5FE0C7;
+    --string: #9FE07A;
+    --punc: #6B7285;
+    --accent: #7C8CFF;
+    --accent-soft: rgba(124,140,255,0.12);
+    --amber-soft: rgba(255,148,87,0.10);
+    --radius: 10px;
+    --maxw: 1180px;
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg: #0D0F14; --panel:#12151D; --panel-2:#171B26; --text:#E7E9F2; --muted:#8C93A8;
+    }
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth; scroll-padding-top: calc(84px + env(safe-area-inset-top,0px));}
+  body{
+    background:
+      radial-gradient(1100px 600px at 85% -10%, rgba(124,140,255,0.10), transparent 60%),
+      radial-gradient(900px 500px at -10% 10%, rgba(255,148,87,0.08), transparent 55%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Inter', system-ui, sans-serif;
+    line-height:1.65;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{font-family:'Sora', system-ui, sans-serif; letter-spacing:-0.01em; color:#F5F6FA;}
+  a{color:inherit;}
+  code, pre, .mono{font-family:'IBM Plex Mono', 'Courier New', monospace;}
+  ::selection{background:var(--accent-soft); color:#fff;}
+
+  .topbar{
+    position:sticky; top:0; z-index:40;
+    padding-top:env(safe-area-inset-top,0px);
+    background:rgba(13,15,20,0.85);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border);
+  }
+  .topbar-inner{
+    max-width:var(--maxw); margin:0 auto; padding:14px 28px;
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+  }
+  .brand{display:flex; align-items:center; gap:10px; font-family:'Sora'; font-weight:700; font-size:15px;}
+  .brand .mark{
+    width:26px; height:26px; border-radius:7px;
+    background:linear-gradient(135deg, var(--tag), #FFB98A);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'IBM Plex Mono'; font-weight:600; font-size:12px; color:#20140B;
+  }
+  .brand small{display:block; color:var(--muted); font-weight:500; font-size:11px; margin-top:1px; font-family:'Inter';}
+  .progress-pill{
+    font-family:'IBM Plex Mono'; font-size:11px; color:var(--muted);
+    border:1px solid var(--border); padding:6px 12px; border-radius:999px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .progress-pill .dot{width:6px; height:6px; border-radius:50%; background:var(--tag);}
+  .menu-btn{display:none; background:none; border:1px solid var(--border); color:var(--text); border-radius:8px; padding:8px 10px; font-size:18px; line-height:1;}
+
+  .shell{max-width:var(--maxw); margin:0 auto; padding:0 28px; display:grid; grid-template-columns:230px 1fr; gap:44px;}
+  nav.sidebar{
+    position:sticky; top:64px; align-self:start;
+    max-height:calc(100vh - 90px); overflow-y:auto;
+    padding:28px 0 40px;
+  }
+  nav.sidebar .navgroup-label{font-size:11px; text-transform:none; color:var(--muted-2); font-family:'IBM Plex Mono'; margin:18px 0 8px; letter-spacing:0.02em;}
+  nav.sidebar .navgroup-label:first-child{margin-top:0;}
+  nav.sidebar a{
+    display:flex; align-items:center; gap:9px;
+    font-size:13.5px; color:var(--muted); text-decoration:none;
+    padding:6px 10px; border-radius:7px; margin:1px 0;
+    border-left:2px solid transparent;
+    transition:color .15s ease, background .15s ease;
+  }
+  nav.sidebar a .n{font-family:'IBM Plex Mono'; font-size:10.5px; color:var(--muted-2); width:16px; flex:none;}
+  nav.sidebar a:hover{color:var(--text); background:var(--panel-2);}
+  nav.sidebar a.active{color:#fff; background:var(--amber-soft); border-left:2px solid var(--tag);}
+  nav.sidebar a.active .n{color:var(--tag);}
+
+  main{padding:28px 0 100px; min-width:0;}
+
+  .hero{padding:26px 0 46px; border-bottom:1px solid var(--border); margin-bottom:46px;}
+  .hero .eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:'IBM Plex Mono'; font-size:12px; color:var(--tag);
+    background:var(--amber-soft); border:1px solid var(--tag-dim);
+    padding:5px 11px; border-radius:999px; margin-bottom:20px;
+  }
+  .hero h1{font-size:clamp(28px,4.2vw,44px); font-weight:800; line-height:1.14; max-width:20ch;}
+  .hero p.lede{color:var(--muted); font-size:16px; max-width:58ch; margin-top:16px;}
+  .hero-meta{display:flex; flex-wrap:wrap; gap:10px; margin-top:26px;}
+  .hero-meta span{
+    font-family:'IBM Plex Mono'; font-size:12px; color:var(--muted);
+    border:1px solid var(--border); background:var(--panel); padding:7px 12px; border-radius:8px;
+  }
+  .hero-meta span b{color:var(--text); font-weight:600;}
+  .hero .usecases{display:flex; flex-wrap:wrap; gap:8px; margin-top:20px;}
+  .hero .usecases span{
+    font-size:12px; color:var(--muted); background:var(--panel-2); border:1px solid var(--border);
+    padding:5px 11px; border-radius:999px;
+  }
+
+  section.block{padding:10px 0 56px; border-bottom:1px solid var(--border); scroll-margin-top:84px;}
+  section.block:last-of-type{border-bottom:none;}
+  .kicker{font-family:'IBM Plex Mono'; font-size:12px; color:var(--accent); margin-bottom:10px; display:flex; align-items:center; gap:8px;}
+  .kicker .ix{color:var(--muted-2);}
+  h2.htitle{font-size:26px; font-weight:700; margin-bottom:14px;}
+  h3.stitle{font-size:17px; font-weight:600; margin:26px 0 10px; color:#F0F1F7;}
+  p{color:#C7CBDA; font-size:15px; max-width:72ch;}
+  p + p{margin-top:12px;}
+  .lead{color:#DADDE9; font-size:16px;}
+  .kbd{color:var(--attr); background:var(--panel-2); padding:2px 6px; border-radius:5px; font-family:'IBM Plex Mono'; font-size:13px;}
+  .kbd-tag{color:var(--tag); background:var(--panel-2); padding:2px 6px; border-radius:5px; font-family:'IBM Plex Mono'; font-size:13px;}
+  .kbd-str{color:var(--string); background:var(--panel-2); padding:2px 6px; border-radius:5px; font-family:'IBM Plex Mono'; font-size:13px;}
+
+  .card{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:20px 22px;}
+  .callout{
+    display:flex; gap:12px; background:var(--panel-2); border:1px solid var(--border);
+    border-left:3px solid var(--accent); border-radius:8px; padding:14px 16px; margin:18px 0;
+  }
+  .callout.warn{border-left-color:var(--tag);}
+  .callout .ic{font-family:'IBM Plex Mono'; font-size:13px; color:var(--accent); flex:none;}
+  .callout.warn .ic{color:var(--tag);}
+  .callout p{font-size:13.5px; color:var(--muted); margin:0;}
+
+  .editor{
+    background:#0B0D13; border:1px solid var(--border); border-radius:var(--radius);
+    overflow:hidden; margin:18px 0; box-shadow:0 12px 30px -18px rgba(0,0,0,0.6);
+  }
+  .editor .titlebar{
+    display:flex; align-items:center; gap:10px; padding:10px 14px;
+    background:var(--panel-2); border-bottom:1px solid var(--border);
+  }
+  .editor .dots{display:flex; gap:6px;}
+  .editor .dots i{width:9px; height:9px; border-radius:50%; display:block; background:#4A4F60;}
+  .editor .fname{font-family:'IBM Plex Mono'; font-size:12px; color:var(--muted); margin-left:2px;}
+  .editor .lang{margin-left:auto; font-family:'IBM Plex Mono'; font-size:10.5px; color:var(--muted-2); border:1px solid var(--border); padding:2px 8px; border-radius:999px;}
+  .editor pre{margin:0; padding:16px 0; overflow-x:auto; font-size:13px; line-height:1.7;}
+  .editor .lines{display:grid; grid-template-columns:44px 1fr;}
+  .editor .lno{color:#3A3F52; text-align:right; padding-right:14px; user-select:none; font-size:12.5px;}
+  .editor .lcode{padding-right:20px; white-space:pre;}
+  .tok-tag{color:var(--tag);}
+  .tok-attr{color:var(--attr);}
+  .tok-str{color:var(--string);}
+  .tok-punc{color:var(--punc);}
+  .tok-com{color:#5A6178; font-style:italic;}
+  .tok-doctype{color:#8B92A8;}
+
+  .preview-wrap{border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin:18px 0;}
+  .preview-wrap .pv-bar{
+    display:flex; align-items:center; gap:8px; padding:9px 14px; background:var(--panel-2);
+    border-bottom:1px solid var(--border); font-family:'IBM Plex Mono'; font-size:11px; color:var(--muted-2);
+  }
+  .preview-wrap .pv-bar .url{background:var(--panel); border:1px solid var(--border); border-radius:6px; padding:3px 10px; color:var(--muted); flex:1;}
+  .preview-wrap iframe{width:100%; height:260px; border:none; background:#fff; display:block;}
+  .preview-wrap iframe.tall{height:760px;}
+  .preview-wrap iframe.short{height:160px;}
+
+  .diagram{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:26px 22px; margin:20px 0;}
+  .diagram .dcap{font-family:'IBM Plex Mono'; font-size:11px; color:var(--muted-2); margin-bottom:16px; text-align:center;}
+  svg{max-width:100%; height:auto; display:block; margin:0 auto;}
+  .svg-label{font-family:'IBM Plex Mono'; font-size:12px;}
+  .svg-sub{font-family:'Inter'; font-size:11px;}
+
+  table.ttable{width:100%; border-collapse:collapse; margin:18px 0; font-size:13.5px;}
+  table.ttable th{
+    text-align:left; font-family:'IBM Plex Mono'; font-size:11px; color:var(--muted-2);
+    font-weight:500; padding:10px 14px; border-bottom:1px solid var(--border);
+  }
+  table.ttable td{padding:11px 14px; border-bottom:1px solid var(--border); color:#CDD0DE; vertical-align:top;}
+  table.ttable tr:last-child td{border-bottom:none;}
+  table.ttable td code, table.ttable td .chip{
+    font-family:'IBM Plex Mono'; font-size:12px; background:var(--panel-2); color:var(--attr);
+    padding:2px 7px; border-radius:5px; border:1px solid var(--border); display:inline-block; margin:2px 4px 2px 0;
+  }
+
+  .steps{position:relative; margin:22px 0 6px; padding-left:2px;}
+  .step{display:grid; grid-template-columns:38px 1fr; gap:16px; position:relative; padding-bottom:26px;}
+  .step:last-child{padding-bottom:0;}
+  .step .line{position:absolute; left:18px; top:38px; bottom:0; width:1px; background:var(--border);}
+  .step:last-child .line{display:none;}
+  .step .num{
+    width:36px; height:36px; border-radius:9px; background:var(--panel-2); border:1px solid var(--border);
+    display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono'; font-weight:600;
+    font-size:13px; color:var(--tag); flex:none; z-index:1;
+  }
+  .step .body h4{font-size:14.5px; font-weight:600; color:#F0F1F7; margin-bottom:5px;}
+  .step .body p{font-size:13.5px; color:var(--muted); margin:0;}
+  .step .body .mini-code{
+    margin-top:9px; font-family:'IBM Plex Mono'; font-size:12.5px; color:var(--attr);
+    background:var(--panel-2); border:1px solid var(--border); padding:7px 11px; border-radius:6px; display:inline-block;
+  }
+  .step .body .ask{
+    margin-top:9px; font-size:13px; color:var(--tag); background:var(--amber-soft); border:1px solid var(--tag-dim);
+    padding:7px 11px; border-radius:6px; display:inline-block; font-style:italic;
+  }
+
+  .checklist{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:10px; margin-top:18px;}
+  .checklist .item{
+    display:flex; align-items:center; gap:10px; background:var(--panel); border:1px solid var(--border);
+    border-radius:8px; padding:11px 14px; font-size:13.5px; color:#D6D9E6;
+  }
+  .checklist .item .chk{
+    width:18px; height:18px; border-radius:5px; background:var(--amber-soft); border:1px solid var(--tag-dim);
+    display:flex; align-items:center; justify-content:center; color:var(--tag); font-size:11px; flex:none;
+  }
+
+  .end-card{
+    background:linear-gradient(135deg, var(--panel-2), var(--panel)); border:1px solid var(--border);
+    border-radius:14px; padding:32px; margin-top:20px; text-align:center;
+  }
+  .end-card h3{font-size:20px; margin-bottom:8px;}
+  .end-card p{color:var(--muted); font-size:14px; max-width:50ch; margin:0 auto;}
+
+  footer.page-footer{max-width:var(--maxw); margin:0 auto; padding:30px 28px 60px; color:var(--muted-2); font-size:12px; font-family:'IBM Plex Mono';}
+
+  nav.sidebar::-webkit-scrollbar{width:5px;}
+  nav.sidebar::-webkit-scrollbar-thumb{background:var(--border); border-radius:10px;}
+
+  .split{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:18px 0;}
+  .split .editor{margin:0;}
+  .split .cap{font-family:'IBM Plex Mono'; font-size:11px; margin-bottom:8px; display:flex; align-items:center; gap:6px;}
+  .split .cap.bad{color:#FF8080;}
+  .split .cap.good{color:var(--string);}
+
+  .type-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin:18px 0;}
+  .type-card{
+    background:var(--panel); border:1px solid var(--border); border-radius:8px; padding:12px 14px;
+  }
+  .type-card .tname{font-family:'IBM Plex Mono'; font-size:12px; color:var(--tag); font-weight:600;}
+  .type-card .tdesc{font-size:12px; color:var(--muted); margin-top:4px;}
+
+  @media (max-width:900px){
+    .shell{grid-template-columns:1fr;}
+    nav.sidebar{
+      position:fixed; top:calc(58px + env(safe-area-inset-top,0px)); left:0; right:0; bottom:0;
+      background:rgba(10,12,17,0.98); backdrop-filter:blur(12px);
+      z-index:35; padding:20px 24px; transform:translateY(-8px); opacity:0; pointer-events:none;
+      transition:opacity .18s ease, transform .18s ease; max-height:none;
+    }
+    nav.sidebar.open{opacity:1; pointer-events:auto; transform:translateY(0);}
+    .menu-btn{display:block;}
+    .shell{padding:0 18px;}
+    .hero h1{max-width:none;}
+    .split{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="mark">&lt;/&gt;</span>
+      <div>
+        Web Fundamentals Track
+        <small>Hour 3 of 12 · HTML</small>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div class="progress-pill"><span class="dot"></span> Hour 3 · In session</div>
+      <button class="menu-btn" id="menuBtn" aria-label="Toggle menu">☰</button>
+    </div>
+  </div>
+</div>
+
+<div class="shell">
+  <nav class="sidebar" id="sidebar">
+    <div class="navgroup-label">Foundations</div>
+    <a href="#what-is-form"><span class="n">01</span>What is a Form?</a>
+    <a href="#label"><span class="n">02</span>Label</a>
+    <div class="navgroup-label">Input types</div>
+    <a href="#input-types"><span class="n">03</span>Text, Password, Email…</a>
+    <div class="navgroup-label">Making choices</div>
+    <a href="#radio"><span class="n">04</span>Radio Buttons</a>
+    <a href="#checkbox"><span class="n">05</span>Checkbox</a>
+    <a href="#select"><span class="n">06</span>Select Dropdown</a>
+    <a href="#textarea"><span class="n">07</span>Textarea</a>
+    <div class="navgroup-label">Submitting data</div>
+    <a href="#buttons"><span class="n">08</span>Buttons</a>
+    <a href="#required"><span class="n">09</span>Required Fields</a>
+    <a href="#placeholder"><span class="n">10</span>Placeholder vs Label</a>
+    <a href="#action-method"><span class="n">11</span>Action &amp; Method</a>
+    <div class="navgroup-label">Practical</div>
+    <a href="#capstone"><span class="n">12</span>Hour 3 Project</a>
+    <a href="#outcomes"><span class="n">13</span>Learning Outcomes</a>
+  </nav>
+
+  <main>
+    <div class="hero">
+      <div class="eyebrow">● HOUR 3 — CORE MODULE</div>
+      <h1>HTML Forms and User Input</h1>
+      <p class="lede">Every real website eventually needs to collect information from the person using it. Forms are how HTML does that — this hour covers every input type you'll actually use, then combines them into a complete, validated registration form.</p>
+      <div class="hero-meta">
+        <span><b>Builds on</b> · Hour 2 semantic layout</span>
+        <span><b>Format</b> · Lecture + hands-on build</span>
+        <span><b>Tools</b> · VS Code + Chrome</span>
+        <span><b>Outcome</b> · A validated registration form</span>
+      </div>
+      <div class="usecases">
+        <span>Login</span><span>Registration</span><span>Contact form</span><span>Search</span>
+        <span>Checkout</span><span>Feedback</span><span>Job application</span><span>Online admission</span>
+      </div>
+    </div>
+
+    <!-- 01 What is a form -->
+    <section class="block" id="what-is-form">
+      <div class="kicker"><span class="ix">01</span> Foundations</div>
+      <h2 class="htitle">What is an HTML Form?</h2>
+      <p class="lead">A <span class="kbd-tag">&lt;form&gt;</span> represents a section of a webpage containing controls that let a user <b style="color:#F0F1F7">enter or submit information</b>. Everything in this hour — inputs, selects, checkboxes, buttons — exists to live inside one.</p>
+
+      <div class="editor">
+        <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="fname">basic-form.html</span><span class="lang">HTML</span></div>
+        <div class="lines" id="code-1"></div>
+      </div>
+
+      <div class="diagram">
+        <div class="dcap">FORM ELEMENTS YOU'LL USE THIS HOUR</div>
+        <svg viewBox="0 0 700 130" xmlns="http://www.w3.org/2000/svg">
+          <rect x="10" y="10" width="680" height="110" rx="10" fill="#171B26" stroke="#FF9457"/>
+          <text x="30" y="32" class="mono" font-size="12" fill="#FF9457" font-weight="600">&lt;form&gt;</text>
+          <g transform="translate(30,44)">
+            <rect width="90" height="26" rx="5" fill="#12151D" stroke="#3A3F52"/>
+            <text x="45" y="17" text-anchor="middle" class="mono" font-size="10.5" fill="#5FE0C7">label</text>
+            <rect x="100" width="90" height="26" rx="5" fill="#12151D" stroke="#3A3F52"/>
+            <text x="145" y="17" text-anchor="middle" class="mono" font-size="10.5" fill="#5FE0C7">input</text>
+            <rect x="200" width="90" height="26" rx="5" fill="#12151D" stroke="#3A3F52"/>
+            <text x="245" y="17" text-anchor="middle" class="mono" font-size="10.5" fill="#5FE0C7">select</text>
+            <rect x="300" width="90" height="26" rx="5" fill="#12151D" stroke="#3A3F52"/>
+            <text x="345" y="17" text-anchor="middle" class="mono" font-size="10.5" fill="#5FE0C7">textarea</text>
+            <rect x="400" width="90" height="26" rx="5" fill="#12151D" stroke="#3A3F52"/>
+            <text x="445" y="17" text-anchor="middle" class="mono" font-size="10.5" fill="#5FE0C7">fieldset</text>
+            <rect x="500" width="130" height="26" rx="5" fill="#12151D" stroke="#3A3F52"/>
+            <text x="565" y="17" text-anchor="middle" class="mono" font-size="10.5" fill="#9FE07A">button [submit]</text>
+          </g>
+          <text x="350" y="104" text-anchor="middle" class="svg-sub" fill="#5D6479" font-size="10.5">all form controls live inside one &lt;form&gt;</text>
+        </svg>
+      </div>
+    </section>
+
+    <!-- 02 Label -->
+    <section class="block" id="label">
+      <div class="kicker"><span class="ix">02</span> Foundations</div>
+      <h2 class="htitle">Label</h2>
+      <p class="lead">A <span class="kbd-tag">&lt;label&gt;</span> connects readable text to a specific control — critical for accessibility and usability, not just decoration.</p>
+
+      <div class="editor">
+        <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="fname">label.html</span><span class="lang">HTML</span></div>
+        <div class="lines" id="code-2"></div>
+      </div>
+
+      <div class="diagram">
+        <div class="dcap">HOW for AND id CONNECT</div>
+        <svg viewBox="0 0 620 130" xmlns="http://www.w3.org/2000/svg">
+          <rect x="30" y="15" width="230" height="40" rx="8" fill="#171B26" stroke="#FF9457"/>
+          <text x="145" y="40" text-anchor="middle" class="mono" font-size="12" fill="#E7E9F2">&lt;label <tspan fill="#5FE0C7">for</tspan>=<tspan fill="#9FE07A">"name"</tspan>&gt;</text>
+
+          <rect x="30" y="75" width="230" height="40" rx="8" fill="#171B26" stroke="#7C8CFF"/>
+          <text x="145" y="100" text-anchor="middle" class="mono" font-size="12" fill="#E7E9F2">&lt;input <tspan fill="#5FE0C7">id</tspan>=<tspan fill="#9FE07A">"name"</tspan>&gt;</text>
+
+          <path d="M 260 35 C 340 35, 340 95, 260 95" fill="none" stroke="#FF9457" stroke-width="1.5" stroke-dasharray="3 3"/>
+          <text x="380" y="60" text-anchor="middle" class="svg-sub" fill="#8C93A8" font-size="11">same value</text>
+          <text x="380" y="76" text-anchor="middle" class="svg-sub" fill="#8C93A8" font-size="11">→ explicitly linked</text>
+
+          <rect x="470" y="45" width="130" height="40" rx="8" fill="#12151D" stroke="#3A3F52"/>
+          <text x="535" y="70" text-anchor="middle" class="svg-sub" fill="#9FE07A" font-size="10.5">clicking the label</text>
+        </svg>
+      </div>
+      <p>Because the two are linked, clicking the label text itself focuses (or toggles) the input — no JavaScript required.</p>
+    </section>
+
+    <!-- 03 Input types -->
+    <section class="block" id="input-types">
+      <div class="kicker"><span class="ix">03</span> Input types</div>
+      <h2 class="htitle">Text, Password, Email &amp; More</h2>
+      <p class="lead">Choosing the right <span class="kbd">type</span> gives you free browser behavior — validation, masking, mobile keyboards — without writing any logic yourself.</p>
+
+      <div class="type-grid">
+        <div class="type-card"><div class="tname">type="text"</div><div class="tdesc">Plain single-line text.</div></div>
+        <div class="type-card"><div class="tname">type="password"</div><div class="tdesc">Masks entered characters.</div></div>
+        <div class="type-card"><div class="tname">type="email"</div><div class="tdesc">Browser-level email validation.</div></div>
+        <div class="type-card"><div class="tname">type="number"</div><div class="tdesc">Numeric input, with min/max.</div></div>
+        <div class="type-card"><div class="tname">type="date"</div><div class="tdesc">Native date picker.</div></div>
+        <div class="type-card"><div class="tname">type="tel"</div><div class="tdesc">Phone number, numeric keypad on mobile.</div></div>
+        <div class="type-card"><div class="tname">type="url"</div><div class="tdesc">Validates as a web address.</div></div>
+      </div>
+
+      <div class="editor">
+        <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="fname">input-types.html</span><span class="lang">HTML</span></div>
+        <div class="lines" id="code-3"></div>
+      </div>
+
+      <div class="preview-wrap">
+        <div class="pv-bar"><span>●</span><span class="url">input-types.html — rendered in browser</span></div>
+        <iframe id="preview-types" class="tall" title="Input types preview"></iframe>
+      </div>
+    </section>
+
+    <!-- 04 Radio -->
+    <section class="block" id="radio">
+      <div class="kicker"><span class="ix">04</span> Making choices</div>
+      <h2 class="htitle">Radio Buttons</h2>
+      <p class="lead">Use radio buttons when the user should select <b style="color:#F0F1F7">one option from a group</b>.</p>
+
+      <div class="editor">
+        <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="fname">radio.html</span><span class="lang">HTML</span></div>
+        <div class="lines" id="code-4"></div>
+      </div>
+
+      <div class="diagram">
+        <div class="dcap">SAME name → SAME GROUP</div>
+        <svg viewBox="0 0 560 140" xmlns="http://www.w3.org/2000/svg">
+          <g transform="translate(30,20)">
+            <circle cx="10" cy="10" r="9" fill="none" stroke="#FF9457" stroke-width="2"/>
+            <text x="26" y="14" class="mono" font-size="12" fill="#E7E9F2">Male</text>
+            <text x="26" y="30" class="svg-sub" fill="#5D6479" font-size="9.5">name="gender"</text>
+          </g>
+          <g transform="translate(30,60)">
+            <circle cx="10" cy="10" r="9" fill="none" stroke="#FF9457" stroke-width="2"/>
+            <text x="26" y="14" class="mono" font-size="12" fill="#E7E9F2">Female</text>
+            <text x="26" y="30" class="svg-sub" fill="#5D6479" font-size="9.5">name="gender"</text>
+          </g>
+          <g transform="translate(30,100)">
+            <circle cx="10" cy="10" r="9" fill="none" stroke="#FF9457" stroke-width="2"/>
+            <text x="26" y="14" class="mono" font-size="12" fill="#E7E9F2">Other</text>
+            <text x="26" y="30" class="svg-sub" fill="#5D6479" font-size="9.5">name="gender"</text>
+          </g>
+
+          <path d="M170 30 C 260 30, 260 130, 350 130" fill="none" stroke="#3A3F52"/>
+          <path d="M170 70 C 260 70, 300 130, 350 130" fill="none" stroke="#3A3F52"/>
+          <path d="M170 110 C 260 110, 320 130, 350 130" fill="none" stroke="#3A3F52"/>
+
+          <rect x="350" y="105" width="180" height="34" rx="8" fill="#171B26" stroke="#9FE07A"/>
+          <text x="440" y="127" text-anchor="middle" class="mono" font-size="12" fill="#9FE07A" font-weight="600">one selected group</text>
+        </svg>
+      </div>
+      <p>Selecting one radio button in a group automatically deselects the others sharing the same <span class="kbd">name</span> — that shared name is the entire mechanism.</p>
+    </section>
+
+    <!-- 05 Checkbox -->
+    <section class="block" id="checkbox">
+      <div class="kicker"><span class="ix">05</span> Making choices</div>
+      <h2 class="htitle">Checkbox</h2>
+      <p class="lead">Checkboxes are appropriate when <b style="color:#F0F1F7">multiple options</b> can be selected at once.</p>
+      <div class="editor">
+        <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="fname">checkbox.html</span><span class="lang">HTML</span></div>
+        <div class="lines" id="code-5"></div>
+      </div>
+    </section>
+
+    <!-- 06 Select -->
+    <section class="block" id="select">
+      <div class="kicker"><span class="ix">06</span> Making choices</div>
+      <h2 class="htitle">Select Dropdown</h2>
+      <p class="lead"><span class="kbd-tag">&lt;select&gt;</span> provides a menu of options, with each <span class="kbd-tag">&lt;option&gt;</span> representing one individual choice.</p>
+      <div class="editor">
+        <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="fname">select.html</span><span class="lang">HTML</span></div>
+        <div class="lines" id="code-6"></div>
+      </div>
+    </section>
+
+    <!-- 07 Textarea -->
+    <section class="block" id="textarea">
+      <div class="kicker"><span class="ix">07</span> Making choices</div>
+      <h2 class="htitle">Textarea</h2>
+      <p class="lead">Used for larger amounts of free text — feedback, addresses, comments, descriptions.</p>
+      <div class="editor">
+        <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="fname">textarea.html</span><span class="lang">HTML</span></div>
+        <div class="lines" id="code-7"></div>
+      </div>
+    </section>
+
+    <!-- 08 Buttons -->
+    <section class="block" id="buttons">
+      <div class="kicker"><span class="ix">08</span> Submitting data</div>
+      <h2 class="htitle">Button</h2>
+      <table class="ttable">
+        <tr><th>Type</th><th>Behavior</th></tr>
+        <tr><td><span class="chip">type="button"</span></td><td>Does nothing on its own — used to trigger custom JavaScript.</td></tr>
+        <tr><td><span class="chip">type="submit"</span></td><td>Submits the form using its <span class="kbd">action</span> and <span class="kbd">method</span>.</td></tr>
+        <tr><td><span class="chip">type="reset"</span></td><td>Clears all fields back to their default values.</td></tr>
+      </table>
+      <div class="editor">
+        <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="fname">buttons.html</span><span class="lang">HTML</span></div>
+        <div class="lines" id="code-8"></div>
+      </div>
+      <div class="callout">
+        <span class="ic">i</span>
+        <p>Explicitly specifying the button <span class="kbd">type</span> inside a form is a good professional habit — a bare <span class="kbd-tag">&lt;button&gt;</span> defaults to <span class="kbd">submit</span>, which surprises developers who only wanted a click handler.</p>
+      </div>
+    </section>
+
+    <!-- 09 Required -->
+    <section class="block" id="required">
+      <div class="kicker"><span class="ix">09</span> Submitting data</div>
+      <h2 class="htitle">Required Field</h2>
+      <div class="editor">
+        <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="fname">required.html</span><span class="lang">HTML</span></div>
+        <div class="lines" id="code-9"></div>
+      </div>
+      <p>The browser will prevent submission if a <span class="kbd">required</span> value is missing — this is free, built-in constraint validation with zero JavaScript.</p>
+    </section>
+
+    <!-- 10 Placeholder -->
+    <section class="block" id="placeholder">
+      <div class="kicker"><span class="ix">10</span> Submitting data</div>
+      <h2 class="htitle">Placeholder</h2>
+      <div class="editor">
+        <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="fname">placeholder.html</span><span class="lang">HTML</span></div>
+        <div class="lines" id="code-10"></div>
+      </div>
+      <div class="callout warn">
+        <span class="ic">!</span>
+        <p><b style="color:#F0F1F7">Placeholder is not a replacement for a label.</b> A placeholder disappears the moment the user types, offers no accessible name for screen readers, and is easy to mistake for a filled field. Always pair it with a real label:</p>
+      </div>
+      <div class="editor">
+        <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="fname">label-plus-placeholder.html</span><span class="lang">HTML</span></div>
+        <div class="lines" id="code-11"></div>
+      </div>
+    </section>
+
+    <!-- 11 Action & method -->
+    <section class="block" id="action-method">
+      <div class="kicker"><span class="ix">11</span> Submitting data</div>
+      <h2 class="htitle">Form action and method</h2>
+      <div class="editor">
+        <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="fname">action-method.html</span><span class="lang">HTML</span></div>
+        <div class="lines" id="code-12"></div>
+      </div>
+
+      <div class="diagram">
+        <div class="dcap">GET vs POST — WHERE THE DATA GOES</div>
+        <svg viewBox="0 0 680 160" xmlns="http://www.w3.org/2000/svg">
+          <rect x="20" y="15" width="120" height="34" rx="7" fill="#171B26" stroke="#242A3A"/>
+          <text x="80" y="37" text-anchor="middle" class="mono" font-size="12" fill="#E7E9F2">&lt;form&gt;</text>
+
+          <line x1="140" y1="32" x2="220" y2="32" stroke="#3A3F52" marker-end="url(#a2)"/>
+          <defs><marker id="a2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#3A3F52"/></marker></defs>
+
+          <rect x="220" y="10" width="220" height="44" rx="8" fill="#171B26" stroke="#7C8CFF"/>
+          <text x="330" y="28" text-anchor="middle" class="mono" font-size="11" fill="#7C8CFF" font-weight="600">method="get"</text>
+          <text x="330" y="44" text-anchor="middle" class="svg-sub" fill="#5D6479" font-size="9.5">data appended to URL</text>
+
+          <rect x="480" y="10" width="180" height="44" rx="8" fill="#12151D" stroke="#3A3F52"/>
+          <text x="570" y="33" text-anchor="middle" class="mono" font-size="10" fill="#8C93A8">/register?name=Rahul</text>
+
+          <line x1="140" y1="90" x2="220" y2="90" stroke="#3A3F52" marker-end="url(#a2)"/>
+          <rect x="220" y="68" width="220" height="44" rx="8" fill="#171B26" stroke="#9FE07A"/>
+          <text x="330" y="86" text-anchor="middle" class="mono" font-size="11" fill="#9FE07A" font-weight="600">method="post"</text>
+          <text x="330" y="102" text-anchor="middle" class="svg-sub" fill="#5D6479" font-size="9.5">data sent in request body</text>
+
+          <rect x="480" y="68" width="180" height="44" rx="8" fill="#12151D" stroke="#3A3F52"/>
+          <text x="570" y="91" text-anchor="middle" class="svg-sub" fill="#8C93A8" font-size="9.5">hidden from the URL</text>
+
+          <text x="330" y="140" text-anchor="middle" class="svg-sub" fill="#5D6479" font-size="10.5">action="/register" decides the destination for either method</text>
+        </svg>
+      </div>
+    </section>
+
+    <!-- 12 Capstone -->
+    <section class="block" id="capstone">
+      <div class="kicker"><span class="ix">12</span> Capstone</div>
+      <h2 class="htitle">Hour 3 — Complete Registration Form</h2>
+      <p class="lead">This is the main practical exercise for Hour 3 — a fully validated, fieldset-organized registration form combining everything covered this hour.</p>
+
+      <div class="steps">
+        <div class="step"><div class="line"></div><div class="num">1</div>
+          <div class="body"><h4>Create a project folder</h4><p>Make a folder for this project.</p><span class="mini-code">html-form-project</span></div>
+        </div>
+        <div class="step"><div class="line"></div><div class="num">2</div>
+          <div class="body"><h4>Create the HTML file</h4><span class="mini-code">registration.html</span></div>
+        </div>
+        <div class="step"><div class="line"></div><div class="num">3</div>
+          <div class="body"><h4>Paste the complete code</h4><p>Use the full registration form shown below.</p></div>
+        </div>
+        <div class="step"><div class="line"></div><div class="num">4</div>
+          <div class="body"><h4>Save the file</h4></div>
+        </div>
+        <div class="step"><div class="line"></div><div class="num">5</div>
+          <div class="body"><h4>Open it in Chrome</h4></div>
+        </div>
+        <div class="step"><div class="line"></div><div class="num">6</div>
+          <div class="body"><h4>Try submitting the empty form</h4>
+            <p>Click Register without filling anything in.</p>
+            <span class="ask">Ask students: "What happens?"</span>
+            <p style="margin-top:8px;">The browser performs built-in constraint validation — fields with <span class="kbd">required</span> and <span class="kbd">type="email"</span> impose those constraints automatically.</p>
+          </div>
+        </div>
+        <div class="step"><div class="line"></div><div class="num">7</div>
+          <div class="body"><h4>Enter an incorrect email</h4><p>Type <span class="mini-code">hello</span> into the email field and observe the browser's validation message.</p></div>
+        </div>
+        <div class="step"><div class="line"></div><div class="num">8</div>
+          <div class="body"><h4>Enter a valid email</h4><p>Type <span class="mini-code">student@example.com</span> and observe the difference.</p></div>
+        </div>
+        <div class="step"><div class="line"></div><div class="num">9</div>
+          <div class="body"><h4>Select the remaining fields</h4><p>Choose a course, a learning mode, and one or more skills.</p></div>
+        </div>
+        <div class="step"><div class="num">10</div>
+          <div class="body"><h4>Click Register</h4><p>The form's front-end structure is now complete — explain that a real application still needs a backend/API to actually process and store what was submitted.</p></div>
+        </div>
+      </div>
+
+      <div class="editor">
+        <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="fname">registration.html</span><span class="lang">HTML</span></div>
+        <div class="lines" id="code-13"></div>
+      </div>
+
+      <div class="preview-wrap">
+        <div class="pv-bar"><span>●</span><span class="url">registration.html — rendered in browser</span></div>
+        <iframe id="preview-13" class="tall" title="Registration form preview"></iframe>
+      </div>
+    </section>
+
+    <!-- 13 Outcomes -->
+    <section class="block" id="outcomes" style="border-bottom:none;">
+      <div class="kicker"><span class="ix">13</span> Wrap-up</div>
+      <h2 class="htitle">Learning Outcomes</h2>
+      <p class="lead">By the end of Hour 3, students should be able to explain and use each of the following without notes:</p>
+      <div class="checklist">
+        <div class="item"><span class="chk">✓</span>&lt;form&gt; structure</div>
+        <div class="item"><span class="chk">✓</span>Label ↔ input via for/id</div>
+        <div class="item"><span class="chk">✓</span>Text, password, email inputs</div>
+        <div class="item"><span class="chk">✓</span>Number, date, tel, url inputs</div>
+        <div class="item"><span class="chk">✓</span>Radio buttons &amp; shared name</div>
+        <div class="item"><span class="chk">✓</span>Checkboxes</div>
+        <div class="item"><span class="chk">✓</span>Select &amp; option</div>
+        <div class="item"><span class="chk">✓</span>Textarea</div>
+        <div class="item"><span class="chk">✓</span>Button types</div>
+        <div class="item"><span class="chk">✓</span>required validation</div>
+        <div class="item"><span class="chk">✓</span>Placeholder vs label</div>
+        <div class="item"><span class="chk">✓</span>action &amp; method (GET/POST)</div>
+      </div>
+
+      <div class="end-card">
+        <h3>Hour 3 complete.</h3>
+        <p>Next hour moves into CSS fundamentals — selectors, the box model, and styling everything you've built structurally so far.</p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<footer class="page-footer">Web Fundamentals Track — Hour 3 · HTML Forms and User Input</footer>
+
+<script>
+function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function highlightHTML(raw){
+  let s = esc(raw);
+  s = s.replace(/(&lt;!--[\s\S]*?--&gt;)/g, '<span class="tok-com">$1</span>');
+  s = s.replace(/(&lt;!DOCTYPE[^&]*?&gt;)/gi, '<span class="tok-doctype">$1</span>');
+  s = s.replace(/(&lt;\/?)([a-zA-Z][a-zA-Z0-9]*)([^&]*?)(\/?&gt;)/g, function(m, open, name, attrs, close){
+    if(m.indexOf('tok-com')>-1 || m.indexOf('tok-doctype')>-1) return m;
+    let attrsHi = attrs.replace(/([a-zA-Z-]+)(=)(&quot;.*?&quot;)/g,
+      '<span class="tok-attr">$1</span><span class="tok-punc">$2</span><span class="tok-str">$3</span>');
+    return '<span class="tok-punc">'+open+'</span><span class="tok-tag">'+name+'</span>'+attrsHi+'<span class="tok-punc">'+close+'</span>';
+  });
+  return s;
+}
+function renderCode(id, code){
+  const container = document.getElementById(id);
+  if(!container) return;
+  const lines = code.replace(/^\n/,'').replace(/\n$/,'').split('\n');
+  let html = '';
+  lines.forEach((line, i) => {
+    const hi = highlightHTML(line) || '&nbsp;';
+    html += '<div class="lno">'+(i+1)+'</div><div class="lcode">'+hi+'</div>';
+  });
+  container.innerHTML = html;
+}
+
+const SNIPPETS = {
+  'code-1': `<form>
+  <!-- Form controls -->
+</form>`,
+
+  'code-2': `<label for="name">Full Name:</label>
+
+<input
+  type="text"
+  id="name"
+  name="name">`,
+
+  'code-3': `<label for="username">Username:</label>
+<input type="text" id="username" name="username">
+
+<label for="password">Password:</label>
+<input type="password" id="password" name="password">
+
+<label for="email">Email:</label>
+<input type="email" id="email" name="email">
+
+<label for="age">Age:</label>
+<input type="number" id="age" name="age" min="18" max="60">
+
+<label for="dob">Date of Birth:</label>
+<input type="date" id="dob" name="dob">
+
+<label for="phone">Phone:</label>
+<input type="tel" id="phone" name="phone" autocomplete="tel">
+
+<label for="website">Website:</label>
+<input type="url" id="website" name="website">`,
+
+  'code-4': `<p>Gender:</p>
+
+<label>
+  <input type="radio" name="gender" value="male">
+  Male
+</label>
+
+<label>
+  <input type="radio" name="gender" value="female">
+  Female
+</label>
+
+<label>
+  <input type="radio" name="gender" value="other">
+  Other
+</label>`,
+
+  'code-5': `<p>Skills:</p>
+
+<label>
+  <input type="checkbox" name="skills" value="html">
+  HTML
+</label>
+
+<label>
+  <input type="checkbox" name="skills" value="css">
+  CSS
+</label>
+
+<label>
+  <input type="checkbox" name="skills" value="javascript">
+  JavaScript
+</label>`,
+
+  'code-6': `<label for="course">Select Course:</label>
+
+<select id="course" name="course">
+  <option value="">Select a course</option>
+  <option value="bca">BCA</option>
+  <option value="btech">B.Tech</option>
+  <option value="mca">MCA</option>
+</select>`,
+
+  'code-7': `<label for="message">Message:</label>
+
+<textarea
+  id="message"
+  name="message"
+  rows="5"
+  cols="40"
+  placeholder="Enter your message">
+</textarea>`,
+
+  'code-8': `<button type="button">Click Me</button>
+
+<button type="submit">Register</button>
+
+<button type="reset">Reset</button>`,
+
+  'code-9': `<input
+  type="text"
+  id="name"
+  name="name"
+  required>`,
+
+  'code-10': `<input
+  type="text"
+  placeholder="Enter your full name">`,
+
+  'code-11': `<label for="email">Email</label>
+
+<input
+  type="email"
+  id="email"
+  name="email"
+  placeholder="you@example.com">`,
+
+  'code-12': `<form
+  action="/register"
+  method="post">`,
+
+  'code-13': `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Registration</title>
+</head>
+<body>
+
+  <main>
+    <h1>Student Registration Form</h1>
+    <p>Please fill in your details below.</p>
+
+    <form action="/register" method="post">
+
+      <!-- Personal Information -->
+      <fieldset>
+        <legend>Personal Information</legend>
+
+        <p>
+          <label for="fullName">Full Name:</label>
+          <input
+            type="text"
+            id="fullName"
+            name="fullName"
+            placeholder="Enter your full name"
+            autocomplete="name"
+            required>
+        </p>
+
+        <p>
+          <label for="email">Email:</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="student@example.com"
+            autocomplete="email"
+            required>
+        </p>
+
+        <p>
+          <label for="phone">Phone Number:</label>
+          <input
+            type="tel"
+            id="phone"
+            name="phone"
+            autocomplete="tel"
+            required>
+        </p>
+
+        <p>
+          <label for="dob">Date of Birth:</label>
+          <input type="date" id="dob" name="dob" required>
+        </p>
+      </fieldset>
+
+      <!-- Academic Information -->
+      <fieldset>
+        <legend>Academic Information</legend>
+
+        <p>
+          <label for="course">Select Course:</label>
+          <select id="course" name="course" required>
+            <option value="">Select a course</option>
+            <option value="bca">BCA</option>
+            <option value="btech">B.Tech</option>
+            <option value="mca">MCA</option>
+          </select>
+        </p>
+
+        <p>Preferred Learning Mode:</p>
+        <label>
+          <input type="radio" name="mode" value="online" required>
+          Online
+        </label>
+        <label>
+          <input type="radio" name="mode" value="offline">
+          Offline
+        </label>
+
+        <p>Technical Skills:</p>
+        <label><input type="checkbox" name="skills" value="html"> HTML</label>
+        <label><input type="checkbox" name="skills" value="css"> CSS</label>
+        <label><input type="checkbox" name="skills" value="javascript"> JavaScript</label>
+        <label><input type="checkbox" name="skills" value="react"> React</label>
+      </fieldset>
+
+      <!-- Additional Information -->
+      <fieldset>
+        <legend>Additional Information</legend>
+
+        <p>
+          <label for="message">Why do you want to join this course?</label>
+          <br>
+          <textarea
+            id="message"
+            name="message"
+            rows="5"
+            placeholder="Write your answer here..."
+            required></textarea>
+        </p>
+
+        <p>
+          <label for="resume">Upload Resume:</label>
+          <input type="file" id="resume" name="resume">
+        </p>
+      </fieldset>
+
+      <!-- Agreement -->
+      <p>
+        <label>
+          <input type="checkbox" name="terms" required>
+          I agree to the terms and conditions.
+        </label>
+      </p>
+
+      <!-- Buttons -->
+      <button type="submit">Register</button>
+      <button type="reset">Reset</button>
+
+    </form>
+  </main>
+
+</body>
+</html>`
+};
+
+Object.keys(SNIPPETS).forEach(id => renderCode(id, SNIPPETS[id]));
+
+const PREVIEW_CSS = `
+<style>
+  body{font-family:sans-serif; margin:0; padding:16px 20px; color:#222;}
+  h1{font-size:20px;}
+  fieldset{border:1px solid #ddd; border-radius:8px; margin:14px 0; padding:12px 16px;}
+  legend{padding:0 6px; font-weight:600; color:#444; font-size:13px;}
+  label{display:inline-block; margin:6px 0; font-size:13.5px;}
+  input, select, textarea{
+    display:block; margin-top:4px; padding:7px 9px; border:1px solid #ccc; border-radius:6px;
+    font-size:13.5px; font-family:sans-serif; width:100%; max-width:320px; box-sizing:border-box;
+  }
+  input[type=radio], input[type=checkbox]{display:inline-block; width:auto; margin:0 6px 0 0; vertical-align:middle;}
+  button{
+    padding:8px 16px; border-radius:6px; border:1px solid #ccc; background:#f4f4f4; font-size:13.5px; margin-right:8px; margin-top:10px; cursor:pointer;
+  }
+  button[type=submit]{background:#2a2f45; color:#fff; border-color:#2a2f45;}
+  p{margin:10px 0;}
+</style>`;
+
+function fillPreview(id, bodyHtml){
+  const el = document.getElementById(id);
+  if(el) el.srcdoc = PREVIEW_CSS + bodyHtml;
+}
+
+fillPreview('preview-types', `<form>${SNIPPETS['code-3']}</form>`);
+
+const regBody = SNIPPETS['code-13']
+  .replace(/<!DOCTYPE html>|<html[^>]*>|<\/html>|<head>[\s\S]*?<\/head>|<body>|<\/body>/g, '');
+fillPreview('preview-13', regBody);
+
+const links = Array.from(document.querySelectorAll('nav.sidebar a'));
+const targets = links.map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+function onScroll(){
+  let idx = 0;
+  const y = window.scrollY + 110;
+  targets.forEach((t, i) => { if(t.offsetTop <= y) idx = i; });
+  links.forEach(l => l.classList.remove('active'));
+  if(links[idx]) links[idx].classList.add('active');
+}
+window.addEventListener('scroll', onScroll, {passive:true});
+onScroll();
+
+const menuBtn = document.getElementById('menuBtn');
+const sidebar = document.getElementById('sidebar');
+if(menuBtn){
+  menuBtn.addEventListener('click', () => sidebar.classList.toggle('open'));
+  links.forEach(l => l.addEventListener('click', () => sidebar.classList.remove('open')));
+}
+</script>
+</body>
+</html>
