@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inheritance | IT Training Module — Hour 12</title>
+<style>
+  :root{
+    --bg:#282a36;
+    --bg-alt:#1e1f29;
+    --surface:#2f3140;
+    --surface-2:#363849;
+    --border:#44475a;
+    --text:#f8f8f2;
+    --text-dim:#b8bcd4;
+    --purple:#bd93f9;
+    --pink:#ff79c6;
+    --green:#50fa7b;
+    --cyan:#8be9fd;
+    --orange:#ffb86c;
+    --yellow:#f1fa8c;
+    --red:#ff5555;
+    --radius:14px;
+    --shadow: 0 10px 30px rgba(0,0,0,0.35);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family:'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background:
+      radial-gradient(circle at 15% 0%, rgba(189,147,249,0.11), transparent 40%),
+      radial-gradient(circle at 85% 15%, rgba(255,184,108,0.10), transparent 40%),
+      var(--bg);
+    color:var(--text);
+    line-height:1.65;
+  }
+  a{color:var(--cyan);}
+  code, pre{ font-family:'Cascadia Code','Fira Code',Consolas,'Courier New',monospace; }
+
+  .topbar{
+    position:sticky; top:0; z-index:50;
+    background:rgba(30,31,41,0.92);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--border);
+    padding:10px 24px;
+    display:flex; align-items:center; justify-content:space-between;
+    gap:16px;
+  }
+  .topbar .brand{ display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:.3px; }
+  .brand .logo{
+    width:30px;height:30px;border-radius:8px;
+    background:linear-gradient(135deg,var(--purple),var(--orange));
+    display:flex;align-items:center;justify-content:center;
+    font-size:15px; color:#1e1f29; font-weight:900;
+  }
+  .progress-track{
+    flex:1; max-width:420px; height:8px; border-radius:20px;
+    background:var(--surface-2); overflow:hidden; border:1px solid var(--border);
+  }
+  .progress-fill{
+    height:100%; width:0%;
+    background:linear-gradient(90deg,var(--purple),var(--orange));
+    transition:width .15s ease;
+  }
+  .nav-links{ display:flex; gap:6px; flex-wrap:wrap; font-size:12.5px; }
+  .nav-links a{
+    color:var(--text-dim); text-decoration:none; padding:6px 10px;
+    border-radius:20px; border:1px solid transparent; white-space:nowrap;
+  }
+  .nav-links a:hover, .nav-links a.active{
+    background:var(--surface-2); color:var(--text); border-color:var(--border);
+  }
+
+  .hero{
+    padding:70px 24px 50px; text-align:center; position:relative; overflow:hidden;
+    border-bottom:1px solid var(--border);
+  }
+  .hero::before{
+    content:""; position:absolute; inset:0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size:42px 42px; opacity:0.12;
+    mask-image:radial-gradient(circle at 50% 20%, black, transparent 70%);
+  }
+  .hero-inner{position:relative; z-index:1;}
+  .badge-pill{
+    display:inline-block; padding:6px 16px; border-radius:30px;
+    background:var(--surface-2); border:1px solid var(--border);
+    font-size:12.5px; letter-spacing:1.2px; text-transform:uppercase;
+    color:var(--purple); font-weight:700; margin-bottom:18px;
+  }
+  .hero h1{
+    font-size:clamp(26px,4.6vw,44px); margin:0 0 12px;
+    background:linear-gradient(90deg,var(--purple),var(--orange) 55%,var(--pink));
+    -webkit-background-clip:text; background-clip:text; color:transparent; font-weight:800;
+  }
+  .hero p.sub{ max-width:680px; margin:0 auto; color:var(--text-dim); font-size:16px; }
+  .hero-meta{ display:flex; justify-content:center; gap:28px; margin-top:28px; flex-wrap:wrap; }
+  .hero-meta div{font-size:13px; color:var(--text-dim);}
+  .hero-meta strong{display:block; font-size:20px; color:var(--text);}
+
+  .wrap{max-width:1080px; margin:0 auto; padding:10px 24px 100px;}
+  section.module{ padding:56px 0; border-bottom:1px dashed var(--border); scroll-margin-top:80px; }
+  section.module:last-child{border-bottom:none;}
+  .module-head{ display:flex; align-items:center; gap:16px; margin-bottom:28px; }
+  .module-num{
+    flex:0 0 auto; width:52px;height:52px;border-radius:14px;
+    background:var(--surface); border:1px solid var(--border);
+    display:flex; align-items:center; justify-content:center;
+    font-weight:800; font-size:20px; color:var(--purple);
+  }
+  .module-head h2{ margin:0; font-size:26px; font-weight:800; }
+  .module-head p{margin:2px 0 0; color:var(--text-dim); font-size:14px;}
+
+  .card{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    padding:22px 24px; margin-bottom:22px; box-shadow:var(--shadow);
+  }
+  .card h3{margin-top:0; font-size:17px; color:var(--cyan); display:flex; gap:8px; align-items:center;}
+  .card h3 .icon{font-size:18px;}
+  .card ul, .card ol{margin:10px 0; padding-left:22px;}
+  .card li{margin-bottom:6px;}
+
+  .grid-2{display:grid; grid-template-columns:1fr 1fr; gap:20px;}
+  .grid-3{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
+  @media (max-width:760px){ .grid-2, .grid-3{grid-template-columns:1fr;} }
+
+  .callout{
+    border-radius:var(--radius); padding:16px 20px; margin:18px 0;
+    border:1px solid; display:flex; gap:14px; align-items:flex-start; font-size:14.5px;
+  }
+  .callout .ico{font-size:20px; line-height:1;}
+  .callout.teach{background:rgba(80,250,123,0.08); border-color:rgba(80,250,123,0.4);}
+  .callout.avoid{background:rgba(255,85,85,0.08); border-color:rgba(255,85,85,0.4);}
+  .callout.tip{background:rgba(139,233,253,0.08); border-color:rgba(139,233,253,0.4);}
+  .callout b{color:var(--text);}
+
+  .code-block{
+    background:#1a1b24; border:1px solid var(--border); border-radius:12px;
+    overflow:hidden; margin:16px 0;
+  }
+  .code-head{
+    display:flex; align-items:center; justify-content:space-between;
+    background:#20212c; padding:9px 16px; border-bottom:1px solid var(--border);
+    font-size:12.5px; color:var(--text-dim);
+  }
+  .code-dots{display:flex; gap:6px;}
+  .code-dots span{width:10px;height:10px;border-radius:50%;}
+  .code-dots span:nth-child(1){background:#ff5f56;}
+  .code-dots span:nth-child(2){background:#ffbd2e;}
+  .code-dots span:nth-child(3){background:#27c93f;}
+  pre.code{ margin:0; padding:18px 20px; overflow-x:auto; font-size:14px; line-height:1.7; }
+  .kw{color:var(--pink);}
+  .cls{color:var(--cyan);}
+  .str{color:var(--yellow);}
+  .mth{color:var(--green);}
+  .cmt{color:#6272a4;}
+  .num-lit{color:var(--orange);}
+  .ann{color:var(--orange);}
+
+  .code-output{
+    background:#151621; border-top:1px dashed var(--border);
+    padding:12px 20px; font-size:13.5px; color:var(--green); font-family:'Cascadia Code',monospace;
+  }
+  .code-output .lbl{color:var(--text-dim); font-size:11px; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:4px;}
+
+  .diagram-box{
+    background:var(--bg-alt); border:1px solid var(--border); border-radius:var(--radius);
+    padding:18px; margin:20px 0; overflow-x:auto;
+  }
+  .diagram-caption{ text-align:center; font-size:12.5px; color:var(--text-dim); margin-top:8px; font-style:italic; }
+
+  table.term{ width:100%; border-collapse:collapse; margin:14px 0; font-size:14.5px; }
+  table.term th, table.term td{ padding:10px 14px; border-bottom:1px solid var(--border); text-align:left; }
+  table.term th{ color:var(--orange); font-size:12px; text-transform:uppercase; letter-spacing:.5px; }
+  table.term td code{ color:var(--cyan); }
+
+  .isa-row{ display:flex; gap:14px; flex-wrap:wrap; margin:16px 0; }
+  .isa-chip{
+    background:var(--surface-2); border:1px solid var(--green); border-radius:10px;
+    padding:10px 16px; font-size:14px; color:var(--green); font-weight:600;
+  }
+  .isa-chip.bad{ border-color:var(--red); color:var(--red); }
+  .hasa-chip{
+    background:var(--surface-2); border:1px solid var(--cyan); border-radius:10px;
+    padding:10px 16px; font-size:14px; color:var(--cyan); font-weight:600; display:inline-block; margin-top:10px;
+  }
+
+  .quiz-box{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    padding:24px; margin-top:20px;
+  }
+  .quiz-q{font-weight:700; margin-bottom:14px; font-size:15.5px;}
+  .quiz-opts{display:flex; flex-direction:column; gap:10px;}
+  .quiz-opt{
+    background:var(--surface-2); border:1px solid var(--border); border-radius:10px;
+    padding:11px 16px; cursor:pointer; font-size:14px; transition:.15s;
+  }
+  .quiz-opt:hover{border-color:var(--purple);}
+  .quiz-opt.correct{background:rgba(80,250,123,0.15); border-color:var(--green); color:var(--green);}
+  .quiz-opt.wrong{background:rgba(255,85,85,0.15); border-color:var(--red); color:var(--red);}
+  .quiz-feedback{margin-top:12px; font-size:13.5px; color:var(--text-dim); min-height:18px;}
+  .quiz-nav{display:flex; justify-content:space-between; align-items:center; margin-top:18px;}
+  .quiz-nav button{
+    background:var(--surface-2); border:1px solid var(--border); color:var(--text);
+    padding:9px 18px; border-radius:20px; cursor:pointer; font-size:13.5px; font-weight:600;
+  }
+  .quiz-nav button:hover{border-color:var(--purple);}
+  .quiz-nav button:disabled{opacity:.35; cursor:not-allowed;}
+  .quiz-dots{display:flex; gap:6px;}
+  .quiz-dots span{width:8px;height:8px;border-radius:50%; background:var(--border);}
+  .quiz-dots span.active{background:var(--orange);}
+  .quiz-dots span.done{background:var(--green);}
+  .quiz-score{ text-align:center; padding:20px; font-size:18px; font-weight:800; }
+
+  footer{ text-align:center; padding:30px 20px; color:var(--text-dim); font-size:12.5px; border-top:1px solid var(--border); }
+  ::selection{background:var(--purple); color:#1e1f29;}
+
+  .scrolltop{
+    position:fixed; bottom:22px; right:22px; z-index:60;
+    width:44px;height:44px;border-radius:50%;
+    background:linear-gradient(135deg,var(--purple),var(--orange));
+    display:flex; align-items:center; justify-content:center;
+    color:#1e1f29; font-weight:900; cursor:pointer; box-shadow:var(--shadow);
+    opacity:0; pointer-events:none; transition:.2s;
+  }
+  .scrolltop.show{opacity:1; pointer-events:auto;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand"><div class="logo">J</div> Java Foundations · Hour 12</div>
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="nav-links" id="navLinks">
+    <a href="#m18">18. What is Inheritance</a>
+    <a href="#m19">19. Basic Inheritance</a>
+    <a href="#m20">20. Parent/Child</a>
+    <a href="#m21">21. Hierarchy</a>
+    <a href="#m22">22. IS-A</a>
+    <a href="#m23">23. super</a>
+    <a href="#m24">24. Parent Constructor</a>
+    <a href="#m25">25. Overriding</a>
+    <a href="#m26">26. @Override</a>
+    <a href="#quiz">Quiz</a>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="hero-inner">
+    <span class="badge-pill">IT Training &middot; Core Java Track &middot; Hour 12</span>
+    <h1>Inheritance</h1>
+    <p class="sub">This hour I'm handing you the third pillar — the one that lets you build families of related classes instead of writing the same behavior over and over.</p>
+    <div class="hero-meta">
+      <div><strong>9</strong>Modules</div>
+      <div><strong>~100 min</strong>Session Length</div>
+      <div><strong>Beginner</strong>Level</div>
+      <div><strong>6</strong>Code Walkthroughs</div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- MODULE 18 -->
+  <section class="module" id="m18">
+    <div class="module-head">
+      <div class="module-num">18</div>
+      <div>
+        <h2>What is Inheritance?</h2>
+        <p>Starting with a family of vehicles</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="icon">🚙</span> Picture This Family</h3>
+      <div class="diagram-box">
+        <svg viewBox="0 0 500 220" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:460px; display:block; margin:0 auto;">
+          <defs>
+            <marker id="arrow12a" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto">
+              <path d="M0,0 L10,5 L0,10 z" fill="#b8bcd4"/>
+            </marker>
+          </defs>
+          <rect x="190" y="10" width="120" height="44" rx="10" fill="#363849" stroke="#bd93f9" stroke-width="2"/>
+          <text x="250" y="37" fill="#bd93f9" font-size="15" font-weight="800" text-anchor="middle" font-family="Segoe UI">Vehicle</text>
+
+          <line x1="250" y1="54" x2="250" y2="76" stroke="#b8bcd4" stroke-width="2"/>
+          <line x1="90" y1="76" x2="410" y2="76" stroke="#b8bcd4" stroke-width="2"/>
+          <line x1="90" y1="76" x2="90" y2="96" stroke="#b8bcd4" stroke-width="2" marker-end="url(#arrow12a)"/>
+          <line x1="250" y1="76" x2="250" y2="96" stroke="#b8bcd4" stroke-width="2" marker-end="url(#arrow12a)"/>
+          <line x1="410" y1="76" x2="410" y2="96" stroke="#b8bcd4" stroke-width="2" marker-end="url(#arrow12a)"/>
+
+          <rect x="30" y="98" width="120" height="42" rx="10" fill="#363849" stroke="#ffb86c" stroke-width="2"/>
+          <text x="90" y="124" fill="#ffb86c" font-size="14" font-weight="700" text-anchor="middle" font-family="Segoe UI">Car</text>
+
+          <rect x="190" y="98" width="120" height="42" rx="10" fill="#363849" stroke="#8be9fd" stroke-width="2"/>
+          <text x="250" y="124" fill="#8be9fd" font-size="14" font-weight="700" text-anchor="middle" font-family="Segoe UI">Bike</text>
+
+          <rect x="350" y="98" width="120" height="42" rx="10" fill="#363849" stroke="#50fa7b" stroke-width="2"/>
+          <text x="410" y="124" fill="#50fa7b" font-size="14" font-weight="700" text-anchor="middle" font-family="Segoe UI">Truck</text>
+
+          <text x="250" y="180" fill="#b8bcd4" font-size="12.5" text-anchor="middle" font-family="Segoe UI">All three share start() and stop()</text>
+          <text x="250" y="200" fill="#b8bcd4" font-size="12.5" text-anchor="middle" font-family="Segoe UI">but each adds its own behavior too</text>
+        </svg>
+      </div>
+      <p>Every one of those three — <code>Car</code>, <code>Bike</code>, <code>Truck</code> — can <code>start()</code> and <code>stop()</code> the same way. But I don't want to write <code>start()</code> and <code>stop()</code> three separate times, once per class. Instead, I write them once on <code>Vehicle</code>, and let each specific type add only what makes it unique. <b>Inheritance allows a class to derive from another class</b> — that's the mechanism that makes this possible.</p>
+    </div>
+  </section>
+
+  <!-- MODULE 19 -->
+  <section class="module" id="m19">
+    <div class="module-head">
+      <div class="module-num">19</div>
+      <div>
+        <h2>Basic Inheritance</h2>
+        <p>Writing it for the first time</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="icon">💻</span> Vehicle and Car</h3>
+      <div class="code-block">
+        <div class="code-head"><span>Vehicle.java</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+        <pre class="code"><span class="kw">class</span> <span class="cls">Vehicle</span> {
+
+    <span class="kw">void</span> <span class="mth">start</span>() {
+        <span class="cls">System</span>.out.<span class="mth">println</span>(<span class="str">"Vehicle started"</span>);
+    }
+
+    <span class="kw">void</span> <span class="mth">stop</span>() {
+        <span class="cls">System</span>.out.<span class="mth">println</span>(<span class="str">"Vehicle stopped"</span>);
+    }
+}
+
+<span class="kw">class</span> <span class="cls">Car</span> <span class="kw">extends</span> <span class="cls">Vehicle</span> {
+
+    <span class="kw">void</span> <span class="mth">drive</span>() {
+        <span class="cls">System</span>.out.<span class="mth">println</span>(<span class="str">"Car is driving"</span>);
+    }
+}</pre>
+      </div>
+      <p>Here's how I'd use it:</p>
+      <div class="code-block">
+        <div class="code-head"><span>Main.java</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+        <pre class="code"><span class="kw">public class</span> <span class="cls">Main</span> {
+
+    <span class="kw">public static void</span> <span class="mth">main</span>(<span class="cls">String</span>[] args) {
+
+        <span class="cls">Car</span> car = <span class="kw">new</span> <span class="cls">Car</span>();
+
+        car.<span class="mth">start</span>();
+        car.<span class="mth">drive</span>();
+        car.<span class="mth">stop</span>();
+    }
+}</pre>
+      </div>
+      <div class="code-output">
+        <span class="lbl">Console Output</span>
+        Vehicle started<br>Car is driving<br>Vehicle stopped
+      </div>
+      <p>I want you noticing this carefully: I never wrote <code>start()</code> or <code>stop()</code> inside <code>Car</code> — yet <code>car.start()</code> and <code>car.stop()</code> both worked. That's inheritance putting <code>Vehicle</code>'s methods directly into <code>Car</code>'s hands.</p>
+    </div>
+  </section>
+
+  <!-- MODULE 20 -->
+  <section class="module" id="m20">
+    <div class="module-head">
+      <div class="module-num">20</div>
+      <div>
+        <h2>Parent and Child</h2>
+        <p>The vocabulary I'll use for the rest of this course</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="icon">🗂️</span> Terminology</h3>
+      <table class="term">
+        <thead><tr><th>Class</th><th>What I call it</th></tr></thead>
+        <tbody>
+          <tr><td><code>Vehicle</code></td><td>superclass / parent class</td></tr>
+          <tr><td><code>Car</code></td><td>subclass / child class</td></tr>
+        </tbody>
+      </table>
+      <p>So when I write:</p>
+      <div class="code-block">
+        <div class="code-head"><span>Car.java</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+        <pre class="code"><span class="kw">class</span> <span class="cls">Car</span> <span class="kw">extends</span> <span class="cls">Vehicle</span></pre>
+      </div>
+      <p>I mean exactly this: <b><code>Car</code> inherits accessible members from <code>Vehicle</code></b>. I want "superclass" and "subclass" to become automatic reflexes in your vocabulary from here on.</p>
+    </div>
+  </section>
+
+  <!-- MODULE 21 -->
+  <section class="module" id="m21">
+    <div class="module-head">
+      <div class="module-num">21</div>
+      <div>
+        <h2>Inheritance Hierarchy</h2>
+        <p>One parent, several children, each with its own extras</p>
+      </div>
+    </div>
+
+    <div class="diagram-box">
+      <svg viewBox="0 0 500 160" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:460px; display:block; margin:0 auto;">
+        <defs>
+          <marker id="arrow12b" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" fill="#b8bcd4"/>
+          </marker>
+        </defs>
+        <rect x="190" y="6" width="120" height="40" rx="10" fill="#363849" stroke="#bd93f9" stroke-width="2"/>
+        <text x="250" y="31" fill="#bd93f9" font-size="14.5" font-weight="800" text-anchor="middle" font-family="Segoe UI">Vehicle</text>
+
+        <line x1="250" y1="46" x2="250" y2="66" stroke="#b8bcd4" stroke-width="2"/>
+        <line x1="90" y1="66" x2="410" y2="66" stroke="#b8bcd4" stroke-width="2"/>
+        <line x1="90" y1="66" x2="90" y2="86" stroke="#b8bcd4" stroke-width="2" marker-end="url(#arrow12b)"/>
+        <line x1="250" y1="66" x2="250" y2="86" stroke="#b8bcd4" stroke-width="2" marker-end="url(#arrow12b)"/>
+        <line x1="410" y1="66" x2="410" y2="86" stroke="#b8bcd4" stroke-width="2" marker-end="url(#arrow12b)"/>
+
+        <rect x="30" y="88" width="120" height="40" rx="10" fill="#363849" stroke="#ffb86c" stroke-width="2"/>
+        <text x="90" y="112" fill="#ffb86c" font-size="14" font-weight="700" text-anchor="middle" font-family="Segoe UI">Car</text>
+
+        <rect x="190" y="88" width="120" height="40" rx="10" fill="#363849" stroke="#8be9fd" stroke-width="2"/>
+        <text x="250" y="112" fill="#8be9fd" font-size="14" font-weight="700" text-anchor="middle" font-family="Segoe UI">Bike</text>
+
+        <rect x="350" y="88" width="120" height="40" rx="10" fill="#363849" stroke="#50fa7b" stroke-width="2"/>
+        <text x="410" y="112" fill="#50fa7b" font-size="14" font-weight="700" text-anchor="middle" font-family="Segoe UI">Truck</text>
+      </svg>
+    </div>
+
+    <div class="card">
+      <h3><span class="icon">💻</span> Two Children, Two Different Extras</h3>
+      <div class="code-block">
+        <div class="code-head"><span>VehicleHierarchy.java</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+        <pre class="code"><span class="kw">class</span> <span class="cls">Vehicle</span> {
+
+    <span class="kw">void</span> <span class="mth">start</span>() {
+        <span class="cls">System</span>.out.<span class="mth">println</span>(<span class="str">"Vehicle starts"</span>);
+    }
+}
+
+<span class="kw">class</span> <span class="cls">Car</span> <span class="kw">extends</span> <span class="cls">Vehicle</span> {
+
+    <span class="kw">void</span> <span class="mth">openTrunk</span>() {
+        <span class="cls">System</span>.out.<span class="mth">println</span>(<span class="str">"Trunk opened"</span>);
+    }
+}
+
+<span class="kw">class</span> <span class="cls">Bike</span> <span class="kw">extends</span> <span class="cls">Vehicle</span> {
+
+    <span class="kw">void</span> <span class="mth">kickStart</span>() {
+        <span class="cls">System</span>.out.<span class="mth">println</span>(<span class="str">"Bike kick-started"</span>);
+    }
+}</pre>
+      </div>
+      <p>Both <code>Car</code> and <code>Bike</code> get <code>start()</code> for free from <code>Vehicle</code>, but only <code>Car</code> can <code>openTrunk()</code>, and only <code>Bike</code> can <code>kickStart()</code>. That's the whole point of a hierarchy — shared behavior at the top, specific behavior branching below it.</p>
+    </div>
+  </section>
+
+  <!-- MODULE 22 -->
+  <section class="module" id="m22">
+    <div class="module-head">
+      <div class="module-num">22</div>
+      <div>
+        <h2>IS-A Relationship</h2>
+        <p>The test I want you running before you ever write "extends"</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="icon">🧪</span> Does It Actually Make Sense?</h3>
+      <p>Before I let a class extend another, I ask myself whether a meaningful <b>is-a</b> relationship actually holds. These all pass my test:</p>
+      <div class="isa-row">
+        <div class="isa-chip">Car IS-A Vehicle</div>
+        <div class="isa-chip">Dog IS-A Animal</div>
+        <div class="isa-chip">Manager IS-A Employee</div>
+      </div>
+      <p>But this one fails it:</p>
+      <div class="isa-row">
+        <div class="isa-chip bad">Car IS-A Engine</div>
+      </div>
+      <p>A car isn't a kind of engine — <b>a car has an engine</b>. That's a completely different relationship, and I want you reaching for it instead:</p>
+      <div class="hasa-chip">Car HAS-A Engine → composition</div>
+    </div>
+
+    <div class="callout tip">
+      <div class="ico">💡</div>
+      <div><b>I want you treating this distinction as non-negotiable:</b> this IS-A versus HAS-A distinction is extremely important in professional software design. Get it wrong, and you end up with class hierarchies that don't make sense and are painful to maintain.</div>
+    </div>
+  </section>
+
+  <!-- MODULE 23 -->
+  <section class="module" id="m23">
+    <div class="module-head">
+      <div class="module-num">23</div>
+      <div>
+        <h2><code>super</code> Keyword</h2>
+        <p>Reaching back up to the parent's version of something</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="icon">⬆️</span> What <code>super</code> Gives Me Access To</h3>
+      <p><code>super</code> refers to the immediate parent-class part of the object. Let me show you exactly what that means:</p>
+      <div class="code-block">
+        <div class="code-head"><span>Manager.java</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+        <pre class="code"><span class="kw">class</span> <span class="cls">Employee</span> {
+
+    <span class="cls">String</span> name = <span class="str">"Employee"</span>;
+
+}
+
+<span class="kw">class</span> <span class="cls">Manager</span> <span class="kw">extends</span> <span class="cls">Employee</span> {
+
+    <span class="cls">String</span> name = <span class="str">"Manager"</span>;
+
+    <span class="kw">void</span> <span class="mth">displayNames</span>() {
+
+        <span class="cls">System</span>.out.<span class="mth">println</span>(name);
+        <span class="cls">System</span>.out.<span class="mth">println</span>(<span class="kw">super</span>.name);
+
+    }
+}</pre>
+      </div>
+      <div class="code-output">
+        <span class="lbl">Console Output</span>
+        Manager<br>Employee
+      </div>
+      <p>Both classes have a field literally named <code>name</code> — plain <code>name</code> reaches the <code>Manager</code> version, and <code>super.name</code> reaches back to the <code>Employee</code> version underneath it. That's exactly what I mean by "the immediate parent-class part of the object."</p>
+    </div>
+  </section>
+
+  <!-- MODULE 24 -->
+  <section class="module" id="m24">
+    <div class="module-head">
+      <div class="module-num">24</div>
+      <div>
+        <h2>Calling Parent Constructor</h2>
+        <p>Letting the parent set up its own part first</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="icon">🏗️</span> Building a Manager on Top of an Employee</h3>
+      <div class="code-block">
+        <div class="code-head"><span>Manager.java</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+        <pre class="code"><span class="kw">class</span> <span class="cls">Employee</span> {
+
+    <span class="cls">String</span> name;
+
+    <span class="cls">Employee</span>(<span class="cls">String</span> name) {
+
+        <span class="kw">this</span>.name = name;
+
+    }
+}
+
+<span class="kw">class</span> <span class="cls">Manager</span> <span class="kw">extends</span> <span class="cls">Employee</span> {
+
+    <span class="cls">String</span> department;
+
+    <span class="cls">Manager</span>(<span class="cls">String</span> name, <span class="cls">String</span> department) {
+
+        <span class="kw">super</span>(name);
+
+        <span class="kw">this</span>.department = department;
+    }
+}</pre>
+      </div>
+      <p>I want this one line burned into memory:</p>
+      <div class="code-block">
+        <div class="code-head"><span>The line in question</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+        <pre class="code"><span class="kw">super</span>(name);</pre>
+      </div>
+      <p><b>This calls the parent constructor.</b> I let <code>Employee</code> handle setting up <code>name</code> exactly the way it already knows how to, and <code>Manager</code> only takes responsibility for the piece that's new: <code>department</code>.</p>
+    </div>
+  </section>
+
+  <!-- MODULE 25 -->
+  <section class="module" id="m25">
+    <div class="module-head">
+      <div class="module-num">25</div>
+      <div>
+        <h2>Method Overriding</h2>
+        <p>Replacing the parent's behavior instead of just extending it</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="icon">🔁</span> Giving a Dog Its Own Sound</h3>
+      <div class="code-block">
+        <div class="code-head"><span>Animal.java</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+        <pre class="code"><span class="kw">class</span> <span class="cls">Animal</span> {
+
+    <span class="kw">void</span> <span class="mth">makeSound</span>() {
+
+        <span class="cls">System</span>.out.<span class="mth">println</span>(<span class="str">"Animal makes sound"</span>);
+    }
+}</pre>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>Dog.java</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+        <pre class="code"><span class="kw">class</span> <span class="cls">Dog</span> <span class="kw">extends</span> <span class="cls">Animal</span> {
+
+    <span class="ann">@Override</span>
+    <span class="kw">void</span> <span class="mth">makeSound</span>() {
+
+        <span class="cls">System</span>.out.<span class="mth">println</span>(<span class="str">"Dog barks"</span>);
+    }
+}</pre>
+      </div>
+      <div class="code-block">
+        <div class="code-head"><span>Main.java</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+        <pre class="code"><span class="kw">public class</span> <span class="cls">Main</span> {
+
+    <span class="kw">public static void</span> <span class="mth">main</span>(<span class="cls">String</span>[] args) {
+
+        <span class="cls">Dog</span> dog = <span class="kw">new</span> <span class="cls">Dog</span>();
+
+        dog.<span class="mth">makeSound</span>();
+    }
+}</pre>
+      </div>
+      <div class="code-output"><span class="lbl">Console Output</span>Dog barks</div>
+      <p><code>Dog</code> doesn't just inherit <code>makeSound()</code> as-is — it completely replaces it with its own version. That's overriding, and I want you clearly distinguishing it from overloading, which we'll get to separately.</p>
+    </div>
+  </section>
+
+  <!-- MODULE 26 -->
+  <section class="module" id="m26">
+    <div class="module-head">
+      <div class="module-num">26</div>
+      <div>
+        <h2>Why <code>@Override</code>?</h2>
+        <p>The one-line habit I want you building right now</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="icon">🏷️</span> A Habit I'm Not Negotiable On</h3>
+      <p>I want you using <code>@Override</code> every single time you override a method — no exceptions, starting today:</p>
+      <div class="code-block">
+        <div class="code-head"><span>Annotation</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+        <pre class="code"><span class="ann">@Override</span></pre>
+      </div>
+      <p>Here's exactly what I'm telling the compiler when I write it: <i>"I intend to override a superclass method."</i> If my method signature is wrong — a typo in the name, a mismatched parameter type — the compiler catches it immediately instead of silently letting me create a brand-new, unrelated method by accident.</p>
+    </div>
+
+    <div class="callout teach">
+      <div class="ico">✅</div>
+      <div><b>This is a professional coding practice</b> — not a beginner's training wheel you'll drop later. Every serious Java codebase you'll ever work in expects to see <code>@Override</code> on every overridden method.</div>
+    </div>
+  </section>
+
+  <!-- QUIZ -->
+  <section class="module" id="quiz">
+    <div class="module-head">
+      <div class="module-num">✓</div>
+      <div>
+        <h2>Quick Knowledge Check</h2>
+        <p>5 questions to reinforce this hour's concepts</p>
+      </div>
+    </div>
+
+    <div class="quiz-box" id="quizBox">
+      <div id="quizQuestionArea"></div>
+      <div class="quiz-nav">
+        <button id="prevBtn">← Previous</button>
+        <div class="quiz-dots" id="quizDots"></div>
+        <button id="nextBtn">Next →</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<footer>Java Foundations Training Module — Hour 12 &middot; Prepared for IT Training Cohort &middot; Confidential Training Material</footer>
+
+<div class="scrolltop" id="scrollTop">↑</div>
+
+<script>
+  const progressFill = document.getElementById('progressFill');
+  const scrollTopBtn = document.getElementById('scrollTop');
+  const sections = document.querySelectorAll('section.module');
+  const navLinks = document.querySelectorAll('#navLinks a');
+
+  window.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const scrolled = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+    progressFill.style.width = scrolled + '%';
+    scrollTopBtn.classList.toggle('show', h.scrollTop > 500);
+
+    let current = '';
+    sections.forEach(sec => {
+      const rect = sec.getBoundingClientRect();
+      if (rect.top <= 120 && rect.bottom >= 120) current = sec.id;
+    });
+    navLinks.forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+    });
+  });
+
+  scrollTopBtn.addEventListener('click', () => window.scrollTo({top:0, behavior:'smooth'}));
+
+  const questions = [
+    {
+      q: "In `class Car extends Vehicle`, what does this let Car do?",
+      options: [
+        "Nothing — extends is just a naming convention",
+        "Inherit accessible members (like methods) from Vehicle without rewriting them",
+        "Delete all of Vehicle's methods",
+        "Force Vehicle to inherit from Car instead"
+      ],
+      correct: 1,
+      explain: "Car automatically gains access to Vehicle's accessible methods and fields — that's the core benefit of inheritance."
+    },
+    {
+      q: "In the Vehicle/Car/Bike/Truck example, what's shared at the top and what varies below?",
+      options: [
+        "Everything is identical across all four classes",
+        "Common behavior like start()/stop() lives on Vehicle; each subclass adds its own specific behavior",
+        "Each subclass must redefine start() and stop() independently",
+        "Only Truck can extend Vehicle"
+      ],
+      correct: 1,
+      explain: "The hierarchy puts shared behavior at the parent level and lets each child class add only what makes it unique."
+    },
+    {
+      q: "Which of these correctly reflects a valid IS-A relationship?",
+      options: [
+        "Car IS-A Engine",
+        "Manager IS-A Employee",
+        "Engine IS-A Car",
+        "Trunk IS-A Car"
+      ],
+      correct: 1,
+      explain: "Manager IS-A Employee is a meaningful is-a relationship. Car and Engine is a HAS-A (composition) relationship, not is-a."
+    },
+    {
+      q: "What does `super(name);` do inside the Manager constructor?",
+      options: [
+        "Creates a new Employee object separately",
+        "Calls the Employee (parent) constructor to initialize the inherited part of the object",
+        "Overrides the Employee constructor",
+        "Deletes the name field"
+      ],
+      correct: 1,
+      explain: "super(name) delegates to the parent class's constructor, letting Employee handle its own initialization before Manager adds its own."
+    },
+    {
+      q: "Why do I insist on using @Override every time you override a method?",
+      options: [
+        "It makes the program run faster",
+        "It tells the compiler your intent, so a mismatched method signature gets caught as an error instead of silently creating an unrelated method",
+        "It's required by the Java language to compile at all",
+        "It automatically generates documentation"
+      ],
+      correct: 1,
+      explain: "@Override is a safety net: if your signature doesn't actually match a superclass method, the compiler flags it instead of letting the mistake pass silently."
+    }
+  ];
+
+  let current = 0;
+  const answered = new Array(questions.length).fill(null);
+
+  const qArea = document.getElementById('quizQuestionArea');
+  const dotsWrap = document.getElementById('quizDots');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+
+  function renderDots(){
+    dotsWrap.innerHTML = '';
+    questions.forEach((_, i) => {
+      const d = document.createElement('span');
+      if (i === current) d.classList.add('active');
+      else if (answered[i] !== null) d.classList.add('done');
+      dotsWrap.appendChild(d);
+    });
+  }
+
+  function renderQuestion(){
+    if (current >= questions.length){
+      const correctCount = answered.filter((a,i) => a === questions[i].correct).length;
+      qArea.innerHTML = `<div class="quiz-score">🎉 You scored ${correctCount} / ${questions.length}</div>`;
+      prevBtn.disabled = false;
+      nextBtn.disabled = true;
+      renderDots();
+      return;
+    }
+    const item = questions[current];
+    let optsHtml = item.options.map((opt, i) => {
+      let cls = 'quiz-opt';
+      if (answered[current] !== null){
+        if (i === item.correct) cls += ' correct';
+        else if (i === answered[current]) cls += ' wrong';
+      }
+      return `<div class="${cls}" data-idx="${i}">${opt}</div>`;
+    }).join('');
+
+    qArea.innerHTML = `
+      <div class="quiz-q">Q${current+1}. ${item.q}</div>
+      <div class="quiz-opts">${optsHtml}</div>
+      <div class="quiz-feedback">${answered[current] !== null ? item.explain : ''}</div>
+    `;
+
+    document.querySelectorAll('.quiz-opt').forEach(el => {
+      el.addEventListener('click', () => {
+        if (answered[current] !== null) return;
+        answered[current] = parseInt(el.getAttribute('data-idx'));
+        renderQuestion();
+      });
+    });
+
+    prevBtn.disabled = current === 0;
+    nextBtn.disabled = false;
+    nextBtn.textContent = current === questions.length - 1 ? 'Finish →' : 'Next →';
+    renderDots();
+  }
+
+  prevBtn.addEventListener('click', () => { if (current > 0){ current--; renderQuestion(); } });
+  nextBtn.addEventListener('click', () => { current++; renderQuestion(); });
+
+  renderQuestion();
+</script>
+
+</body>
+</html>

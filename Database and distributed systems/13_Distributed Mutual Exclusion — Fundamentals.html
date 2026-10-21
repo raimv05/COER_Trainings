@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hour 13 — Distributed Mutual Exclusion Fundamentals</title>
+<style>
+  :root{
+    --bg:#282a36;
+    --bg-alt:#21222c;
+    --panel:#2f3140;
+    --line:#44475a;
+    --fg:#f8f8f2;
+    --muted:#a9adc7;
+    --comment:#6272a4;
+    --cyan:#8be9fd;
+    --green:#50fa7b;
+    --amber:#ffb86c;
+    --pink:#ff79c6;
+    --purple:#bd93f9;
+    --red:#ff5555;
+    --yellow:#f1fa8c;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    background:radial-gradient(circle at 15% 10%, #31334a 0%, var(--bg) 45%) fixed;
+    color:var(--fg);
+    font-family:'Segoe UI', Roboto, -apple-system, sans-serif;
+    overflow:hidden;
+  }
+  .deck{position:relative;width:100vw;height:100vh;}
+  .slide{
+    position:absolute;inset:0;
+    display:none;
+    flex-direction:column;
+    padding:56px 80px 90px;
+    animation:fadeIn .45s ease;
+  }
+  .slide.active{display:flex;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+  .kicker{color:var(--amber);font-size:14px;letter-spacing:2px;font-weight:600;margin-bottom:6px;}
+  h1{font-size:40px;margin:0 0 6px;color:var(--fg);}
+  h2{font-size:30px;margin:0 0 18px;color:var(--fg);}
+  h3{font-size:20px;margin:0 0 10px;color:var(--cyan);}
+  p{line-height:1.6;color:var(--muted);font-size:16px;}
+  .lead{font-size:19px;color:var(--fg);max-width:760px;}
+
+  .topbar{position:fixed;top:0;left:0;right:0;height:6px;background:var(--line);z-index:50;}
+  .topbar-fill{height:100%;background:linear-gradient(90deg,var(--amber),var(--pink));transition:width .3s ease;}
+  .navbar{
+    position:fixed;bottom:0;left:0;right:0;height:64px;
+    background:rgba(33,34,44,.92);border-top:1px solid var(--line);
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 32px;backdrop-filter:blur(6px);z-index:50;
+  }
+  .navbar .brand{font-size:13px;color:var(--comment);}
+  .navbar .brand b{color:var(--amber);}
+  .nav-controls{display:flex;align-items:center;gap:14px;}
+  .nav-btn{
+    background:var(--panel);border:1px solid var(--line);color:var(--fg);
+    padding:8px 18px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;transition:.2s;
+  }
+  .nav-btn:hover{border-color:var(--amber);color:var(--amber);}
+  .nav-btn:disabled{opacity:.35;cursor:not-allowed;}
+  .slide-counter{color:var(--muted);font-size:13px;min-width:60px;text-align:center;}
+  .dots{display:flex;gap:5px;flex-wrap:wrap;max-width:340px;}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--line);cursor:pointer;transition:.2s;}
+  .dot.active{background:var(--amber);width:18px;border-radius:4px;}
+
+  .grid{display:grid;gap:16px;}
+  .grid-5{grid-template-columns:repeat(5,1fr);}
+  .grid-4{grid-template-columns:repeat(4,1fr);}
+  .grid-3{grid-template-columns:repeat(3,1fr);}
+  .grid-2{grid-template-columns:repeat(2,1fr);}
+  .content{flex:1;overflow-y:auto;padding-right:8px;}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;}
+  .badge{
+    display:inline-block;background:rgba(189,147,249,.15);color:var(--purple);
+    border:1px solid rgba(189,147,249,.4);padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;
+    margin-bottom:14px;letter-spacing:.5px;
+  }
+  .tag-warn{
+    display:inline-block;background:rgba(255,85,85,.12);color:var(--red);
+    border:1px solid rgba(255,85,85,.4);padding:4px 12px;border-radius:20px;
+    font-size:12px;font-weight:700;letter-spacing:1px;margin-bottom:10px;
+  }
+  .tag-good{
+    display:inline-block;background:rgba(80,250,123,.12);color:var(--green);
+    border:1px solid rgba(80,250,123,.4);padding:4px 12px;border-radius:20px;
+    font-size:12px;font-weight:700;letter-spacing:1px;margin-bottom:10px;
+  }
+
+  .resource-card{
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:16px;text-align:center;transition:.2s;
+  }
+  .resource-card:hover{border-color:var(--amber);transform:translateY(-3px);}
+  .resource-card .ic{font-size:24px;margin-bottom:8px;display:block;}
+  .resource-card .lbl{font-size:13.5px;color:var(--fg);font-weight:600;}
+
+  /* CODE */
+  .code-wrap{background:var(--bg-alt);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;}
+  .code-head{display:flex;align-items:center;gap:8px;padding:10px 14px;background:#1c1d27;border-bottom:1px solid var(--line);}
+  .code-head .dotc{width:11px;height:11px;border-radius:50%;}
+  .code-head .filename{margin-left:8px;color:var(--comment);font-size:12px;font-family:'Consolas','Courier New',monospace;}
+  pre{margin:0;padding:16px 20px;overflow-x:auto;font-family:'Consolas','Courier New',monospace;font-size:13.5px;line-height:1.65;}
+  code{color:var(--fg);}
+  .tok-kw{color:var(--pink);}
+  .tok-type{color:var(--cyan);}
+  .tok-str{color:var(--yellow);}
+  .tok-fn{color:var(--green);}
+  .tok-num{color:var(--purple);}
+
+  .line-explainer{display:flex;gap:12px;padding:10px 0;border-bottom:1px dashed var(--line);align-items:flex-start;}
+  .line-explainer:last-child{border-bottom:none;}
+  .line-explainer .ln{
+    background:var(--bg-alt);color:var(--amber);font-family:'Consolas',monospace;font-size:12px;
+    padding:3px 8px;border-radius:5px;white-space:nowrap;border:1px solid var(--line);
+  }
+  .line-explainer .desc{font-size:14px;color:var(--muted);line-height:1.5;}
+  .line-explainer .desc b{color:var(--fg);}
+
+  /* Fan diagram (projector / branches) */
+  .fan-wrap{display:flex;align-items:center;justify-content:center;gap:0;padding:16px 0;position:relative;}
+  .fan-left{display:flex;flex-direction:column;gap:10px;}
+  .fan-node{
+    background:var(--panel);border:1px solid var(--line);border-radius:8px;
+    padding:8px 18px;font-weight:600;font-size:13.5px;color:var(--fg);min-width:110px;text-align:center;
+  }
+  .fan-lines{width:70px;height:170px;position:relative;}
+  .fan-lines svg{width:100%;height:100%;}
+  .fan-center{
+    background:var(--panel);border:2px solid var(--amber);color:var(--amber);border-radius:10px;
+    padding:18px 26px;font-weight:700;font-size:15px;text-align:center;
+  }
+
+  /* Flow chain */
+  .chain{display:flex;flex-direction:column;align-items:center;gap:0;padding:16px 0;}
+  .chain-node{
+    background:var(--panel);border:1px solid var(--line);border-radius:8px;
+    padding:12px 26px;font-weight:600;font-size:14px;color:var(--fg);min-width:200px;text-align:center;
+  }
+  .chain-node.c1{border-color:var(--purple);color:var(--purple);}
+  .chain-node.c2{border-color:var(--cyan);color:var(--cyan);}
+  .chain-node.c3{border-color:var(--amber);color:var(--amber);}
+  .chain-node.c4{border-color:var(--red);color:var(--red);}
+  .chain-node.c5{border-color:var(--green);color:var(--green);}
+  .chain-arrow{color:var(--comment);font-size:18px;line-height:1;padding:4px 0;}
+
+  /* Centralized vs distributed topology */
+  .topo-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;}
+  .topo-top{
+    background:var(--panel);border:2px solid var(--amber);color:var(--amber);border-radius:10px;
+    padding:10px 20px;font-weight:700;font-size:14px;
+  }
+  .topo-row{display:flex;gap:40px;}
+  .topo-node{
+    background:var(--bg-alt);border:1px solid var(--line);border-radius:8px;
+    padding:8px 18px;font-size:13px;font-weight:600;color:var(--cyan);
+  }
+  .mesh-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px 60px;justify-items:center;position:relative;}
+  .mesh-node{
+    background:var(--bg-alt);border:1px solid var(--line);border-radius:8px;
+    padding:8px 18px;font-size:13px;font-weight:600;color:var(--pink);z-index:1;
+  }
+
+  /* Classification tree */
+  .class-tree{display:flex;flex-direction:column;align-items:center;}
+  .class-children{display:flex;gap:70px;margin-top:10px;position:relative;}
+  .class-children::before{
+    content:'';position:absolute;top:-18px;left:50%;transform:translateX(-50%);
+    width:calc(100% - 40px);height:1px;background:var(--line);
+  }
+
+  /* Formula box */
+  .formula-box{
+    background:var(--bg-alt);border:1px solid var(--line);border-radius:10px;
+    padding:18px 26px;text-align:center;font-family:'Consolas',monospace;font-size:22px;
+    font-weight:700;color:var(--amber);margin:14px 0;
+  }
+
+  /* Live CS simulator */
+  .demo-btn{
+    background:linear-gradient(135deg,var(--amber),#ff9d4d);color:#282a36;border:none;
+    padding:10px 20px;border-radius:8px;font-weight:700;cursor:pointer;font-size:14px;transition:.2s;
+  }
+  .demo-btn:hover{filter:brightness(1.1);transform:translateY(-1px);}
+  .demo-btn:disabled{opacity:.4;cursor:not-allowed;}
+  .demo-btn.secondary{background:var(--line);color:var(--fg);}
+  .cs-box{
+    width:220px;background:var(--bg-alt);border:2px dashed var(--line);border-radius:12px;
+    padding:20px;text-align:center;margin:16px auto;transition:.3s;
+  }
+  .cs-box.occupied{border-style:solid;border-color:var(--amber);box-shadow:0 0 18px rgba(255,184,108,.3);}
+  .cs-box .cs-label{font-size:12px;color:var(--comment);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;}
+  .cs-box .cs-occupant{font-size:16px;font-weight:700;color:var(--fg);}
+  .thread-row{display:flex;gap:20px;justify-content:center;margin-bottom:10px;}
+  .thread-chip{
+    background:var(--panel);border:2px solid var(--line);border-radius:8px;padding:10px 20px;
+    font-size:13px;font-weight:700;color:var(--muted);transition:.25s;
+  }
+  .thread-chip.waiting{border-color:var(--red);color:var(--red);}
+  .thread-chip.active{border-color:var(--green);color:var(--green);box-shadow:0 0 14px rgba(80,250,123,.3);}
+  .cs-log{
+    background:var(--bg-alt);border:1px solid var(--line);border-radius:8px;padding:12px 16px;
+    font-family:'Consolas',monospace;font-size:12.5px;height:110px;overflow-y:auto;color:var(--muted);
+  }
+
+  /* Quiz */
+  .quiz-q{margin-bottom:22px;}
+  .quiz-q .q-title{font-size:16px;color:var(--fg);font-weight:600;margin-bottom:10px;}
+  .opt{
+    display:block;width:100%;text-align:left;background:var(--panel);border:1px solid var(--line);
+    color:var(--fg);padding:10px 14px;border-radius:8px;margin-bottom:8px;cursor:pointer;font-size:14px;transition:.15s;
+  }
+  .opt:hover{border-color:var(--cyan);}
+  .opt.correct{border-color:var(--green);background:rgba(80,250,123,.12);color:var(--green);}
+  .opt.incorrect{border-color:var(--red);background:rgba(255,85,85,.12);color:var(--red);}
+  .opt.disabled{pointer-events:none;}
+  .quiz-score{color:var(--amber);font-weight:700;font-size:16px;}
+
+  ::-webkit-scrollbar{width:8px;height:8px;}
+  ::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+
+  @media (max-width:900px){
+    .slide{padding:36px 24px 90px;}
+    .grid-5{grid-template-columns:repeat(2,1fr);}
+    .grid-4{grid-template-columns:repeat(2,1fr);}
+    .grid-3{grid-template-columns:repeat(2,1fr);}
+    .grid-2{grid-template-columns:1fr;}
+    h1{font-size:28px;}
+    h2{font-size:22px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar"><div class="topbar-fill" id="progressFill"></div></div>
+
+<div class="deck" id="deck">
+
+  <!-- SLIDE 1: TITLE -->
+  <section class="slide active">
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;">
+      <div class="kicker">MERN STACK BOOTCAMP · DISTRIBUTED SYSTEMS FOUNDATIONS</div>
+      <h1 style="font-size:52px;">Hour 13</h1>
+      <h2 style="color:var(--amber);font-size:34px;">Distributed Mutual Exclusion Fundamentals</h2>
+      <p class="lead">One projector, five teachers — the simplest possible version of a problem that gets a lot harder the moment there's no one machine in charge.</p>
+      <div style="margin-top:28px;display:flex;gap:12px;flex-wrap:wrap;">
+        <div class="card" style="padding:10px 18px;">🔒 Critical Sections</div>
+        <div class="card" style="padding:10px 18px;">🏛️ Centralized vs Distributed</div>
+        <div class="card" style="padding:10px 18px;">✅ Safety &amp; Liveness</div>
+        <div class="card" style="padding:10px 18px;">🧪 Live Critical Section Demo</div>
+      </div>
+    </div>
+    <p style="color:var(--comment);font-size:13px;">Instructor: Manish Rai</p>
+  </section>
+
+  <!-- SLIDE 2: LEARNING OBJECTIVES -->
+  <section class="slide">
+    <div class="kicker">LEARNING OBJECTIVES</div>
+    <h2>By the end of this hour, students should understand</h2>
+    <div class="content">
+      <div class="grid grid-2" style="gap:16px;">
+        <div class="card"><h3>🔐 What mutual exclusion means</h3><p>And why it's required the moment a resource is shared.</p></div>
+        <div class="card"><h3>🧩 What a critical section is</h3><p>The exact portion of code that touches shared state.</p></div>
+        <div class="card"><h3>🌐 Why distributed is harder</h3><p>Than ordinary locking on one machine.</p></div>
+        <div class="card"><h3>🗂️ Classification of algorithms</h3><p>Token-based vs. non-token-based approaches.</p></div>
+        <div class="card" style="grid-column:1/-1;"><h3>✅ Requirements of a good algorithm</h3><p>Safety, liveness, fairness, no deadlock, and fault awareness — the five properties every real algorithm is judged against.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 3: REAL-LIFE EXAMPLE -->
+  <section class="slide">
+    <div class="badge">2. START WITH A REAL-LIFE EXAMPLE</div>
+    <h2>One projector, five teachers</h2>
+    <div class="content">
+      <div class="fan-wrap">
+        <div class="fan-left">
+          <div class="fan-node">Teacher A</div>
+          <div class="fan-node">Teacher B</div>
+          <div class="fan-node">Teacher C</div>
+          <div class="fan-node">Teacher D</div>
+          <div class="fan-node">Teacher E</div>
+        </div>
+        <div class="fan-lines">
+          <svg viewBox="0 0 70 170" preserveAspectRatio="none">
+            <line x1="0" y1="14" x2="60" y2="85" stroke="#44475a" stroke-width="2"/>
+            <line x1="0" y1="48" x2="60" y2="85" stroke="#44475a" stroke-width="2"/>
+            <line x1="0" y1="82" x2="60" y2="85" stroke="#44475a" stroke-width="2"/>
+            <line x1="0" y1="116" x2="60" y2="85" stroke="#44475a" stroke-width="2"/>
+            <line x1="0" y1="150" x2="60" y2="85" stroke="#44475a" stroke-width="2"/>
+          </svg>
+        </div>
+        <div class="fan-center">📽️ ONE PROJECTOR</div>
+      </div>
+      <p class="lead" style="text-align:center;">Two teachers cannot use the projector simultaneously.</p>
+      <div class="card" style="margin-top:4px;text-align:center;">
+        <p style="margin:0;font-weight:600;color:var(--fg);">Only one participant can enter the critical section at a time.</p>
+      </div>
+      <h3 style="margin-top:18px;text-align:center;">In software, this becomes:</h3>
+      <div class="chain">
+        <div class="chain-node c2">Process</div>
+        <div class="chain-arrow">↓</div>
+        <div class="chain-node c3">Request shared resource</div>
+        <div class="chain-arrow">↓</div>
+        <div class="chain-node c4">Critical Section</div>
+        <div class="chain-arrow">↓</div>
+        <div class="chain-node c5">Release resource</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 4: CRITICAL SECTION -->
+  <section class="slide">
+    <div class="badge">3. WHAT IS A CRITICAL SECTION?</div>
+    <h2>The part of the code that can't be shared</h2>
+    <div class="content">
+      <div class="card">
+        <p class="lead" style="margin:0;">A <b style="color:var(--fg);">critical section</b> is the portion of a program where a shared resource is accessed or modified.</p>
+      </div>
+      <div class="code-wrap" style="margin-top:16px;max-width:400px;">
+        <div class="code-head">
+          <div class="dotc" style="background:#ff5f56;"></div>
+          <div class="dotc" style="background:#ffbd2e;"></div>
+          <div class="dotc" style="background:#27c93f;"></div>
+          <span class="filename">critical-section.java</span>
+        </div>
+        <pre><code>balance = balance - <span class="tok-num">500</span>;</code></pre>
+      </div>
+      <div class="card" style="margin-top:16px;border-color:var(--red);">
+        <p style="margin:0;">If multiple processes execute this simultaneously <b style="color:var(--fg);">without coordination</b>, incorrect results can occur — the exact lost-update problem from Hour 8, now across independent machines instead of threads.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 5: CENTRALIZED VS DISTRIBUTED -->
+  <section class="slide">
+    <div class="badge">4. CENTRALIZED VS DISTRIBUTED MUTUAL EXCLUSION</div>
+    <h2>Who decides who goes next?</h2>
+    <div class="content">
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="tag-good">CENTRALIZED</div>
+          <div class="topo-wrap">
+            <div class="topo-top">Coordinator</div>
+            <div class="topo-row">
+              <div class="topo-node">P1</div>
+              <div class="topo-node">P2</div>
+              <div class="topo-node">P3</div>
+            </div>
+          </div>
+          <p style="text-align:center;margin-top:12px;">The coordinator decides who gets access — simple, but a single point of failure.</p>
+        </div>
+        <div class="card">
+          <div class="tag-warn">DISTRIBUTED</div>
+          <div class="mesh-grid" style="margin-top:10px;">
+            <div class="mesh-node">P1</div>
+            <div class="mesh-node">P2</div>
+            <div class="mesh-node">P3</div>
+            <div class="mesh-node">P4</div>
+          </div>
+          <p style="text-align:center;margin-top:16px;">There may be <b style="color:var(--fg);">no central coordinator</b> — processes must agree among themselves.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 6: WHY DISTRIBUTED MUTUAL EXCLUSION -->
+  <section class="slide">
+    <div class="badge">5. WHY DISTRIBUTED MUTUAL EXCLUSION?</div>
+    <h2>Four bank branches, one shared account</h2>
+    <div class="content">
+      <div class="fan-wrap">
+        <div class="fan-left">
+          <div class="fan-node">Branch A</div>
+          <div class="fan-node">Branch B</div>
+          <div class="fan-node">Branch C</div>
+          <div class="fan-node">Branch D</div>
+        </div>
+        <div class="fan-lines" style="height:140px;">
+          <svg viewBox="0 0 70 140" preserveAspectRatio="none">
+            <line x1="0" y1="14" x2="60" y2="70" stroke="#44475a" stroke-width="2"/>
+            <line x1="0" y1="48" x2="60" y2="70" stroke="#44475a" stroke-width="2"/>
+            <line x1="0" y1="82" x2="60" y2="70" stroke="#44475a" stroke-width="2"/>
+            <line x1="0" y1="116" x2="60" y2="70" stroke="#44475a" stroke-width="2"/>
+          </svg>
+        </div>
+        <div class="fan-center">🏦 Shared Account</div>
+      </div>
+      <div class="card" style="margin-top:6px;">
+        <p style="margin:0;">Any branch, anywhere, might try to update the same account at the same moment. We need to <b style="color:var(--fg);">prevent conflicting operations</b> — and unlike the projector, no single room has a line of teachers waiting; the "requests" arrive over a network, from machines that can't see each other directly.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 7: REQUIREMENTS -->
+  <section class="slide">
+    <div class="badge">6. REQUIREMENTS OF MUTUAL EXCLUSION</div>
+    <h2>What makes an algorithm actually good</h2>
+    <div class="content">
+      <div class="grid grid-5">
+        <div class="resource-card"><span class="ic">🛡️</span><span class="lbl">Safety</span></div>
+        <div class="resource-card"><span class="ic">⏳</span><span class="lbl">Liveness</span></div>
+        <div class="resource-card"><span class="ic">⚖️</span><span class="lbl">Fairness</span></div>
+        <div class="resource-card"><span class="ic">🚫</span><span class="lbl">No deadlock</span></div>
+        <div class="resource-card"><span class="ic">🩺</span><span class="lbl">Fault awareness</span></div>
+      </div>
+      <div class="grid grid-2" style="margin-top:18px;">
+        <div class="card"><h3 style="font-size:16px;">1. Safety</h3><p>Never allow two processes into the critical section simultaneously.</p><div class="code-wrap" style="margin-top:8px;"><pre style="padding:10px 14px;font-size:12.5px;"><code>P1 → CS
+P2 → CS   ❌</code></pre></div></div>
+        <div class="card"><h3 style="font-size:16px;">2. Liveness</h3><p>A requesting process should <b style="color:var(--fg);">eventually</b> get access — not be stuck forever.</p></div>
+        <div class="card"><h3 style="font-size:16px;">3. Fairness</h3><p>Requests should not be indefinitely ignored in favor of others.</p></div>
+        <div class="card"><h3 style="font-size:16px;">4. No deadlock</h3><p>Processes shouldn't wait forever <b style="color:var(--fg);">because of the algorithm itself.</b></p></div>
+      </div>
+      <div class="card" style="margin-top:16px;"><h3 style="font-size:16px;">5. Fault awareness</h3><p style="margin:0;">The algorithm should consider process and network failures — a crashed process should never be able to permanently lock everyone else out.</p></div>
+    </div>
+  </section>
+
+  <!-- SLIDE 8: SAFETY CONDITION -->
+  <section class="slide">
+    <div class="badge">7. MUTUAL EXCLUSION THEOREM / SAFETY CONDITION</div>
+    <h2>The fundamental property, stated precisely</h2>
+    <div class="content">
+      <div class="card">
+        <p class="lead" style="margin:0;">At any instant, <b style="color:var(--fg);">at most one process</b> may execute its critical section for a particular shared resource.</p>
+      </div>
+      <p style="margin-top:16px;">If the critical sections of two different processes ever overlap in time:</p>
+      <div class="formula-box">CS(P<sub>i</sub>) ∩ CS(P<sub>j</sub>) ≠ ∅</div>
+      <p style="text-align:center;">...the mutual exclusion property is <b style="color:var(--red);">violated</b>.</p>
+      <div class="card" style="margin-top:10px;text-align:center;">
+        <p style="margin:0;">For teaching purposes, the simplest way to remember it:</p>
+        <div class="formula-box" style="margin:10px auto 0;max-width:260px;">Processes in CS ≤ 1</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 9: CLASSIFICATION -->
+  <section class="slide">
+    <div class="badge">8. CLASSIFICATION</div>
+    <h2>Two major families of algorithms</h2>
+    <div class="content">
+      <div class="class-tree">
+        <div class="chain-node c3">Distributed Mutual Exclusion</div>
+        <div class="class-children">
+          <div class="chain-node c2">Token-based</div>
+          <div class="chain-node c4">Non-token-based</div>
+        </div>
+      </div>
+      <div class="grid grid-2" style="margin-top:20px;">
+        <div class="card">
+          <h3>🎫 Token-based</h3>
+          <p>Possession of a token gives permission to enter the critical section — only one token exists, so only one process can hold it.</p>
+          <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+            <span class="tag-good" style="margin:0;">Token Ring</span>
+            <span class="tag-good" style="margin:0;">Suzuki–Kasami</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3>💬 Non-token-based</h3>
+          <p>Processes communicate through request/reply messages and negotiate access directly with each other.</p>
+          <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+            <span class="tag-warn" style="margin:0;">Lamport's algorithm</span>
+            <span class="tag-warn" style="margin:0;">Ricart–Agrawala</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 10: JAVA FOUNDATION CODE -->
+  <section class="slide">
+    <div class="badge">9. JAVA FOUNDATION — CRITICAL SECTION</div>
+    <h2>Mutual exclusion inside a single JVM</h2>
+    <div class="content">
+      <div class="code-wrap">
+        <div class="code-head">
+          <div class="dotc" style="background:#ff5f56;"></div>
+          <div class="dotc" style="background:#ffbd2e;"></div>
+          <div class="dotc" style="background:#27c93f;"></div>
+          <span class="filename">SharedResource.java</span>
+        </div>
+        <pre><code><span class="tok-kw">class</span> <span class="tok-type">SharedResource</span> {
+
+    <span class="tok-kw">private</span> <span class="tok-kw">int</span> value = <span class="tok-num">0</span>;
+
+    <span class="tok-kw">public</span> <span class="tok-kw">synchronized</span> <span class="tok-kw">void</span> <span class="tok-fn">update</span>(<span class="tok-type">String</span> processName) {
+
+        <span class="tok-type">System</span>.out.println(
+                processName + <span class="tok-str">" entered critical section."</span>);
+
+        value++;
+
+        <span class="tok-kw">try</span> {
+            <span class="tok-type">Thread</span>.sleep(<span class="tok-num">1000</span>);
+        } <span class="tok-kw">catch</span> (<span class="tok-type">InterruptedException</span> e) {
+            <span class="tok-type">Thread</span>.currentThread().interrupt();
+        }
+
+        <span class="tok-type">System</span>.out.println(
+                processName + <span class="tok-str">" leaving critical section."</span>);
+    }
+}</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 11: TEST CODE + LIVE DEMO -->
+  <section class="slide">
+    <div class="badge">9. JAVA FOUNDATION — LIVE DEMO</div>
+    <h2>Watch mutual exclusion enforced live</h2>
+    <div class="content">
+      <div class="code-wrap" style="max-width:600px;">
+        <div class="code-head">
+          <div class="dotc" style="background:#ff5f56;"></div>
+          <div class="dotc" style="background:#ffbd2e;"></div>
+          <div class="dotc" style="background:#27c93f;"></div>
+          <span class="filename">MutualExclusionDemo.java</span>
+        </div>
+        <pre style="font-size:12.5px;"><code><span class="tok-kw">public class</span> <span class="tok-type">MutualExclusionDemo</span> {
+
+    <span class="tok-kw">public static</span> <span class="tok-kw">void</span> <span class="tok-fn">main</span>(<span class="tok-type">String</span>[] args) {
+
+        <span class="tok-type">SharedResource</span> resource = <span class="tok-kw">new</span> <span class="tok-fn">SharedResource</span>();
+
+        <span class="tok-type">Thread</span> p1 = <span class="tok-kw">new</span> <span class="tok-type">Thread</span>(
+                () -> resource.update(<span class="tok-str">"Process-1"</span>));
+
+        <span class="tok-type">Thread</span> p2 = <span class="tok-kw">new</span> <span class="tok-type">Thread</span>(
+                () -> resource.update(<span class="tok-str">"Process-2"</span>));
+
+        p1.start();
+        p2.start();
+    }
+}</code></pre>
+      </div>
+
+      <div class="thread-row" style="margin-top:16px;">
+        <div class="thread-chip" id="chip1">Process-1</div>
+        <div class="thread-chip" id="chip2">Process-2</div>
+      </div>
+      <div class="cs-box" id="csBox">
+        <div class="cs-label">Critical Section</div>
+        <div class="cs-occupant" id="csOccupant">— empty —</div>
+      </div>
+      <div class="cs-log" id="csLog"><div>Ready. Click "Run demo" to start both threads at once.</div></div>
+      <div style="display:flex;gap:12px;justify-content:center;margin-top:12px;">
+        <button class="demo-btn" id="csRunBtn" onclick="runCsDemo()">▶ Run demo</button>
+        <button class="demo-btn secondary" onclick="resetCsDemo()">↺ Reset</button>
+      </div>
+      <p style="margin-top:12px;text-align:center;font-size:13px;color:var(--comment);">Java's <code style="color:var(--amber);">synchronized</code> gives mutual exclusion <b style="color:var(--fg);">inside one JVM</b>. Distributed mutual exclusion requires coordination across <b style="color:var(--fg);">independent processes and machines</b> — that distinction is the whole reason this course has a dedicated hour for it.</p>
+    </div>
+  </section>
+
+  <!-- SLIDE 12: RECAP -->
+  <section class="slide">
+    <div class="kicker">RECAP</div>
+    <h2>Hour 13 — Key takeaways</h2>
+    <div class="content">
+      <div class="grid grid-2">
+        <div class="card"><h3>🔒 Mutual exclusion, everywhere</h3><p>Any time a critical section touches shared state, only one participant can be inside it at a time.</p></div>
+        <div class="card"><h3>🏛️ Centralized vs. distributed</h3><p>A coordinator simplifies the decision but becomes a single point of failure — distributed systems often have no coordinator at all.</p></div>
+        <div class="card"><h3>✅ Five requirements</h3><p>Safety, liveness, fairness, no deadlock, and fault awareness define what "good" means for these algorithms.</p></div>
+        <div class="card"><h3>🎫 Two families</h3><p>Token-based (Token Ring, Suzuki–Kasami) and non-token-based (Lamport's, Ricart–Agrawala) — both studied in the hours ahead.</p></div>
+      </div>
+      <p class="lead" style="margin-top:20px;">Next hour: diving into <b style="color:var(--fg);">Lamport's Distributed Mutual Exclusion Algorithm</b> in full detail.</p>
+    </div>
+  </section>
+
+  <!-- SLIDE 13: QUIZ -->
+  <section class="slide">
+    <div class="kicker">QUICK CHECK</div>
+    <h2>Hour 13 quiz</h2>
+    <div class="content" id="quizContainer"></div>
+    <div style="margin-top:6px;" id="quizScoreRow"></div>
+  </section>
+
+</div>
+
+<div class="navbar">
+  <div class="brand">MERN Stack Bootcamp · <b>Hour 13</b> — Distributed Mutual Exclusion Fundamentals</div>
+  <div class="nav-controls">
+    <button class="nav-btn" id="prevBtn" onclick="goTo(current-1)">← Prev</button>
+    <div class="dots" id="dots"></div>
+    <span class="slide-counter" id="counter">1 / 13</span>
+    <button class="nav-btn" id="nextBtn" onclick="goTo(current+1)">Next →</button>
+  </div>
+</div>
+
+<script>
+/* ---------- SLIDE NAVIGATION ---------- */
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+let current = 0;
+
+const dotsWrap = document.getElementById('dots');
+for(let i=0;i<total;i++){
+  const d = document.createElement('div');
+  d.className = 'dot' + (i===0?' active':'');
+  d.onclick = () => goTo(i);
+  dotsWrap.appendChild(d);
+}
+const dotEls = document.querySelectorAll('.dot');
+
+function goTo(i){
+  if(i<0||i>=total) return;
+  slides[current].classList.remove('active');
+  dotEls[current].classList.remove('active');
+  current = i;
+  slides[current].classList.add('active');
+  dotEls[current].classList.add('active');
+  document.getElementById('counter').textContent = (current+1)+' / '+total;
+  document.getElementById('prevBtn').disabled = current===0;
+  document.getElementById('nextBtn').disabled = current===total-1;
+  document.getElementById('progressFill').style.width = ((current+1)/total*100)+'%';
+}
+document.addEventListener('keydown', e=>{
+  if(e.key==='ArrowRight') goTo(current+1);
+  if(e.key==='ArrowLeft') goTo(current-1);
+});
+goTo(0);
+
+/* ---------- 9: CRITICAL SECTION LIVE DEMO ---------- */
+function sleep(ms){ return new Promise(res=>setTimeout(res, ms)); }
+
+function csAddLog(text){
+  const log = document.getElementById('csLog');
+  const div = document.createElement('div');
+  div.textContent = '› ' + text;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+
+let csRunning = false;
+async function runCsDemo(){
+  if(csRunning) return;
+  csRunning = true;
+  resetCsDemo(true);
+  const btn = document.getElementById('csRunBtn');
+  btn.disabled = true;
+
+  const chip1 = document.getElementById('chip1');
+  const chip2 = document.getElementById('chip2');
+  const box = document.getElementById('csBox');
+  const occupant = document.getElementById('csOccupant');
+
+  chip1.classList.add('waiting');
+  chip2.classList.add('waiting');
+  csAddLog('Process-1.start(); Process-2.start();  — both try to enter at once');
+
+  // synchronized means only one gets in; the other waits. Pick order randomly like real JVM scheduling.
+  const order = Math.random() < 0.5 ? ['Process-1','Process-2'] : ['Process-2','Process-1'];
+
+  for(const name of order){
+    const chip = name === 'Process-1' ? chip1 : chip2;
+    const otherChip = name === 'Process-1' ? chip2 : chip1;
+    chip.classList.remove('waiting');
+    chip.classList.add('active');
+    box.classList.add('occupied');
+    occupant.textContent = name;
+    csAddLog(name + ' entered critical section.');
+    await sleep(900);
+    csAddLog(name + ' leaving critical section.');
+    chip.classList.remove('active');
+    box.classList.remove('occupied');
+    occupant.textContent = '— empty —';
+    await sleep(200);
+  }
+
+  csAddLog('Both processes completed — critical section was never shared.');
+  btn.disabled = false;
+  csRunning = false;
+}
+function resetCsDemo(silent){
+  document.getElementById('chip1').classList.remove('waiting','active');
+  document.getElementById('chip2').classList.remove('waiting','active');
+  document.getElementById('csBox').classList.remove('occupied');
+  document.getElementById('csOccupant').textContent = '— empty —';
+  if(!silent){
+    document.getElementById('csLog').innerHTML = '<div>Ready. Click "Run demo" to start both threads at once.</div>';
+  } else {
+    document.getElementById('csLog').innerHTML = '';
+  }
+}
+
+/* ---------- QUIZ ---------- */
+const quizData = [
+  {
+    q: "In the projector example, what rule solves the scheduling problem?",
+    opts: [
+      "Every teacher can use the projector at once",
+      "Only one participant can enter the critical section at a time",
+      "The projector is duplicated for each teacher",
+      "Teachers take turns randomly with no coordination"
+    ],
+    correct: 1
+  },
+  {
+    q: "What is a critical section?",
+    opts: [
+      "Any line of code in a program",
+      "The portion of a program where a shared resource is accessed or modified",
+      "A section of code that never runs",
+      "The main() method only"
+    ],
+    correct: 1
+  },
+  {
+    q: "What is the key risk of a centralized mutual exclusion approach?",
+    opts: [
+      "It's too fair to all processes",
+      "The coordinator is a single point of failure",
+      "It requires no network at all",
+      "It can't be implemented in Java"
+    ],
+    correct: 1
+  },
+  {
+    q: "Which requirement means 'a requesting process should eventually get access'?",
+    opts: ["Safety", "Liveness", "Fault awareness", "Token possession"],
+    correct: 1
+  },
+  {
+    q: "What's the key distinction the Java synchronized demo is meant to teach?",
+    opts: [
+      "synchronized works the same across any number of separate machines",
+      "synchronized gives mutual exclusion only within one JVM — distributed mutual exclusion needs coordination across independent processes",
+      "synchronized has nothing to do with critical sections",
+      "synchronized automatically solves distributed mutual exclusion"
+    ],
+    correct: 1
+  }
+];
+
+let quizScore = 0;
+let quizAnswered = 0;
+const quizContainer = document.getElementById('quizContainer');
+quizData.forEach((item, qi)=>{
+  const wrap = document.createElement('div');
+  wrap.className = 'quiz-q';
+  const title = document.createElement('div');
+  title.className = 'q-title';
+  title.textContent = (qi+1) + '. ' + item.q;
+  wrap.appendChild(title);
+  item.opts.forEach((optText, oi)=>{
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = optText;
+    btn.onclick = () => {
+      const allOpts = wrap.querySelectorAll('.opt');
+      allOpts.forEach(o=>o.classList.add('disabled'));
+      if(oi === item.correct){
+        btn.classList.add('correct');
+        quizScore++;
+      } else {
+        btn.classList.add('incorrect');
+        allOpts[item.correct].classList.add('correct');
+      }
+      quizAnswered++;
+      updateScore();
+    };
+    wrap.appendChild(btn);
+  });
+  quizContainer.appendChild(wrap);
+});
+function updateScore(){
+  const row = document.getElementById('quizScoreRow');
+  row.innerHTML = '<span class="quiz-score">Score: '+quizScore+' / '+quizData.length+'</span>' +
+    (quizAnswered===quizData.length ? ' — Quiz complete! 🎉' : '');
+}
+</script>
+</body>
+</html>

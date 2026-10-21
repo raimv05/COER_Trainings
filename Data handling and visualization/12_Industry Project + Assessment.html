@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Industry Mini Project — Problem Statement</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<style>
+  :root{
+    --ink:#14181F;
+    --paper:#F4F6F5;
+    --panel:#FFFFFF;
+    --line:#DCE3E1;
+    --teal:#0E7C86;
+    --teal-soft:#E4F1F1;
+    --amber:#D98E31;
+    --amber-soft:#FBEEDD;
+    --violet:#6E5A9E;
+    --violet-soft:#EDE9F5;
+    --coral:#C0524A;
+    --coral-soft:#F7E7E5;
+    --green:#3E8E5A;
+    --green-soft:#E6F1EA;
+    --slate:#5B6570;
+    --radius-sm:4px;
+    --radius-md:8px;
+    --maxw:960px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:'IBM Plex Sans',sans-serif;font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;}
+  h1,h2,h3,h4{font-family:'Space Grotesk',sans-serif;color:var(--ink);line-height:1.2;margin:0 0 .5em 0;}
+  code,.mono{font-family:'IBM Plex Mono',monospace;}
+  p{max-width:72ch;}
+  a{color:var(--teal);}
+
+  .shell{display:grid;grid-template-columns:250px minmax(0,1fr);max-width:1280px;margin:0 auto;}
+  @media (max-width:880px){.shell{grid-template-columns:1fr;} .toc{display:none;}}
+
+  .topbar{background:var(--ink);color:#EDEFEC;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:12.5px;letter-spacing:.02em;}
+  .topbar .mark{display:flex;align-items:center;gap:10px;color:#EDEFEC;}
+  .topbar .path{color:#8B9490;}
+  .topbar .path b{color:#EDEFEC;font-weight:500;}
+
+  .toc{padding:40px 20px 40px 32px;position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;}
+  .toc .toc-label{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--slate);margin-bottom:14px;}
+  .toc ol{list-style:none;margin:0;padding:0;border-left:1px solid var(--line);}
+  .toc a{display:block;text-decoration:none;color:var(--slate);font-size:13.5px;padding:7px 0 7px 16px;margin-left:-1px;border-left:2px solid transparent;transition:color .15s ease,border-color .15s ease;}
+  .toc a:hover{color:var(--ink);}
+  .toc a.active{color:var(--ink);border-left:2px solid var(--teal);font-weight:500;}
+
+  main{padding:0 32px 100px;}
+  .content-inner{max-width:var(--maxw);}
+
+  /* hero / document header */
+  .hero{padding:56px 0 32px;border-bottom:1px solid var(--line);margin-bottom:12px;}
+  .hero .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--teal);margin-bottom:16px;}
+  .hero h1{max-width:20ch;font-size:clamp(28px,4vw,42px);letter-spacing:-.01em;}
+  .hero .sub{color:var(--slate);max-width:62ch;font-size:16.5px;margin-top:14px;}
+
+  .meta-strip{display:flex;flex-wrap:wrap;gap:10px;margin:28px 0 48px;}
+  .meta-chip{
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-md);
+    padding:10px 16px;display:flex;flex-direction:column;gap:2px;min-width:120px;
+  }
+  .meta-chip .mc-label{font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--slate);}
+  .meta-chip .mc-val{font-size:14px;font-weight:600;font-family:'Space Grotesk',sans-serif;}
+
+  section.block{margin-bottom:64px;}
+  .sec-num{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--teal);margin-bottom:6px;}
+  section.block h2{font-size:25px;margin-bottom:14px;}
+  section.block > p.lead{color:var(--ink);font-size:16.5px;}
+
+  /* objectives */
+  .obj-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:24px 0;}
+  @media (max-width:640px){.obj-grid{grid-template-columns:1fr;}}
+  .obj-item{
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-md);
+    padding:14px 16px;display:flex;gap:12px;align-items:flex-start;font-size:14px;
+  }
+  .obj-item .obj-num{
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px;color:var(--teal);
+    background:var(--teal-soft);width:26px;height:26px;border-radius:50%;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+  }
+
+  /* course outcomes table */
+  .co-wrap{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden;margin:22px 0;}
+  table.co-table{width:100%;border-collapse:collapse;font-size:14px;}
+  table.co-table th{background:var(--violet-soft);color:var(--violet);text-align:left;padding:10px 16px;font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.04em;}
+  table.co-table td{padding:11px 16px;border-top:1px solid var(--line);vertical-align:top;}
+  table.co-table td:first-child{font-family:'IBM Plex Mono',monospace;font-weight:700;color:var(--violet);white-space:nowrap;}
+
+  /* scenario card */
+  .scenario-card{
+    background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--amber);
+    border-radius:var(--radius-md);padding:22px 24px;margin:22px 0;
+  }
+  .scenario-card .sc-role{font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--amber);margin-bottom:10px;}
+  .scenario-card p{margin:0 0 8px;font-size:15px;}
+  .scenario-card p:last-child{margin-bottom:0;}
+
+  /* code panel (shared) */
+  .code-panel{background:#1B2027;border-radius:var(--radius-md);overflow:hidden;margin:20px 0;border:1px solid #2B323C;}
+  .code-panel .cp-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:#20262E;border-bottom:1px solid #2B323C;}
+  .cp-bar .cp-file{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:#B8C0C7;}
+  .cp-bar .cp-dots{display:flex;gap:6px;}
+  .cp-bar .cp-dots span{width:9px;height:9px;border-radius:50%;background:#3A4149;}
+  .copy-btn{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#B8C0C7;background:#2B323C;border:none;border-radius:4px;padding:5px 10px;cursor:pointer;}
+  .copy-btn:hover{background:#37404B;}
+  .code-panel pre{margin:0;padding:20px 22px;overflow-x:auto;font-size:13px;}
+  .code-panel code.hljs{background:transparent;padding:0;}
+
+  /* dataset table */
+  .data-table-wrap{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden;margin:20px 0;overflow-x:auto;}
+  table.data-table{width:100%;border-collapse:collapse;font-size:13px;font-family:'IBM Plex Mono',monospace;min-width:620px;}
+  table.data-table th{background:#EEF1F0;text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--slate);padding:9px 14px;font-weight:600;}
+  table.data-table td{padding:9px 14px;border-top:1px solid var(--line);}
+  table.data-table td.nanv{background:var(--coral-soft);color:var(--coral);font-weight:600;}
+  table.data-table tr.dup td{background:var(--amber-soft);}
+  .assumption-note{font-size:12.5px;color:var(--slate);border-left:3px solid var(--line);padding-left:12px;margin-top:10px;}
+
+  /* task list */
+  .task-list{display:flex;flex-direction:column;gap:10px;margin:24px 0;}
+  .task-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden;}
+  .task-card .tk-head{
+    display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--paper);
+  }
+  .task-card .tk-num{
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:13px;color:#fff;
+    background:var(--teal);width:24px;height:24px;border-radius:6px;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .task-card .tk-title{font-weight:600;font-size:14.5px;flex:1;}
+  .task-card .tk-tag{font-family:'IBM Plex Mono',monospace;font-size:10px;padding:3px 9px;border-radius:20px;background:var(--teal-soft);color:var(--teal);text-transform:uppercase;letter-spacing:.04em;}
+  .task-card pre{margin:0;padding:14px 18px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;background:#1B2027;color:#D4D9DE;overflow-x:auto;}
+  .task-card pre .c1{color:#7FB8A8;}
+
+  /* pipeline flowchart */
+  .flow-wrap{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-md);padding:28px 20px;margin:24px 0;overflow-x:auto;}
+  .flow-wrap svg{display:block;margin:0 auto;min-width:560px;}
+
+  /* standards cards */
+  .standard-card{
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-md);
+    padding:18px 20px;margin:14px 0;
+  }
+  .standard-card .std-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+  .standard-card .std-num{
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:13px;color:var(--teal);
+    background:var(--teal-soft);width:24px;height:24px;border-radius:50%;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .standard-card h4{margin:0;font-size:15px;}
+  .standard-card p{font-size:13.5px;color:var(--slate);margin:0 0 10px;}
+
+  /* folder tree */
+  .tree-wrap{background:#1B2027;border-radius:var(--radius-md);padding:18px 22px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:13px;color:#D4D9DE;line-height:1.9;overflow-x:auto;}
+  .tree-wrap .t-dir{color:#7FB8A8;}
+  .tree-wrap .t-file{color:#D4D9DE;}
+  .tree-wrap .t-comment{color:#6C7783;}
+
+  /* right/wrong pattern (reused) */
+  .decision-wrap{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0;}
+  @media (max-width:640px){.decision-wrap{grid-template-columns:1fr;}}
+  .decision-col{border-radius:var(--radius-md);padding:16px;}
+  .decision-col.right{background:var(--green-soft);border:1px solid var(--green);}
+  .decision-col.wrong{background:var(--coral-soft);border:1px solid var(--coral);}
+  .decision-col h5{font-size:11.5px;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.04em;margin:0 0 10px;}
+  .decision-col.right h5{color:var(--green);}
+  .decision-col.wrong h5{color:var(--coral);}
+  .decision-col code{display:block;font-family:'IBM Plex Mono',monospace;font-size:12px;background:rgba(255,255,255,.55);padding:6px 10px;border-radius:4px;margin-bottom:4px;}
+
+  /* env table */
+  .env-grid{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0;}
+  .env-chip{font-family:'IBM Plex Mono',monospace;font-size:13px;background:var(--panel);border:1px solid var(--line);padding:8px 16px;border-radius:20px;}
+
+  /* rubric table */
+  .rubric-wrap{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden;margin:22px 0;overflow-x:auto;}
+  table.rubric-table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:560px;}
+  table.rubric-table th{background:var(--teal-soft);color:var(--teal);text-align:left;padding:10px 14px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;}
+  table.rubric-table td{padding:10px 14px;border-top:1px solid var(--line);}
+  table.rubric-table td.wt{font-family:'IBM Plex Mono',monospace;font-weight:700;color:var(--teal);text-align:center;}
+
+  /* deliverables checklist */
+  .deliv-list{display:flex;flex-direction:column;gap:8px;margin:20px 0;}
+  .deliv-item{display:flex;align-items:flex-start;gap:12px;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-md);padding:12px 16px;font-size:14px;}
+  .deliv-item .dl-box{width:18px;height:18px;border:2px solid var(--teal);border-radius:4px;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;}
+  .deliv-item .dl-box svg{width:11px;height:11px;}
+
+  .outcome{background:var(--ink);color:#EDEFEC;border-radius:var(--radius-md);padding:32px 28px;margin-top:8px;}
+  .outcome .oc-label{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#8FBF9F;margin-bottom:14px;text-transform:uppercase;letter-spacing:.05em;}
+  .outcome p.oc-note{color:#EDEFEC;font-size:17px;margin:0;max-width:66ch;font-family:'Space Grotesk',sans-serif;line-height:1.45;}
+  .outcome p.oc-sub{color:#9AA3AC;font-size:14px;margin-top:12px;max-width:64ch;}
+
+  footer{text-align:center;padding:36px 0 60px;color:var(--slate);font-size:12.5px;font-family:'IBM Plex Mono',monospace;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="mark">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="9" width="3" height="6" fill="#0E7C86"/><rect x="6.5" y="5" width="3" height="10" fill="#D98E31"/><rect x="12" y="1" width="3" height="14" fill="#6E5A9E"/></svg>
+    DATA&nbsp;HANDLING&nbsp;·&nbsp;FINAL&nbsp;HOUR&nbsp;·&nbsp;ASSESSMENT
+  </div>
+  <div class="path">course<span>/</span><b>mini-project</b><span>/</span>problem-statement</div>
+</div>
+
+<div class="shell">
+
+  <nav class="toc" id="toc">
+    <div class="toc-label">ON THIS PAGE</div>
+    <ol>
+      <li><a href="#objectives" class="tocLink">Objectives</a></li>
+      <li><a href="#outcomes" class="tocLink">Course outcomes</a></li>
+      <li><a href="#scenario" class="tocLink">Scenario</a></li>
+      <li><a href="#dataset" class="tocLink">Raw dataset</a></li>
+      <li><a href="#tasks" class="tocLink">Student tasks</a></li>
+      <li><a href="#pipeline" class="tocLink">Expected pipeline</a></li>
+      <li><a href="#standards" class="tocLink">Industry standards</a></li>
+      <li><a href="#environment" class="tocLink">Environment setup</a></li>
+      <li><a href="#deliverables" class="tocLink">Deliverables</a></li>
+      <li><a href="#rubric" class="tocLink">Evaluation rubric</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <div class="content-inner">
+
+      <div class="hero">
+        <div class="eyebrow">INDUSTRY MINI PROJECT · PROBLEM STATEMENT</div>
+        <h1>E-Commerce Customer Data Cleaning</h1>
+        <p class="sub">The capstone assignment for the Data Handling &amp; Preprocessing course. No new theory — this hour is a practical assessment of everything covered across the previous eleven modules, applied to one realistic dataset.</p>
+
+        <div class="meta-strip">
+          <div class="meta-chip"><span class="mc-label">Track</span><span class="mc-val">Data Preprocessing</span></div>
+          <div class="meta-chip"><span class="mc-label">Format</span><span class="mc-val">Individual assignment</span></div>
+          <div class="meta-chip"><span class="mc-label">Duration</span><span class="mc-val">Final hour (Hour 12)</span></div>
+          <div class="meta-chip"><span class="mc-label">Tools</span><span class="mc-val">pandas · scikit-learn</span></div>
+          <div class="meta-chip"><span class="mc-label">Role simulated</span><span class="mc-val">Junior Data Analyst</span></div>
+        </div>
+      </div>
+
+      <!-- Objectives -->
+      <section class="block" id="objectives">
+        <div class="sec-num">OBJECTIVES</div>
+        <h2>What this assessment measures</h2>
+        <p class="lead">By the end of this project, a student should be able to take an unverified, messy dataset and turn it into something an analytics or ML team could use without hesitation.</p>
+
+        <div class="obj-grid">
+          <div class="obj-item"><span class="obj-num">1</span>Profile a raw dataset systematically before making any changes to it.</div>
+          <div class="obj-item"><span class="obj-num">2</span>Detect and resolve duplicate records, inconsistent text, and missing values.</div>
+          <div class="obj-item"><span class="obj-num">3</span>Engineer a new business-relevant feature from existing columns.</div>
+          <div class="obj-item"><span class="obj-num">4</span>Normalize and standardize numeric features correctly, without data leakage.</div>
+          <div class="obj-item"><span class="obj-num">5</span>Justify every cleaning decision rather than applying fixes by default.</div>
+          <div class="obj-item"><span class="obj-num">6</span>Produce a reproducible script, not a one-off manual edit.</div>
+        </div>
+      </section>
+
+      <!-- Course outcomes -->
+      <section class="block" id="outcomes">
+        <div class="sec-num">COURSE OUTCOMES MAPPED</div>
+        <h2>Course outcomes</h2>
+        <p class="lead">This project is the single assessment point that exercises every course outcome from the 12-hour series at once.</p>
+
+        <div class="co-wrap">
+          <table class="co-table">
+            <thead><tr><th>CO</th><th>On completion, the student will be able to</th></tr></thead>
+            <tbody>
+              <tr><td>CO1</td><td>Distinguish structured, semi-structured and unstructured data, and identify common data sources and formats.</td></tr>
+              <tr><td>CO2</td><td>Explore a dataset's shape, types and summary statistics to assess its quality before cleaning it.</td></tr>
+              <tr><td>CO3</td><td>Apply cleaning operations — deduplication, text standardisation, type conversion — correctly and in the right order.</td></tr>
+              <tr><td>CO4</td><td>Select and justify an appropriate missing-value strategy based on context, not habit.</td></tr>
+              <tr><td>CO5</td><td>Engineer new features and encode categorical data for downstream analysis or modelling.</td></tr>
+              <tr><td>CO6</td><td>Normalize and standardize numeric features while avoiding data leakage between train and test data.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Scenario -->
+      <section class="block" id="scenario">
+        <div class="sec-num">SCENARIO</div>
+        <h2>Brief</h2>
+        <div class="scenario-card">
+          <div class="sc-role">Your role: Junior Data Analyst</div>
+          <p>You work as a junior data analyst for an e-commerce company. The company has provided raw customer transaction data pulled directly from the production database.</p>
+          <p>Your job is to prepare this data for analytics — nobody downstream should have to second-guess whether a number in this dataset can be trusted.</p>
+        </div>
+      </section>
+
+      <!-- Dataset -->
+      <section class="block" id="dataset">
+        <div class="sec-num">INPUT</div>
+        <h2>Raw dataset</h2>
+        <p class="lead">Hand this to students exactly as the company would — duplicated, incomplete, and inconsistently formatted.</p>
+
+        <div class="code-panel">
+          <div class="cp-bar">
+            <div class="cp-dots"><span></span><span></span><span></span></div>
+            <div class="cp-file">raw_customers.py</div>
+            <button class="copy-btn" onclick="copyCode(this,'raw-code')">Copy</button>
+          </div>
+          <pre><code class="language-python" id="raw-code">import pandas as pd
+
+data = {
+    "customer_id": [101, 102, 103, 104, 105, 105, 106],
+    "name": ["Rahul", "Priya", "Amit", "Sneha", "Ravi", "Ravi", "Ankit"],
+    "age": [25, 29, None, 35, 31, 31, 28],
+    "city": ["Delhi", "Mumbai", "Delhi", "Pune", "delhi", "delhi", "Mumbai"],
+    "salary": [40000, 55000, 45000, None, 62000, 62000, 48000],
+    "orders": [4, 6, 3, 8, 12, 12, 5]
+}
+
+df = pd.DataFrame(data)
+
+print(df)</code></pre>
+        </div>
+
+        <div class="data-table-wrap">
+          <table class="data-table">
+            <thead><tr><th>customer_id</th><th>name</th><th>age</th><th>city</th><th>salary</th><th>orders</th></tr></thead>
+            <tbody>
+              <tr><td>101</td><td>Rahul</td><td>25</td><td>Delhi</td><td>40000</td><td>4</td></tr>
+              <tr><td>102</td><td>Priya</td><td>29</td><td>Mumbai</td><td>55000</td><td>6</td></tr>
+              <tr><td>103</td><td>Amit</td><td class="nanv">NaN</td><td>Delhi</td><td>45000</td><td>3</td></tr>
+              <tr><td>104</td><td>Sneha</td><td>35</td><td>Pune</td><td class="nanv">NaN</td><td>8</td></tr>
+              <tr class="dup"><td>105</td><td>Ravi</td><td>31</td><td>delhi</td><td>62000</td><td>12</td></tr>
+              <tr class="dup"><td>105</td><td>Ravi</td><td>31</td><td>delhi</td><td>62000</td><td>12</td></tr>
+              <tr><td>106</td><td>Ankit</td><td>28</td><td>Mumbai</td><td>48000</td><td>5</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="assumption-note">The <span class="mono">orders</span> column is included because Task 8 (Create Revenue Indicator) depends on it — fill in or adjust the exact order counts to suit your own class if you'd rather use different figures.</div>
+      </section>
+
+      <!-- Tasks -->
+      <section class="block" id="tasks">
+        <div class="sec-num">ASSIGNMENT</div>
+        <h2>Student tasks</h2>
+        <p class="lead">Ten tasks, in the order a real cleaning pipeline actually runs — explore first, fix what's found, then transform and scale.</p>
+
+        <div class="task-list">
+          <div class="task-card">
+            <div class="tk-head"><span class="tk-num">1</span><span class="tk-title">Explore</span><span class="tk-tag">Module 05</span></div>
+            <pre>df.head()
+df.shape
+df.info()
+df.describe()</pre>
+          </div>
+          <div class="task-card">
+            <div class="tk-head"><span class="tk-num">2</span><span class="tk-title">Find missing values</span><span class="tk-tag">Module 05</span></div>
+            <pre>df.isna().sum()</pre>
+          </div>
+          <div class="task-card">
+            <div class="tk-head"><span class="tk-num">3</span><span class="tk-title">Find duplicates</span><span class="tk-tag">Module 05</span></div>
+            <pre>df.duplicated().sum()</pre>
+          </div>
+          <div class="task-card">
+            <div class="tk-head"><span class="tk-num">4</span><span class="tk-title">Remove duplicates</span><span class="tk-tag">Module 06</span></div>
+            <pre>df = df.drop_duplicates()</pre>
+          </div>
+          <div class="task-card">
+            <div class="tk-head"><span class="tk-num">5</span><span class="tk-title">Standardize city names</span><span class="tk-tag">Module 06</span></div>
+            <pre>df["city"] = df["city"].str.title()</pre>
+          </div>
+          <div class="task-card">
+            <div class="tk-head"><span class="tk-num">6</span><span class="tk-title">Handle missing age</span><span class="tk-tag">Module 07</span></div>
+            <pre>df["age"] = df["age"].fillna(df["age"].median())</pre>
+          </div>
+          <div class="task-card">
+            <div class="tk-head"><span class="tk-num">7</span><span class="tk-title">Handle missing salary</span><span class="tk-tag">Module 07</span></div>
+            <pre>df["salary"] = df["salary"].fillna(df["salary"].median())</pre>
+          </div>
+          <div class="task-card">
+            <div class="tk-head"><span class="tk-num">8</span><span class="tk-title">Create revenue indicator</span><span class="tk-tag">Module 08</span></div>
+            <pre># Assume average order value = ₹1,500
+df["estimated_revenue"] = df["orders"] * 1500</pre>
+          </div>
+          <div class="task-card">
+            <div class="tk-head"><span class="tk-num">9</span><span class="tk-title">Normalize salary</span><span class="tk-tag">Module 09</span></div>
+            <pre>from sklearn.preprocessing import MinMaxScaler
+
+scaler = MinMaxScaler()
+df["salary_normalized"] = scaler.fit_transform(
+    df[["salary"]]
+)</pre>
+          </div>
+          <div class="task-card">
+            <div class="tk-head"><span class="tk-num">10</span><span class="tk-title">Standardize features</span><span class="tk-tag">Module 10</span></div>
+            <pre>from sklearn.preprocessing import StandardScaler
+
+scaler = StandardScaler()
+features = ["age", "salary", "orders", "estimated_revenue"]
+df[features] = scaler.fit_transform(df[features])</pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- Pipeline -->
+      <section class="block" id="pipeline">
+        <div class="sec-num">FINAL EXPECTED WORKFLOW</div>
+        <h2>The complete pipeline students should recognise</h2>
+        <p class="lead">Ten tasks are really one workflow in disguise — by the end, students should be able to redraw this diagram from memory.</p>
+
+        <div class="flow-wrap">
+          <svg viewBox="0 0 640 820" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="pArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M0 0L10 5L0 10z" fill="#5B6570"/>
+              </marker>
+            </defs>
+
+            <!-- RAW DATA -->
+            <rect x="200" y="6" width="240" height="46" rx="6" fill="#FBEEDD" stroke="#D98E31"/>
+            <text x="320" y="34" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="14.5" fill="#14181F" font-weight="600">Raw Data</text>
+            <line x1="320" y1="52" x2="320" y2="74" stroke="#5B6570" stroke-width="1.6" marker-end="url(#pArrow)"/>
+
+            <!-- DATA COLLECTION -->
+            <rect x="200" y="76" width="240" height="46" rx="6" fill="#FFFFFF" stroke="#DCE3E1"/>
+            <text x="320" y="104" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="14.5" fill="#14181F" font-weight="600">Data Collection</text>
+            <line x1="320" y1="122" x2="320" y2="144" stroke="#5B6570" stroke-width="1.6" marker-end="url(#pArrow)"/>
+
+            <!-- DATA INSPECTION -->
+            <rect x="200" y="146" width="240" height="46" rx="6" fill="#FFFFFF" stroke="#DCE3E1"/>
+            <text x="320" y="174" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="14.5" fill="#14181F" font-weight="600">Data Inspection</text>
+            <line x1="320" y1="192" x2="320" y2="214" stroke="#5B6570" stroke-width="1.6" marker-end="url(#pArrow)"/>
+
+            <!-- DATA QUALITY CHECK -->
+            <rect x="180" y="216" width="280" height="46" rx="6" fill="#E4F1F1" stroke="#0E7C86"/>
+            <text x="320" y="244" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="14.5" fill="#14181F" font-weight="600">Data Quality Check</text>
+
+            <!-- branch lines -->
+            <line x1="320" y1="262" x2="320" y2="284" stroke="#5B6570" stroke-width="1.6"/>
+            <line x1="90" y1="284" x2="550" y2="284" stroke="#5B6570" stroke-width="1.6"/>
+            <line x1="90" y1="284" x2="90" y2="304" stroke="#5B6570" stroke-width="1.6" marker-end="url(#pArrow)"/>
+            <line x1="320" y1="284" x2="320" y2="304" stroke="#5B6570" stroke-width="1.6" marker-end="url(#pArrow)"/>
+            <line x1="550" y1="284" x2="550" y2="304" stroke="#5B6570" stroke-width="1.6" marker-end="url(#pArrow)"/>
+
+            <!-- 3 branch boxes -->
+            <rect x="20" y="306" width="140" height="44" rx="6" fill="#F7E7E5" stroke="#C0524A"/>
+            <text x="90" y="333" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12.5" fill="#C0524A" font-weight="600">Missing Values</text>
+
+            <rect x="250" y="306" width="140" height="44" rx="6" fill="#FBEEDD" stroke="#D98E31"/>
+            <text x="320" y="333" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12.5" fill="#D98E31" font-weight="600">Duplicate Data</text>
+
+            <rect x="480" y="306" width="140" height="44" rx="6" fill="#EDE9F5" stroke="#6E5A9E"/>
+            <text x="550" y="333" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12.5" fill="#6E5A9E" font-weight="600">Invalid Data</text>
+
+            <!-- merge lines -->
+            <line x1="90" y1="350" x2="90" y2="372" stroke="#5B6570" stroke-width="1.6"/>
+            <line x1="320" y1="350" x2="320" y2="372" stroke="#5B6570" stroke-width="1.6"/>
+            <line x1="550" y1="350" x2="550" y2="372" stroke="#5B6570" stroke-width="1.6"/>
+            <line x1="90" y1="372" x2="550" y2="372" stroke="#5B6570" stroke-width="1.6"/>
+            <line x1="320" y1="372" x2="320" y2="394" stroke="#5B6570" stroke-width="1.6" marker-end="url(#pArrow)"/>
+
+            <!-- DATA CLEANING -->
+            <rect x="200" y="396" width="240" height="46" rx="6" fill="#E4F1F1" stroke="#0E7C86"/>
+            <text x="320" y="424" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="14.5" fill="#14181F" font-weight="600">Data Cleaning</text>
+            <line x1="320" y1="442" x2="320" y2="464" stroke="#5B6570" stroke-width="1.6" marker-end="url(#pArrow)"/>
+
+            <!-- DATA TRANSFORMATION -->
+            <rect x="200" y="466" width="240" height="46" rx="6" fill="#FFFFFF" stroke="#DCE3E1"/>
+            <text x="320" y="494" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="14.5" fill="#14181F" font-weight="600">Data Transformation</text>
+            <line x1="320" y1="512" x2="320" y2="534" stroke="#5B6570" stroke-width="1.6" marker-end="url(#pArrow)"/>
+
+            <!-- ENCODING -->
+            <rect x="200" y="536" width="240" height="46" rx="6" fill="#FFFFFF" stroke="#DCE3E1"/>
+            <text x="320" y="564" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="14.5" fill="#14181F" font-weight="600">Encoding</text>
+            <line x1="320" y1="582" x2="320" y2="604" stroke="#5B6570" stroke-width="1.6" marker-end="url(#pArrow)"/>
+
+            <!-- NORMALIZATION/STANDARDIZATION -->
+            <rect x="160" y="606" width="320" height="46" rx="6" fill="#EDE9F5" stroke="#6E5A9E"/>
+            <text x="320" y="634" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="14" fill="#14181F" font-weight="600">Normalization / Standardization</text>
+            <line x1="320" y1="652" x2="320" y2="674" stroke="#5B6570" stroke-width="1.6" marker-end="url(#pArrow)"/>
+
+            <!-- READY FOR ANALYSIS -->
+            <rect x="200" y="676" width="240" height="46" rx="6" fill="#FFFFFF" stroke="#DCE3E1"/>
+            <text x="320" y="704" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="14" fill="#14181F" font-weight="600">Ready for Analysis</text>
+            <line x1="320" y1="722" x2="320" y2="744" stroke="#5B6570" stroke-width="1.6" marker-end="url(#pArrow)"/>
+
+            <!-- ML / REPORTING -->
+            <rect x="180" y="746" width="280" height="46" rx="6" fill="#14181F" stroke="#14181F"/>
+            <text x="320" y="774" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="14" fill="#EDEFEC" font-weight="600">Machine Learning / Reporting</text>
+          </svg>
+        </div>
+      </section>
+
+      <!-- Industry standards -->
+      <section class="block" id="standards">
+        <div class="sec-num">EMPHASIZE THROUGHOUT</div>
+        <h2>Industry standards</h2>
+        <p class="lead">These habits are what separate a student who can run pandas commands from one who can be trusted with production data.</p>
+
+        <div class="standard-card">
+          <div class="std-head"><span class="std-num">1</span><h4>Never modify the raw dataset directly</h4></div>
+          <p>Keep raw inputs, processed outputs and source code in clearly separated folders.</p>
+          <div class="tree-wrap"><span class="t-dir">project/</span><br>
+├── <span class="t-dir">data/</span><br>
+│&nbsp;&nbsp;&nbsp;├── <span class="t-dir">raw/</span><br>
+│&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;└── <span class="t-file">customers.csv</span><br>
+│&nbsp;&nbsp;&nbsp;└── <span class="t-dir">processed/</span><br>
+│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── <span class="t-file">customers_clean.csv</span><br>
+├── <span class="t-dir">src/</span><br>
+│&nbsp;&nbsp;&nbsp;└── <span class="t-file">preprocessing.py</span><br>
+├── <span class="t-dir">notebooks/</span><br>
+│&nbsp;&nbsp;&nbsp;└── <span class="t-file">exploration.ipynb</span><br>
+└── <span class="t-file">README.md</span></div>
+        </div>
+
+        <div class="standard-card">
+          <div class="std-head"><span class="std-num">2</span><h4>Always inspect before cleaning</h4></div>
+          <div class="decision-wrap">
+            <div class="decision-col wrong"><h5>Bad approach</h5><code>df.dropna()</code></div>
+            <div class="decision-col right"><h5>Professional approach</h5><code>df.info()</code><code>df.isna().sum()</code><code>df.describe()</code><span style="font-size:12px;color:var(--slate);">then decide what to do</span></div>
+          </div>
+        </div>
+
+        <div class="standard-card">
+          <div class="std-head"><span class="std-num">3</span><h4>Never assume missing values should become zero</h4></div>
+          <p>For example, <span class="mono">Salary = missing</span> does not necessarily mean <span class="mono">Salary = 0</span>.</p>
+        </div>
+
+        <div class="standard-card">
+          <div class="std-head"><span class="std-num">4</span><h4>Keep data types correct</h4></div>
+          <p><span class="mono">Age → numeric</span> · <span class="mono">Salary → numeric</span> · <span class="mono">Date → datetime</span> · <span class="mono">City → categorical/text</span></p>
+        </div>
+
+        <div class="standard-card">
+          <div class="std-head"><span class="std-num">5</span><h4>Validate after cleaning</h4></div>
+          <div class="code-panel" style="margin:10px 0 0;">
+            <div class="cp-bar"><div class="cp-dots"><span></span><span></span><span></span></div><div class="cp-file">validate.py</div></div>
+            <pre><code class="language-python">print(df.isna().sum())
+print(df.duplicated().sum())
+print(df.dtypes)</code></pre>
+          </div>
+          <p style="margin-top:10px;">The goal isn't "I ran the cleaning code" — it's <em>"I can demonstrate that the resulting data satisfies the expected quality rules."</em></p>
+        </div>
+
+        <div class="standard-card">
+          <div class="std-head"><span class="std-num">6</span><h4>Avoid data leakage</h4></div>
+          <p>Especially important when preprocessing data for machine learning.</p>
+          <div class="decision-wrap">
+            <div class="decision-col right">
+              <h5>Correct</h5>
+              <code>scaler.fit(X_train)</code>
+              <code>X_train_scaled = scaler.transform(X_train)</code>
+              <code>X_test_scaled = scaler.transform(X_test)</code>
+              <span style="font-size:12px;color:var(--slate);">shorthand: <span class="mono">fit_transform(X_train)</span>, then <span class="mono">transform(X_test)</span></span>
+            </div>
+            <div class="decision-col wrong">
+              <h5>Incorrect</h5>
+              <code>X_train_scaled = scaler.fit_transform(X_train)</code>
+              <code style="text-decoration:line-through;opacity:.8;">X_test_scaled = scaler.fit_transform(X_test)</code>
+              <span style="font-size:12px;color:var(--coral);">lets test-set information leak into preprocessing</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="standard-card">
+          <div class="std-head"><span class="std-num">7</span><h4>Reproducibility</h4></div>
+          <p>A professional data-processing task should be rerunnable by anyone — not a one-time manual Excel edit.</p>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-family:'IBM Plex Mono',monospace;font-size:13px;margin-top:8px;">
+            <span style="background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:6px 14px;">Raw Data</span>
+            <span style="color:var(--slate);">→</span>
+            <span style="background:var(--teal-soft);color:var(--teal);border-radius:20px;padding:6px 14px;font-weight:600;">Python Script</span>
+            <span style="color:var(--slate);">→</span>
+            <span style="background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:6px 14px;">Clean Data</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Environment -->
+      <section class="block" id="environment">
+        <div class="sec-num">SETUP</div>
+        <h2>Recommended Python environment</h2>
+        <div class="env-grid">
+          <span class="env-chip">Python</span>
+          <span class="env-chip">Jupyter Notebook / VS Code</span>
+          <span class="env-chip">pandas</span>
+          <span class="env-chip">NumPy</span>
+          <span class="env-chip">scikit-learn</span>
+        </div>
+
+        <div class="code-panel">
+          <div class="cp-bar">
+            <div class="cp-dots"><span></span><span></span><span></span></div>
+            <div class="cp-file">install.sh</div>
+            <button class="copy-btn" onclick="copyCode(this,'install-code')">Copy</button>
+          </div>
+          <pre><code class="language-bash" id="install-code">pip install pandas numpy scikit-learn openpyxl pyarrow</code></pre>
+        </div>
+        <p style="font-size:13.5px;color:var(--slate);"><span class="mono">openpyxl</span> is for reading and writing Excel files; <span class="mono">pyarrow</span> is commonly used when working with Parquet. Pandas' current documentation lists version 3.0.5 and continues to position pandas as the core tool for exploring, cleaning and processing tabular data.</p>
+      </section>
+
+      <!-- Deliverables -->
+      <section class="block" id="deliverables">
+        <div class="sec-num">WHAT TO SUBMIT</div>
+        <h2>Deliverables</h2>
+        <div class="deliv-list">
+          <div class="deliv-item"><span class="dl-box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-6" stroke="#0E7C86" stroke-width="1.8"/></svg></span>A single, runnable script or notebook — <span class="mono">preprocessing.py</span> or <span class="mono">exploration.ipynb</span> — that performs all 10 tasks in order.</div>
+          <div class="deliv-item"><span class="dl-box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-6" stroke="#0E7C86" stroke-width="1.8"/></svg></span>The raw input file and the cleaned output file, kept in separate <span class="mono">data/raw/</span> and <span class="mono">data/processed/</span> folders.</div>
+          <div class="deliv-item"><span class="dl-box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-6" stroke="#0E7C86" stroke-width="1.8"/></svg></span>Printed validation output (<span class="mono">isna().sum()</span>, <span class="mono">duplicated().sum()</span>, <span class="mono">dtypes</span>) proving the cleaned data actually meets quality rules.</div>
+          <div class="deliv-item"><span class="dl-box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-6" stroke="#0E7C86" stroke-width="1.8"/></svg></span>A short <span class="mono">README.md</span> explaining each cleaning decision — especially the missing-value strategy — and why it was chosen.</div>
+        </div>
+      </section>
+
+      <!-- Rubric -->
+      <section class="block" id="rubric" style="margin-bottom:24px;">
+        <div class="sec-num">GRADING</div>
+        <h2>Evaluation rubric</h2>
+        <div class="rubric-wrap">
+          <table class="rubric-table">
+            <thead><tr><th>Criterion</th><th>What's assessed</th><th>Weight</th></tr></thead>
+            <tbody>
+              <tr><td>Exploration</td><td>Correct, complete use of head/shape/info/describe before any change is made</td><td class="wt">15%</td></tr>
+              <tr><td>Cleaning accuracy</td><td>Duplicates removed, text standardised, no residual quality issues</td><td class="wt">20%</td></tr>
+              <tr><td>Missing-value reasoning</td><td>Strategy fits the data (median vs. mode vs. drop), and is justified in the README</td><td class="wt">20%</td></tr>
+              <tr><td>Feature engineering &amp; encoding</td><td>Revenue indicator and any categorical encoding are correctly derived</td><td class="wt">15%</td></tr>
+              <tr><td>Scaling correctness</td><td>Normalization/standardization applied to the right columns, no data leakage</td><td class="wt">20%</td></tr>
+              <tr><td>Reproducibility &amp; structure</td><td>Clean folder layout, rerunnable script, no manual data edits</td><td class="wt">10%</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="outcome">
+          <div class="oc-label">Final word</div>
+          <p class="oc-note">This project isn't graded on whether the code runs — it's graded on whether a stranger could read the README, rerun the script, and trust the output without re-checking your work.</p>
+          <p class="oc-sub">That standard — reproducible, justified, validated — is the actual skill this entire 12-hour course has been building toward.</p>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<footer>INDUSTRY MINI PROJECT — PROBLEM STATEMENT</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
+<script>
+  if (window.hljs) { hljs.highlightAll(); }
+
+  function copyCode(btn, id){
+    const code = document.getElementById(id).innerText;
+    navigator.clipboard.writeText(code).then(()=>{
+      const old = btn.textContent;
+      btn.textContent = 'Copied';
+      setTimeout(()=>btn.textContent = old, 1400);
+    });
+  }
+
+  const links = document.querySelectorAll('.tocLink');
+  const sections = Array.from(links).map(l => document.querySelector(l.getAttribute('href')));
+  function onScroll(){
+    let current = sections[0];
+    const y = window.scrollY + 120;
+    sections.forEach(sec => { if (sec && sec.offsetTop <= y) current = sec; });
+    links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + current.id));
+  }
+  window.addEventListener('scroll', onScroll);
+  onScroll();
+</script>
+</body>
+</html>

@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>E-Commerce Automation Framework — Problem Statement</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<style>
+  :root{
+    --ink:#14181F; --paper:#F4F6F5; --panel:#FFFFFF; --line:#DCE3E1;
+    --teal:#0E7C86; --teal-soft:#E4F1F1;
+    --amber:#D98E31; --amber-soft:#FBEEDD;
+    --violet:#6E5A9E; --violet-soft:#EDE9F5;
+    --coral:#C0524A; --coral-soft:#F7E7E5;
+    --green:#3E8E5A; --green-soft:#E6F1EA;
+    --slate:#5B6570; --radius-sm:4px; --radius-md:8px; --maxw:960px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:'IBM Plex Sans',sans-serif;font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;}
+  h1,h2,h3,h4{font-family:'Space Grotesk',sans-serif;color:var(--ink);line-height:1.2;margin:0 0 .5em 0;}
+  code,.mono{font-family:'IBM Plex Mono',monospace;}
+  p{max-width:72ch;}
+  a{color:var(--teal);}
+
+  .shell{display:grid;grid-template-columns:250px minmax(0,1fr);max-width:1280px;margin:0 auto;}
+  @media (max-width:880px){.shell{grid-template-columns:1fr;} .toc{display:none;}}
+
+  .topbar{background:var(--ink);color:#EDEFEC;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:12.5px;letter-spacing:.02em;}
+  .topbar .mark{display:flex;align-items:center;gap:10px;color:#EDEFEC;}
+  .topbar .path{color:#8B9490;}
+  .topbar .path b{color:#EDEFEC;font-weight:500;}
+
+  .toc{padding:40px 20px 40px 32px;position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;}
+  .toc .toc-label{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--slate);margin-bottom:14px;}
+  .toc ol{list-style:none;margin:0;padding:0;border-left:1px solid var(--line);}
+  .toc a{display:block;text-decoration:none;color:var(--slate);font-size:13.5px;padding:7px 0 7px 16px;margin-left:-1px;border-left:2px solid transparent;transition:color .15s ease,border-color .15s ease;}
+  .toc a:hover{color:var(--ink);}
+  .toc a.active{color:var(--ink);border-left:2px solid var(--teal);font-weight:500;}
+
+  main{padding:0 32px 100px;}
+  .content-inner{max-width:var(--maxw);}
+
+  .hero{padding:56px 0 32px;border-bottom:1px solid var(--line);margin-bottom:12px;}
+  .hero .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--teal);margin-bottom:16px;}
+  .hero h1{max-width:20ch;font-size:clamp(28px,4vw,42px);letter-spacing:-.01em;}
+  .hero .sub{color:var(--slate);max-width:62ch;font-size:16.5px;margin-top:14px;}
+
+  .meta-strip{display:flex;flex-wrap:wrap;gap:10px;margin:28px 0 48px;}
+  .meta-chip{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-md);padding:10px 16px;display:flex;flex-direction:column;gap:2px;min-width:130px;}
+  .meta-chip .mc-label{font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--slate);}
+  .meta-chip .mc-val{font-size:14px;font-weight:600;font-family:'Space Grotesk',sans-serif;}
+
+  section.block{margin-bottom:64px;}
+  .sec-num{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--teal);margin-bottom:6px;}
+  section.block h2{font-size:25px;margin-bottom:14px;}
+  section.block > p.lead{color:var(--ink);font-size:16.5px;}
+
+  .obj-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:24px 0;}
+  @media (max-width:640px){.obj-grid{grid-template-columns:1fr;}}
+  .obj-item{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-md);padding:14px 16px;display:flex;gap:12px;align-items:flex-start;font-size:14px;}
+  .obj-item .obj-num{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px;color:var(--teal);background:var(--teal-soft);width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+
+  .scenario-card{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--amber);border-radius:var(--radius-md);padding:22px 24px;margin:22px 0;}
+  .scenario-card .sc-role{font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--amber);margin-bottom:10px;}
+  .scenario-card p{margin:0 0 8px;font-size:15px;}
+  .scenario-card p:last-child{margin-bottom:0;}
+
+  /* test case cards */
+  .test-list{display:flex;flex-direction:column;gap:10px;margin:24px 0;}
+  .test-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden;}
+  .test-card .tc-head{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--paper);}
+  .test-card .tc-num{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:13px;color:#fff;background:var(--teal);width:24px;height:24px;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+  .test-card .tc-title{font-weight:600;font-size:14.5px;flex:1;}
+  .test-card .tc-tag{font-family:'IBM Plex Mono',monospace;font-size:10px;padding:3px 9px;border-radius:20px;text-transform:uppercase;letter-spacing:.04em;}
+  .test-card.positive .tc-tag{background:var(--teal-soft);color:var(--teal);}
+  .test-card.negative .tc-tag{background:var(--coral-soft);color:var(--coral);}
+  .test-card .tc-steps{padding:4px 18px 14px;}
+  .test-card .tc-step{display:flex;align-items:center;gap:10px;padding:6px 0;font-family:'IBM Plex Mono',monospace;font-size:13px;border-bottom:1px dashed var(--line);}
+  .test-card .tc-step:last-child{border-bottom:none;}
+  .test-card .tc-step .tc-arrow{color:var(--line);}
+  .test-card .tc-step.verify{color:var(--teal);font-weight:600;}
+  .test-card.negative .tc-step.verify{color:var(--coral);}
+
+  /* folder tree */
+  .tree-wrap{background:#1B2027;border-radius:var(--radius-md);padding:18px 22px;margin:18px 0;font-family:'IBM Plex Mono',monospace;font-size:13px;color:#D4D9DE;line-height:1.9;overflow-x:auto;}
+  .tree-wrap .t-dir{color:#7FB8A8;}
+  .tree-wrap .t-file{color:#D4D9DE;}
+  .tree-wrap .t-comment{color:#6C7783;}
+  .tree-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:18px 0;}
+  @media (max-width:700px){.tree-cols{grid-template-columns:1fr;}}
+  .tree-cols .tree-wrap{margin:0;}
+  .tree-col-label{font-family:'IBM Plex Mono',monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--slate);margin-bottom:8px;}
+
+  /* architecture diagram */
+  .arch-wrap{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-md);padding:26px 20px;margin:22px 0;overflow-x:auto;}
+  .arch-wrap svg{display:block;margin:0 auto;min-width:580px;}
+
+  /* best practices */
+  .bp-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:24px 0;}
+  @media (max-width:700px){.bp-grid{grid-template-columns:1fr;}}
+  .bp-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-md);padding:14px 16px;}
+  .bp-card .bp-head{display:flex;align-items:center;gap:9px;margin-bottom:7px;}
+  .bp-card .bp-num{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:12px;color:var(--teal);background:var(--teal-soft);width:22px;height:22px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+  .bp-card h4{margin:0;font-size:13.5px;}
+  .bp-card p{font-size:12.5px;color:var(--slate);margin:0;max-width:none;}
+  .bp-card.full{grid-column:1 / -1;}
+
+  /* code panel */
+  .code-panel{background:#1B2027;border-radius:var(--radius-md);overflow:hidden;margin:10px 0;border:1px solid #2B323C;}
+  .code-panel .cp-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:#20262E;border-bottom:1px solid #2B323C;}
+  .cp-bar .cp-file{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#B8C0C7;}
+  .cp-bar .cp-dots{display:flex;gap:6px;}
+  .cp-bar .cp-dots span{width:8px;height:8px;border-radius:50%;background:#3A4149;}
+  .code-panel pre{margin:0;padding:12px 16px;overflow-x:auto;font-size:12.5px;}
+  .code-panel code.hljs{background:transparent;padding:0;}
+
+  /* right/wrong (reused pattern, compact) */
+  .decision-wrap{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0 0;}
+  @media (max-width:560px){.decision-wrap{grid-template-columns:1fr;}}
+  .decision-col{border-radius:var(--radius-sm);padding:10px 12px;}
+  .decision-col.right{background:var(--green-soft);border:1px solid var(--green);}
+  .decision-col.wrong{background:var(--coral-soft);border:1px solid var(--coral);}
+  .decision-col .dc-lbl{font-size:10px;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;font-weight:600;}
+  .decision-col.right .dc-lbl{color:var(--green);}
+  .decision-col.wrong .dc-lbl{color:var(--coral);}
+  .decision-col code{display:block;font-family:'IBM Plex Mono',monospace;font-size:11.5px;background:rgba(255,255,255,.55);padding:4px 8px;border-radius:3px;}
+
+  /* deliverables */
+  .deliv-list{display:flex;flex-direction:column;gap:8px;margin:20px 0;}
+  .deliv-item{display:flex;align-items:flex-start;gap:12px;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-md);padding:12px 16px;font-size:14px;}
+  .deliv-item .dl-box{width:18px;height:18px;border:2px solid var(--teal);border-radius:4px;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;}
+  .deliv-item .dl-box svg{width:11px;height:11px;}
+
+  /* rubric */
+  .rubric-wrap{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden;margin:22px 0;overflow-x:auto;}
+  table.rubric-table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:560px;}
+  table.rubric-table th{background:var(--teal-soft);color:var(--teal);text-align:left;padding:10px 14px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;}
+  table.rubric-table td{padding:10px 14px;border-top:1px solid var(--line);}
+  table.rubric-table td.wt{font-family:'IBM Plex Mono',monospace;font-weight:700;color:var(--teal);text-align:center;}
+
+  .outcome{background:var(--ink);color:#EDEFEC;border-radius:var(--radius-md);padding:32px 28px;margin-top:8px;}
+  .outcome .oc-label{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#8FBF9F;margin-bottom:14px;text-transform:uppercase;letter-spacing:.05em;}
+  .outcome p.oc-note{color:#EDEFEC;font-size:17px;margin:0;max-width:66ch;font-family:'Space Grotesk',sans-serif;line-height:1.45;}
+  .outcome p.oc-sub{color:#9AA3AC;font-size:14px;margin-top:12px;max-width:64ch;}
+
+  footer{text-align:center;padding:36px 0 60px;color:var(--slate);font-size:12.5px;font-family:'IBM Plex Mono',monospace;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="mark">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="9" width="3" height="6" fill="#0E7C86"/><rect x="6.5" y="5" width="3" height="10" fill="#D98E31"/><rect x="12" y="1" width="3" height="14" fill="#6E5A9E"/></svg>
+    AUTOMATION&nbsp;TESTING&nbsp;·&nbsp;PROJECT&nbsp;ASSESSMENT
+  </div>
+  <div class="path">course<span>/</span><b>ecommerce-automation</b><span>/</span>problem-statement</div>
+</div>
+
+<div class="shell">
+  <nav class="toc" id="toc">
+    <div class="toc-label">ON THIS PAGE</div>
+    <ol>
+      <li><a href="#objectives" class="tocLink">Objectives</a></li>
+      <li><a href="#scenario" class="tocLink">Scenario</a></li>
+      <li><a href="#tests" class="tocLink">Test cases to automate</a></li>
+      <li><a href="#architecture" class="tocLink">Project architecture</a></li>
+      <li><a href="#diagram" class="tocLink">Framework design</a></li>
+      <li><a href="#practices" class="tocLink">Industry best practices</a></li>
+      <li><a href="#deliverables" class="tocLink">Deliverables</a></li>
+      <li><a href="#rubric" class="tocLink">Evaluation rubric</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <div class="content-inner">
+
+      <div class="hero">
+        <div class="eyebrow">AUTOMATION TESTING · CAPSTONE PROJECT · PROBLEM STATEMENT</div>
+        <h1>E-Commerce Automation Framework</h1>
+        <p class="sub">The capstone build for the Automation Testing track. Not another standalone Selenium script — a real, maintainable test framework built the way an SDET team would structure one.</p>
+
+        <div class="meta-strip">
+          <div class="meta-chip"><span class="mc-label">Track</span><span class="mc-val">Automation Testing</span></div>
+          <div class="meta-chip"><span class="mc-label">Format</span><span class="mc-val">Individual / Team</span></div>
+          <div class="meta-chip"><span class="mc-label">Tools</span><span class="mc-val">Java · Selenium · TestNG · Maven</span></div>
+          <div class="meta-chip"><span class="mc-label">Pattern</span><span class="mc-val">Page Object Model</span></div>
+          <div class="meta-chip"><span class="mc-label">Role simulated</span><span class="mc-val">SDET / Automation Engineer</span></div>
+        </div>
+      </div>
+
+      <!-- Objectives -->
+      <section class="block" id="objectives">
+        <div class="sec-num">OBJECTIVES</div>
+        <h2>What this project measures</h2>
+        <p class="lead">By the end, a student should be able to design a test automation framework that a QA team could actually extend and maintain — not just a script that happens to pass once.</p>
+        <div class="obj-grid">
+          <div class="obj-item"><span class="obj-num">1</span>Structure a Maven-based automation project following industry folder conventions.</div>
+          <div class="obj-item"><span class="obj-num">2</span>Implement the Page Object Model to separate locators from test logic.</div>
+          <div class="obj-item"><span class="obj-num">3</span>Automate both positive and negative end-to-end flows.</div>
+          <div class="obj-item"><span class="obj-num">4</span>Synchronize tests correctly using explicit waits, not fixed sleeps.</div>
+          <div class="obj-item"><span class="obj-num">5</span>Externalize configuration and test data instead of hard-coding values.</div>
+          <div class="obj-item"><span class="obj-num">6</span>Produce a reusable, independently-runnable suite with clear reporting.</div>
+        </div>
+      </section>
+
+      <!-- Scenario -->
+      <section class="block" id="scenario">
+        <div class="sec-num">SCENARIO</div>
+        <h2>Brief</h2>
+        <div class="scenario-card">
+          <div class="sc-role">Your role: SDET / QA Automation Engineer</div>
+          <p>You've joined the QA team of an e-commerce company. Manual regression testing before every release is slowing the team down, and the product keeps shipping with issues that should have been caught earlier.</p>
+          <p>Your job is to build an automation framework that covers the application's core customer journey — launch, login, search, product details, and cart — reliably enough that it can run unattended in CI.</p>
+        </div>
+      </section>
+
+      <!-- Test cases -->
+      <section class="block" id="tests">
+        <div class="sec-num">SCOPE</div>
+        <h2>Test cases to automate</h2>
+        <p class="lead">Six scenarios covering the core shopping journey, plus one negative path — exactly the mix a real regression suite starts with.</p>
+
+        <div class="test-list">
+          <div class="test-card positive">
+            <div class="tc-head"><span class="tc-num">1</span><span class="tc-title">Application Launch</span><span class="tc-tag">Smoke</span></div>
+            <div class="tc-steps">
+              <div class="tc-step">Open application</div>
+              <div class="tc-step verify">✓ Verify title</div>
+            </div>
+          </div>
+          <div class="test-card positive">
+            <div class="tc-head"><span class="tc-num">2</span><span class="tc-title">Login</span><span class="tc-tag">Positive</span></div>
+            <div class="tc-steps">
+              <div class="tc-step">Enter username</div>
+              <div class="tc-step">Enter password</div>
+              <div class="tc-step">Click login</div>
+              <div class="tc-step verify">✓ Verify dashboard</div>
+            </div>
+          </div>
+          <div class="test-card positive">
+            <div class="tc-head"><span class="tc-num">3</span><span class="tc-title">Search</span><span class="tc-tag">Positive</span></div>
+            <div class="tc-steps">
+              <div class="tc-step">Enter product</div>
+              <div class="tc-step">Click search</div>
+              <div class="tc-step verify">✓ Verify results</div>
+            </div>
+          </div>
+          <div class="test-card positive">
+            <div class="tc-head"><span class="tc-num">4</span><span class="tc-title">Product</span><span class="tc-tag">Positive</span></div>
+            <div class="tc-steps">
+              <div class="tc-step">Select product</div>
+              <div class="tc-step verify">✓ Verify product details</div>
+            </div>
+          </div>
+          <div class="test-card positive">
+            <div class="tc-head"><span class="tc-num">5</span><span class="tc-title">Cart</span><span class="tc-tag">Positive</span></div>
+            <div class="tc-steps">
+              <div class="tc-step">Add product</div>
+              <div class="tc-step">Open cart</div>
+              <div class="tc-step verify">✓ Verify product</div>
+            </div>
+          </div>
+          <div class="test-card negative">
+            <div class="tc-head"><span class="tc-num">6</span><span class="tc-title">Negative Login</span><span class="tc-tag">Negative</span></div>
+            <div class="tc-steps">
+              <div class="tc-step">Invalid username</div>
+              <div class="tc-step">Invalid password</div>
+              <div class="tc-step verify">✓ Verify error message</div>
+            </div>
+          </div>
+        </div>
+        <p style="font-size:13px;color:var(--slate);">Test 6 matters as much as the other five — a suite that only ever tests the happy path misses exactly the bugs that reach production.</p>
+      </section>
+
+      <!-- Project architecture -->
+      <section class="block" id="architecture">
+        <div class="sec-num">EXPECTED PROJECT ARCHITECTURE</div>
+        <h2>Folder &amp; package structure</h2>
+        <p class="lead">A standard Maven layout, with the Java source split into four clearly separated packages.</p>
+
+        <div class="tree-wrap">
+<span class="t-dir">ECommerceAutomation</span><br>
+│<br>
+├── <span class="t-file">pom.xml</span><br>
+├── <span class="t-file">testng.xml</span><br>
+├── <span class="t-file">README.md</span><br>
+│<br>
+└── <span class="t-dir">src/</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;└── <span class="t-dir">test/</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── <span class="t-dir">java/</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── <span class="t-dir">resources/</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── <span class="t-file">config.properties</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── <span class="t-dir">testdata/</span>
+        </div>
+
+        <div class="tree-cols">
+          <div>
+            <div class="tree-col-label">src/test/java — four packages</div>
+            <div class="tree-wrap">
+<span class="t-dir">base/</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;└── BaseTest.java<br><br>
+<span class="t-dir">pages/</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;├── LoginPage.java<br>
+&nbsp;&nbsp;&nbsp;&nbsp;├── HomePage.java<br>
+&nbsp;&nbsp;&nbsp;&nbsp;├── ProductPage.java<br>
+&nbsp;&nbsp;&nbsp;&nbsp;└── CartPage.java
+            </div>
+          </div>
+          <div>
+            <div class="tree-col-label">&nbsp;</div>
+            <div class="tree-wrap">
+<span class="t-dir">tests/</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;├── LoginTest.java<br>
+&nbsp;&nbsp;&nbsp;&nbsp;├── SearchTest.java<br>
+&nbsp;&nbsp;&nbsp;&nbsp;├── ProductTest.java<br>
+&nbsp;&nbsp;&nbsp;&nbsp;└── CartTest.java<br><br>
+<span class="t-dir">utils/</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;├── ConfigReader.java<br>
+&nbsp;&nbsp;&nbsp;&nbsp;└── TestDataReader.java
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Framework diagram -->
+      <section class="block" id="diagram">
+        <div class="sec-num">ARCHITECTURE</div>
+        <h2>How the pieces fit together</h2>
+        <p class="lead">This is the dependency direction a reviewer will check first — tests should never talk to the browser directly, and locators should never live inside a test.</p>
+
+        <div class="arch-wrap">
+          <svg viewBox="0 0 680 460" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="aArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M0 0L10 5L0 10z" fill="#5B6570"/>
+              </marker>
+            </defs>
+
+            <!-- testng.xml -->
+            <rect x="260" y="8" width="160" height="40" rx="6" fill="#14181F"/>
+            <text x="340" y="33" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12.5" fill="#EDEFEC" font-weight="600">testng.xml</text>
+            <line x1="340" y1="48" x2="340" y2="70" stroke="#5B6570" stroke-width="1.6" marker-end="url(#aArrow)"/>
+
+            <!-- tests package -->
+            <rect x="140" y="72" width="400" height="60" rx="6" fill="#E4F1F1" stroke="#0E7C86"/>
+            <text x="340" y="94" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="13" fill="#0E7C86" font-weight="700">tests</text>
+            <text x="340" y="114" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="#14181F">LoginTest · SearchTest · ProductTest · CartTest</text>
+
+            <!-- BaseTest (side, feeds tests) -->
+            <rect x="20" y="78" width="100" height="48" rx="6" fill="#FBEEDD" stroke="#D98E31"/>
+            <text x="70" y="98" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="#D98E31" font-weight="700">base</text>
+            <text x="70" y="113" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="#14181F">BaseTest</text>
+            <line x1="120" y1="102" x2="138" y2="102" stroke="#D98E31" stroke-width="1.6" marker-end="url(#aArrow)"/>
+
+            <!-- utils (side, feeds tests + pages) -->
+            <rect x="560" y="78" width="100" height="48" rx="6" fill="#EDE9F5" stroke="#6E5A9E"/>
+            <text x="610" y="98" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="#6E5A9E" font-weight="700">utils</text>
+            <text x="610" y="113" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="#14181F">Config/TestData</text>
+            <line x1="560" y1="102" x2="542" y2="102" stroke="#6E5A9E" stroke-width="1.6" marker-end="url(#aArrow)"/>
+
+            <line x1="340" y1="132" x2="340" y2="154" stroke="#5B6570" stroke-width="1.6" marker-end="url(#aArrow)"/>
+
+            <!-- pages package -->
+            <rect x="140" y="156" width="400" height="60" rx="6" fill="#FFFFFF" stroke="#DCE3E1"/>
+            <text x="340" y="178" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="13" fill="#14181F" font-weight="700">pages</text>
+            <text x="340" y="198" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="#14181F">LoginPage · HomePage · ProductPage · CartPage</text>
+
+            <line x1="610" y1="126" x2="400" y2="156" stroke="#6E5A9E" stroke-width="1.2" stroke-dasharray="3 2"/>
+
+            <line x1="340" y1="216" x2="340" y2="238" stroke="#5B6570" stroke-width="1.6" marker-end="url(#aArrow)"/>
+
+            <!-- WebDriver -->
+            <rect x="220" y="240" width="240" height="46" rx="6" fill="#FFFFFF" stroke="#DCE3E1"/>
+            <text x="340" y="268" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="13" fill="#14181F" font-weight="700">Selenium WebDriver</text>
+
+            <line x1="340" y1="286" x2="340" y2="308" stroke="#5B6570" stroke-width="1.6" marker-end="url(#aArrow)"/>
+
+            <!-- Application -->
+            <rect x="220" y="310" width="240" height="46" rx="6" fill="#14181F"/>
+            <text x="340" y="338" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="13" fill="#EDEFEC" font-weight="700">E-Commerce Application</text>
+
+            <!-- resources -->
+            <rect x="560" y="156" width="100" height="56" rx="6" fill="#F7F3EC" stroke="#DCE3E1"/>
+            <text x="610" y="176" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#5B6570" font-weight="600">resources</text>
+            <text x="610" y="192" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="#5B6570">config.properties</text>
+            <text x="610" y="204" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="#5B6570">testdata/</text>
+            <line x1="610" y1="156" x2="610" y2="126" stroke="#6E5A9E" stroke-width="1.2" stroke-dasharray="3 2"/>
+
+            <!-- legend -->
+            <text x="20" y="400" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="#5B6570">Tests drive Pages. Pages drive WebDriver. Nothing skips a layer.</text>
+          </svg>
+        </div>
+      </section>
+
+      <!-- Industry best practices -->
+      <section class="block" id="practices">
+        <div class="sec-num">EMPHASIZE THROUGHOUT</div>
+        <h2>Industry best practices</h2>
+        <p class="lead">These are what separate a maintainable automation framework from a pile of Selenium scripts that happen to work today.</p>
+
+        <div class="bp-grid">
+          <div class="bp-card">
+            <div class="bp-head"><span class="bp-num">1</span><h4>Don't automate everything</h4></div>
+            <p>Automation is a business decision — weigh ROI, not just feasibility.</p>
+          </div>
+
+          <div class="bp-card full">
+            <div class="bp-head"><span class="bp-num">2</span><h4>Avoid hard waits</h4></div>
+            <p>Fixed sleeps make suites slow and still flaky.</p>
+            <div class="decision-wrap">
+              <div class="decision-col wrong"><div class="dc-lbl">Avoid</div><code>Thread.sleep(5000);</code></div>
+              <div class="decision-col right"><div class="dc-lbl">Prefer</div><code>new WebDriverWait(driver, ...)</code></div>
+            </div>
+          </div>
+
+          <div class="bp-card">
+            <div class="bp-head"><span class="bp-num">3</span><h4>Use Page Object Model</h4></div>
+            <p>Don't duplicate locators across test files — one page, one source of truth.</p>
+          </div>
+
+          <div class="bp-card full">
+            <div class="bp-head"><span class="bp-num">4</span><h4>Use meaningful names</h4></div>
+            <div class="decision-wrap">
+              <div class="decision-col wrong"><div class="dc-lbl">Bad</div><code>test1()</code></div>
+              <div class="decision-col right"><div class="dc-lbl">Better</div><code>verifyValidUserCanLogin()</code></div>
+            </div>
+          </div>
+
+          <div class="bp-card">
+            <div class="bp-head"><span class="bp-num">5</span><h4>Keep test data separate</h4></div>
+            <p>Don't hard-code values — read them from <span class="mono">testdata/</span> or <span class="mono">config.properties</span>.</p>
+          </div>
+          <div class="bp-card">
+            <div class="bp-head"><span class="bp-num">6</span><h4>Use version control</h4></div>
+            <p><span class="mono">Git → GitHub</span>, with meaningful commits — same discipline as production code.</p>
+          </div>
+          <div class="bp-card">
+            <div class="bp-head"><span class="bp-num">7</span><h4>Make tests independent</h4></div>
+            <p>One test should ideally not depend on another test's execution order.</p>
+          </div>
+
+          <div class="bp-card full">
+            <div class="bp-head"><span class="bp-num">8</span><h4>Build stable selectors</h4></div>
+            <p>Prefer stable attributes the application team provides:</p>
+            <div class="code-panel"><div class="cp-bar"><div class="cp-dots"><span></span><span></span><span></span></div><div class="cp-file">locator.java</div></div><pre><code class="language-java">By.cssSelector("[data-testid='login-button']")</code></pre></div>
+          </div>
+
+          <div class="bp-card full">
+            <div class="bp-head"><span class="bp-num">9</span><h4>Don't overuse XPath</h4></div>
+            <div class="decision-wrap">
+              <div class="decision-col wrong"><div class="dc-lbl">Overused</div><code>//div[3]/span[contains(...)]</code></div>
+              <div class="decision-col right"><div class="dc-lbl">Prefer</div><code>By.id("login-btn")</code></div>
+            </div>
+          </div>
+
+          <div class="bp-card full">
+            <div class="bp-head"><span class="bp-num">10</span><h4>Handle synchronization properly</h4></div>
+            <p>Understand the difference and teach <em>why</em> it matters, not just the syntax:</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;">
+              <span class="mono" style="background:var(--teal-soft);color:var(--teal);border-radius:16px;padding:4px 12px;font-size:12px;">Implicit Wait</span>
+              <span class="mono" style="background:var(--teal-soft);color:var(--teal);border-radius:16px;padding:4px 12px;font-size:12px;">Explicit Wait</span>
+              <span class="mono" style="background:var(--teal-soft);color:var(--teal);border-radius:16px;padding:4px 12px;font-size:12px;">Fluent Wait</span>
+            </div>
+          </div>
+
+          <div class="bp-card full">
+            <div class="bp-head"><span class="bp-num">11</span><h4>Reports matter</h4></div>
+            <p>A professional suite communicates far more than a pass/fail count:</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;">
+              <span class="mono" style="background:var(--green-soft);color:var(--green);border-radius:16px;padding:4px 12px;font-size:12px;">PASS</span>
+              <span class="mono" style="background:var(--coral-soft);color:var(--coral);border-radius:16px;padding:4px 12px;font-size:12px;">FAIL</span>
+              <span class="mono" style="background:var(--amber-soft);color:var(--amber);border-radius:16px;padding:4px 12px;font-size:12px;">SKIPPED</span>
+              <span class="mono" style="background:#EEF1F0;color:var(--slate);border-radius:16px;padding:4px 12px;font-size:12px;">Execution Time</span>
+              <span class="mono" style="background:#EEF1F0;color:var(--slate);border-radius:16px;padding:4px 12px;font-size:12px;">Failure Details</span>
+              <span class="mono" style="background:#EEF1F0;color:var(--slate);border-radius:16px;padding:4px 12px;font-size:12px;">Screenshots</span>
+              <span class="mono" style="background:#EEF1F0;color:var(--slate);border-radius:16px;padding:4px 12px;font-size:12px;">Logs</span>
+            </div>
+          </div>
+
+          <div class="bp-card full">
+            <div class="bp-head"><span class="bp-num">12</span><h4>Automation code is software</h4></div>
+            <p>Treat it like production code — every item on this list applies to the automation repo, not just the application it tests:</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;">
+              <span class="mono" style="background:var(--violet-soft);color:var(--violet);border-radius:16px;padding:4px 12px;font-size:12px;">Clean code</span>
+              <span class="mono" style="background:var(--violet-soft);color:var(--violet);border-radius:16px;padding:4px 12px;font-size:12px;">Code review</span>
+              <span class="mono" style="background:var(--violet-soft);color:var(--violet);border-radius:16px;padding:4px 12px;font-size:12px;">Version control</span>
+              <span class="mono" style="background:var(--violet-soft);color:var(--violet);border-radius:16px;padding:4px 12px;font-size:12px;">Reusable components</span>
+              <span class="mono" style="background:var(--violet-soft);color:var(--violet);border-radius:16px;padding:4px 12px;font-size:12px;">Configuration management</span>
+              <span class="mono" style="background:var(--violet-soft);color:var(--violet);border-radius:16px;padding:4px 12px;font-size:12px;">Documentation</span>
+              <span class="mono" style="background:var(--violet-soft);color:var(--violet);border-radius:16px;padding:4px 12px;font-size:12px;">CI/CD</span>
+              <span class="mono" style="background:var(--violet-soft);color:var(--violet);border-radius:16px;padding:4px 12px;font-size:12px;">Maintenance</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Deliverables -->
+      <section class="block" id="deliverables">
+        <div class="sec-num">WHAT TO SUBMIT</div>
+        <h2>Deliverables</h2>
+        <div class="deliv-list">
+          <div class="deliv-item"><span class="dl-box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-6" stroke="#0E7C86" stroke-width="1.8"/></svg></span>A complete Maven project matching the expected folder structure, pushed to a GitHub repository.</div>
+          <div class="deliv-item"><span class="dl-box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-6" stroke="#0E7C86" stroke-width="1.8"/></svg></span>All six test cases automated and runnable in one go via <span class="mono">testng.xml</span>.</div>
+          <div class="deliv-item"><span class="dl-box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-6" stroke="#0E7C86" stroke-width="1.8"/></svg></span>A generated execution report showing pass/fail status, execution time, and failure screenshots.</div>
+          <div class="deliv-item"><span class="dl-box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-6" stroke="#0E7C86" stroke-width="1.8"/></svg></span>A <span class="mono">README.md</span> explaining the framework's structure and how to run the suite locally.</div>
+        </div>
+      </section>
+
+      <!-- Rubric -->
+      <section class="block" id="rubric" style="margin-bottom:24px;">
+        <div class="sec-num">GRADING</div>
+        <h2>Evaluation rubric</h2>
+        <div class="rubric-wrap">
+          <table class="rubric-table">
+            <thead><tr><th>Criterion</th><th>What's assessed</th><th>Weight</th></tr></thead>
+            <tbody>
+              <tr><td>Framework structure</td><td>Matches the expected folder/package layout; Page Object Model correctly applied</td><td class="wt">20%</td></tr>
+              <tr><td>Test coverage</td><td>All six scenarios automated, including the negative login path</td><td class="wt">20%</td></tr>
+              <tr><td>Synchronization</td><td>Explicit/fluent waits used correctly; no <span class="mono">Thread.sleep()</span></td><td class="wt">20%</td></tr>
+              <tr><td>Code quality</td><td>Meaningful names, no duplicated locators, externalized config/test data</td><td class="wt">20%</td></tr>
+              <tr><td>Reporting &amp; reproducibility</td><td>Suite runs independently via <span class="mono">testng.xml</span>; report includes failure details/screenshots</td><td class="wt">20%</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="outcome">
+          <div class="oc-label">Final word</div>
+          <p class="oc-note">This isn't graded on whether six tests happen to pass once — it's graded on whether another engineer could clone the repo, read the README, and run the suite without asking you a single question.</p>
+          <p class="oc-sub">That's the actual difference between a Selenium script and an automation framework.</p>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<footer>E-COMMERCE AUTOMATION FRAMEWORK — PROBLEM STATEMENT</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/java.min.js"></script>
+<script>
+  if (window.hljs) { hljs.highlightAll(); }
+  const links = document.querySelectorAll('.tocLink');
+  const sections = Array.from(links).map(l => document.querySelector(l.getAttribute('href')));
+  function onScroll(){
+    let current = sections[0];
+    const y = window.scrollY + 120;
+    sections.forEach(sec => { if (sec && sec.offsetTop <= y) current = sec; });
+    links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + current.id));
+  }
+  window.addEventListener('scroll', onScroll);
+  onScroll();
+</script>
+</body>
+</html>

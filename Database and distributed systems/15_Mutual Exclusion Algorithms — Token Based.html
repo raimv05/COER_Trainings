@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hour 15 — Token-Based Algorithms</title>
+<style>
+  :root{
+    --bg:#282a36;
+    --bg-alt:#21222c;
+    --panel:#2f3140;
+    --line:#44475a;
+    --fg:#f8f8f2;
+    --muted:#a9adc7;
+    --comment:#6272a4;
+    --cyan:#8be9fd;
+    --green:#50fa7b;
+    --amber:#ffb86c;
+    --pink:#ff79c6;
+    --purple:#bd93f9;
+    --red:#ff5555;
+    --yellow:#f1fa8c;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    background:radial-gradient(circle at 15% 10%, #31334a 0%, var(--bg) 45%) fixed;
+    color:var(--fg);
+    font-family:'Segoe UI', Roboto, -apple-system, sans-serif;
+    overflow:hidden;
+  }
+  .deck{position:relative;width:100vw;height:100vh;}
+  .slide{
+    position:absolute;inset:0;
+    display:none;
+    flex-direction:column;
+    padding:56px 80px 90px;
+    animation:fadeIn .45s ease;
+  }
+  .slide.active{display:flex;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+  .kicker{color:var(--amber);font-size:14px;letter-spacing:2px;font-weight:600;margin-bottom:6px;}
+  h1{font-size:40px;margin:0 0 6px;color:var(--fg);}
+  h2{font-size:30px;margin:0 0 18px;color:var(--fg);}
+  h3{font-size:20px;margin:0 0 10px;color:var(--cyan);}
+  p{line-height:1.6;color:var(--muted);font-size:16px;}
+  .lead{font-size:19px;color:var(--fg);max-width:760px;}
+
+  .topbar{position:fixed;top:0;left:0;right:0;height:6px;background:var(--line);z-index:50;}
+  .topbar-fill{height:100%;background:linear-gradient(90deg,var(--amber),var(--pink));transition:width .3s ease;}
+  .navbar{
+    position:fixed;bottom:0;left:0;right:0;height:64px;
+    background:rgba(33,34,44,.92);border-top:1px solid var(--line);
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 32px;backdrop-filter:blur(6px);z-index:50;
+  }
+  .navbar .brand{font-size:13px;color:var(--comment);}
+  .navbar .brand b{color:var(--amber);}
+  .nav-controls{display:flex;align-items:center;gap:14px;}
+  .nav-btn{
+    background:var(--panel);border:1px solid var(--line);color:var(--fg);
+    padding:8px 18px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;transition:.2s;
+  }
+  .nav-btn:hover{border-color:var(--amber);color:var(--amber);}
+  .nav-btn:disabled{opacity:.35;cursor:not-allowed;}
+  .slide-counter{color:var(--muted);font-size:13px;min-width:60px;text-align:center;}
+  .dots{display:flex;gap:5px;flex-wrap:wrap;max-width:340px;}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--line);cursor:pointer;transition:.2s;}
+  .dot.active{background:var(--amber);width:18px;border-radius:4px;}
+
+  .grid{display:grid;gap:16px;}
+  .grid-4{grid-template-columns:repeat(4,1fr);}
+  .grid-3{grid-template-columns:repeat(3,1fr);}
+  .grid-2{grid-template-columns:repeat(2,1fr);}
+  .content{flex:1;overflow-y:auto;padding-right:8px;}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;}
+  .badge{
+    display:inline-block;background:rgba(189,147,249,.15);color:var(--purple);
+    border:1px solid rgba(189,147,249,.4);padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;
+    margin-bottom:14px;letter-spacing:.5px;
+  }
+
+  /* CODE */
+  .code-wrap{background:var(--bg-alt);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;}
+  .code-head{display:flex;align-items:center;gap:8px;padding:10px 14px;background:#1c1d27;border-bottom:1px solid var(--line);}
+  .code-head .dotc{width:11px;height:11px;border-radius:50%;}
+  .code-head .filename{margin-left:8px;color:var(--comment);font-size:12px;font-family:'Consolas','Courier New',monospace;}
+  pre{margin:0;padding:16px 20px;overflow-x:auto;font-family:'Consolas','Courier New',monospace;font-size:13.5px;line-height:1.65;}
+  code{color:var(--fg);}
+  .tok-kw{color:var(--pink);}
+  .tok-type{color:var(--cyan);}
+  .tok-str{color:var(--yellow);}
+  .tok-fn{color:var(--green);}
+  .tok-num{color:var(--purple);}
+
+  /* Token loop diagram (4.1) */
+  .loop-wrap{display:flex;align-items:center;justify-content:center;gap:0;padding:20px 0;flex-wrap:wrap;}
+  .loop-node{
+    background:var(--panel);border:1px solid var(--line);border-radius:8px;
+    padding:12px 22px;font-weight:700;font-size:15px;color:var(--fg);
+  }
+  .loop-arrow{color:var(--comment);font-size:20px;padding:0 6px;}
+  .token-badge{
+    display:inline-flex;align-items:center;gap:6px;background:rgba(255,184,108,.15);border:1px solid var(--amber);
+    color:var(--amber);border-radius:20px;padding:8px 18px;font-weight:700;font-size:14px;margin-top:14px;
+  }
+
+  /* Ring diagram (circular) */
+  .ring-wrap{position:relative;width:300px;height:300px;margin:20px auto;}
+  .ring-node{
+    position:absolute;width:64px;height:64px;border-radius:50%;
+    background:var(--panel);border:2px solid var(--cyan);color:var(--cyan);
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;
+    transition:.3s;
+  }
+  .ring-node.holder{border-color:var(--amber);color:var(--amber);box-shadow:0 0 20px rgba(255,184,108,.4);transform:scale(1.1);}
+  .ring-arrow-svg{position:absolute;top:0;left:0;width:100%;height:100%;}
+
+  /* Chain (microphone) */
+  .chain{display:flex;flex-direction:column;align-items:center;gap:0;padding:16px 0;}
+  .chain-node{
+    background:var(--panel);border:1px solid var(--line);border-radius:8px;
+    padding:12px 26px;font-weight:600;font-size:14px;color:var(--fg);min-width:160px;text-align:center;
+  }
+  .chain-arrow{color:var(--comment);font-size:18px;line-height:1;padding:4px 0;}
+
+  /* Live token ring simulator */
+  .demo-btn{
+    background:linear-gradient(135deg,var(--amber),#ff9d4d);color:#282a36;border:none;
+    padding:10px 20px;border-radius:8px;font-weight:700;cursor:pointer;font-size:14px;transition:.2s;
+  }
+  .demo-btn:hover{filter:brightness(1.1);transform:translateY(-1px);}
+  .demo-btn:disabled{opacity:.4;cursor:not-allowed;}
+  .demo-btn.secondary{background:var(--line);color:var(--fg);}
+  .sim-log{
+    background:var(--bg-alt);border:1px solid var(--line);border-radius:8px;padding:12px 16px;
+    font-family:'Consolas',monospace;font-size:12.5px;height:130px;overflow-y:auto;color:var(--green);
+  }
+
+  /* Broadcast diagram (Suzuki-Kasami) */
+  .bcast-wrap{display:flex;flex-direction:column;align-items:center;padding:12px 0;}
+  .bcast-fan{display:flex;gap:16px;justify-content:center;margin-top:14px;flex-wrap:wrap;}
+  .bcast-target{
+    background:var(--bg-alt);border:1px solid var(--cyan);color:var(--cyan);border-radius:8px;
+    padding:10px 20px;font-size:13.5px;font-weight:600;
+  }
+
+  /* SK concept cards */
+  .sk-card{
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px;position:relative;
+  }
+  .sk-tag{
+    font-family:'Consolas',monospace;font-weight:800;font-size:22px;color:var(--amber);margin-bottom:8px;
+  }
+
+  /* Quiz */
+  .quiz-q{margin-bottom:22px;}
+  .quiz-q .q-title{font-size:16px;color:var(--fg);font-weight:600;margin-bottom:10px;}
+  .opt{
+    display:block;width:100%;text-align:left;background:var(--panel);border:1px solid var(--line);
+    color:var(--fg);padding:10px 14px;border-radius:8px;margin-bottom:8px;cursor:pointer;font-size:14px;transition:.15s;
+  }
+  .opt:hover{border-color:var(--cyan);}
+  .opt.correct{border-color:var(--green);background:rgba(80,250,123,.12);color:var(--green);}
+  .opt.incorrect{border-color:var(--red);background:rgba(255,85,85,.12);color:var(--red);}
+  .opt.disabled{pointer-events:none;}
+  .quiz-score{color:var(--amber);font-weight:700;font-size:16px;}
+
+  ::-webkit-scrollbar{width:8px;height:8px;}
+  ::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+
+  @media (max-width:900px){
+    .slide{padding:36px 24px 90px;}
+    .grid-4{grid-template-columns:repeat(2,1fr);}
+    .grid-3{grid-template-columns:repeat(2,1fr);}
+    .grid-2{grid-template-columns:1fr;}
+    h1{font-size:28px;}
+    h2{font-size:22px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar"><div class="topbar-fill" id="progressFill"></div></div>
+
+<div class="deck" id="deck">
+
+  <!-- SLIDE 1: TITLE -->
+  <section class="slide active">
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;">
+      <div class="kicker">MERN STACK BOOTCAMP · DISTRIBUTED SYSTEMS FOUNDATIONS</div>
+      <h1 style="font-size:52px;">Hour 15</h1>
+      <h2 style="color:var(--amber);font-size:34px;">Token-Based Algorithms</h2>
+      <p class="lead">Stop asking everyone for permission — just pass around one special object, and whoever holds it gets to go.</p>
+      <div style="margin-top:28px;display:flex;gap:12px;flex-wrap:wrap;">
+        <div class="card" style="padding:10px 18px;">🎫 The Token Concept</div>
+        <div class="card" style="padding:10px 18px;">⭕ Token Ring</div>
+        <div class="card" style="padding:10px 18px;">🎙️ Microphone Analogy</div>
+        <div class="card" style="padding:10px 18px;">📡 Suzuki–Kasami</div>
+      </div>
+    </div>
+    <p style="color:var(--comment);font-size:13px;">Instructor: Manish Rai</p>
+  </section>
+
+  <!-- SLIDE 2: AGENDA -->
+  <section class="slide">
+    <div class="kicker">SESSION MAP</div>
+    <h2>What we'll cover this hour</h2>
+    <div class="content">
+      <div class="grid grid-2" style="gap:16px;">
+        <div class="card"><h3>3.1 Basic Concept</h3><p>Why possession of a token is simpler than asking every process for permission.</p></div>
+        <div class="card"><h3>3.2 Token Ring</h3><p>Four processes in a circle, passing the token around in a fixed order.</p></div>
+        <div class="card"><h3>3.3 Real-Life Example</h3><p>The microphone-in-a-meeting analogy that makes this click instantly.</p></div>
+        <div class="card"><h3>3.4 Java Token Ring</h3><p>A working implementation — plus a live version you can step through yourself.</p></div>
+        <div class="card" style="grid-column:1/-1;"><h3>3.5 Suzuki–Kasami Algorithm</h3><p>A broadcast-based token algorithm for systems with no fixed ring — the intuition behind RN, Q, and LN.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 3: 3.1 BASIC CONCEPT -->
+  <section class="slide">
+    <div class="badge">3.1 BASIC CONCEPT</div>
+    <h2>Instead of asking everyone "Can I enter?"</h2>
+    <div class="content">
+      <p class="lead">A special object called a <b style="color:var(--fg);">token</b> grants permission — no voting, no collecting replies from every other process.</p>
+      <div class="loop-wrap">
+        <div class="loop-node">P1</div><span class="loop-arrow">→</span>
+        <div class="loop-node">P2</div><span class="loop-arrow">→</span>
+        <div class="loop-node">P3</div><span class="loop-arrow">→</span>
+        <div class="loop-node">P4</div>
+      </div>
+      <div style="text-align:center;">
+        <div class="token-badge">🎫 TOKEN circulates back to P1</div>
+      </div>
+      <div class="card" style="margin-top:20px;text-align:center;">
+        <p style="margin:0;font-weight:600;color:var(--fg);">Only the process holding the token can enter the critical section.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 4: 3.2 TOKEN RING -->
+  <section class="slide">
+    <div class="badge">3.2 TOKEN RING</div>
+    <h2>Four people sitting in a circle</h2>
+    <div class="content">
+      <div class="ring-wrap">
+        <svg class="ring-arrow-svg" viewBox="0 0 300 300">
+          <defs>
+            <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+              <path d="M0,0 L8,4 L0,8 Z" fill="#6272a4"/>
+            </marker>
+          </defs>
+          <path d="M 150 50 A 100 100 0 0 1 250 150" fill="none" stroke="#6272a4" stroke-width="2" marker-end="url(#arrowhead)"/>
+          <path d="M 250 150 A 100 100 0 0 1 150 250" fill="none" stroke="#6272a4" stroke-width="2" marker-end="url(#arrowhead)"/>
+          <path d="M 150 250 A 100 100 0 0 1 50 150" fill="none" stroke="#6272a4" stroke-width="2" marker-end="url(#arrowhead)"/>
+          <path d="M 50 150 A 100 100 0 0 1 150 50" fill="none" stroke="#6272a4" stroke-width="2" marker-end="url(#arrowhead)"/>
+        </svg>
+        <div class="ring-node" style="top:0;left:118px;">P1</div>
+        <div class="ring-node" style="top:118px;left:236px;">P2</div>
+        <div class="ring-node" style="top:236px;left:118px;">P3</div>
+        <div class="ring-node" style="top:118px;left:0;">P4</div>
+      </div>
+      <p class="lead" style="text-align:center;">The token travels in a fixed cycle:</p>
+      <div class="loop-wrap">
+        <div class="loop-node">P1</div><span class="loop-arrow">→</span>
+        <div class="loop-node">P2</div><span class="loop-arrow">→</span>
+        <div class="loop-node">P3</div><span class="loop-arrow">→</span>
+        <div class="loop-node">P4</div><span class="loop-arrow">→</span>
+        <div class="loop-node">P1</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 5: 3.3 REAL-LIFE EXAMPLE -->
+  <section class="slide">
+    <div class="badge">3.3 REAL-LIFE EXAMPLE</div>
+    <h2>The microphone in a meeting</h2>
+    <div class="content">
+      <div class="card" style="text-align:center;">
+        <p class="lead" style="margin:0;">Only the person holding the microphone speaks.</p>
+      </div>
+      <div class="chain" style="margin-top:10px;">
+        <div class="chain-node">🎙️ Person A</div>
+        <div class="chain-arrow">↓</div>
+        <div class="chain-node">🎙️ Person B</div>
+        <div class="chain-arrow">↓</div>
+        <div class="chain-node">🎙️ Person C</div>
+        <div class="chain-arrow">↓</div>
+        <div class="chain-node">🎙️ Person D</div>
+      </div>
+      <div class="card" style="margin-top:16px;text-align:center;">
+        <p style="margin:0;font-weight:700;font-size:18px;color:var(--amber);">The microphone = the token.</p>
+        <p style="margin-top:8px;">Nobody needs to ask the other three people in the room for permission — if you're not holding the mic, you simply wait your turn.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 6: 3.4 JAVA TOKEN RING CODE -->
+  <section class="slide">
+    <div class="badge">3.4 JAVA TOKEN RING</div>
+    <h2>Implementing the ring in Java</h2>
+    <div class="content">
+      <div class="code-wrap">
+        <div class="code-head">
+          <div class="dotc" style="background:#ff5f56;"></div>
+          <div class="dotc" style="background:#ffbd2e;"></div>
+          <div class="dotc" style="background:#27c93f;"></div>
+          <span class="filename">TokenRing.java</span>
+        </div>
+        <pre><code><span class="tok-kw">class</span> <span class="tok-type">TokenRing</span> {
+
+    <span class="tok-kw">private final</span> <span class="tok-kw">int</span> numberOfProcesses;
+    <span class="tok-kw">private</span> <span class="tok-kw">int</span> tokenHolder = <span class="tok-num">0</span>;
+
+    <span class="tok-kw">public</span> <span class="tok-fn">TokenRing</span>(<span class="tok-kw">int</span> numberOfProcesses) {
+        <span class="tok-kw">this</span>.numberOfProcesses = numberOfProcesses;
+    }
+
+    <span class="tok-kw">public</span> <span class="tok-kw">void</span> <span class="tok-fn">passToken</span>() {
+
+        <span class="tok-type">System</span>.out.println(
+                <span class="tok-str">"P"</span> + tokenHolder + <span class="tok-str">" has the token."</span>);
+
+        <span class="tok-type">System</span>.out.println(
+                <span class="tok-str">"P"</span> + tokenHolder + <span class="tok-str">" enters critical section."</span>);
+
+        <span class="tok-type">System</span>.out.println(
+                <span class="tok-str">"P"</span> + tokenHolder + <span class="tok-str">" exits critical section."</span>);
+
+        tokenHolder = (tokenHolder + <span class="tok-num">1</span>) % numberOfProcesses;
+    }
+}
+
+<span class="tok-kw">public class</span> <span class="tok-type">TokenRingDemo</span> {
+
+    <span class="tok-kw">public static</span> <span class="tok-kw">void</span> <span class="tok-fn">main</span>(<span class="tok-type">String</span>[] args) {
+
+        <span class="tok-type">TokenRing</span> ring = <span class="tok-kw">new</span> <span class="tok-fn">TokenRing</span>(<span class="tok-num">4</span>);
+
+        <span class="tok-kw">for</span> (<span class="tok-kw">int</span> i = <span class="tok-num">0</span>; i &lt; <span class="tok-num">8</span>; i++) {
+            ring.passToken();
+        }
+    }
+}</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 7: LIVE TOKEN RING SIMULATOR -->
+  <section class="slide">
+    <div class="badge">🧪 LIVE TOKEN RING SIMULATOR</div>
+    <h2>Pass the token yourself</h2>
+    <div class="content">
+      <div class="ring-wrap" style="width:260px;height:260px;margin:10px auto;">
+        <svg class="ring-arrow-svg" viewBox="0 0 260 260">
+          <defs>
+            <marker id="arrowhead2" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+              <path d="M0,0 L8,4 L0,8 Z" fill="#6272a4"/>
+            </marker>
+          </defs>
+          <path d="M 130 40 A 90 90 0 0 1 220 130" fill="none" stroke="#6272a4" stroke-width="2" marker-end="url(#arrowhead2)"/>
+          <path d="M 220 130 A 90 90 0 0 1 130 220" fill="none" stroke="#6272a4" stroke-width="2" marker-end="url(#arrowhead2)"/>
+          <path d="M 130 220 A 90 90 0 0 1 40 130" fill="none" stroke="#6272a4" stroke-width="2" marker-end="url(#arrowhead2)"/>
+          <path d="M 40 130 A 90 90 0 0 1 130 40" fill="none" stroke="#6272a4" stroke-width="2" marker-end="url(#arrowhead2)"/>
+        </svg>
+        <div class="ring-node holder" id="ringP0" style="top:0;left:98px;">P0</div>
+        <div class="ring-node" id="ringP1" style="top:98px;left:196px;">P1</div>
+        <div class="ring-node" id="ringP2" style="top:196px;left:98px;">P2</div>
+        <div class="ring-node" id="ringP3" style="top:98px;left:0;">P3</div>
+      </div>
+      <div class="sim-log" id="ringLog"><div>Ready. P0 starts with the token — click "Pass token" to run passToken().</div></div>
+      <div style="display:flex;gap:12px;justify-content:center;margin-top:14px;">
+        <button class="demo-btn" onclick="passTokenSim()">▶ Pass token</button>
+        <button class="demo-btn secondary" onclick="resetTokenSim()">↺ Reset</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 8: 3.5 SUZUKI-KASAMI INTRO -->
+  <section class="slide">
+    <div class="badge">3.5 SUZUKI–KASAMI ALGORITHM</div>
+    <h2>Token-based, but no fixed ring</h2>
+    <div class="content">
+      <p class="lead">Suzuki–Kasami is a token-based distributed mutual exclusion algorithm for systems where processes communicate by <b style="color:var(--fg);">broadcast</b> — there's no neat circle to pass the token around.</p>
+      <div class="bcast-wrap">
+        <div class="chain-node" style="border-color:var(--amber);color:var(--amber);">P1 wants CS</div>
+        <div class="chain-arrow">↓</div>
+        <div class="chain-node" style="border-color:var(--cyan);color:var(--cyan);">BROADCAST REQUEST</div>
+        <div class="bcast-fan">
+          <div class="bcast-target">P2</div>
+          <div class="bcast-target">P3</div>
+          <div class="bcast-target">P4</div>
+          <div class="bcast-target">...</div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:16px;">
+        <p style="margin:0;">The token itself contains information that helps determine which requests remain outstanding — so instead of a fixed hand-off order, the token is sent directly to whoever needs it next, decided dynamically.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 9: RN, Q, LN -->
+  <section class="slide">
+    <div class="badge">3.5 SUZUKI–KASAMI ALGORITHM</div>
+    <h2>Three pieces of information to introduce</h2>
+    <div class="content">
+      <div class="grid grid-3">
+        <div class="sk-card">
+          <div class="sk-tag">RN</div>
+          <h3 style="font-size:16px;">Request Number</h3>
+          <p>Each process tracks the highest request sequence number it has seen from every other process — like a per-process logical clock for CS requests.</p>
+        </div>
+        <div class="sk-card">
+          <div class="sk-tag">Q</div>
+          <h3 style="font-size:16px;">Token Queue</h3>
+          <p>The token itself carries a queue of processes still waiting for it — so the holder knows exactly who to pass it to next.</p>
+        </div>
+        <div class="sk-card">
+          <div class="sk-tag">LN</div>
+          <h3 style="font-size:16px;">Token Array</h3>
+          <p>Records the request number last <b style="color:var(--fg);">granted</b> for each process, carried inside the token itself.</p>
+        </div>
+      </div>
+      <div class="card" style="margin-top:18px;">
+        <p style="margin:0;">Students don't need to memorize the implementation immediately — <b style="color:var(--fg);">focus first on the algorithm's intuition</b>: a broadcast asks everyone "do you need this?", and the token, as it moves, carries the bookkeeping needed to answer that question correctly next time.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 10: RECAP -->
+  <section class="slide">
+    <div class="kicker">RECAP</div>
+    <h2>Hour 15 — Key takeaways</h2>
+    <div class="content">
+      <div class="grid grid-2">
+        <div class="card"><h3>🎫 One token, one permission</h3><p>Only the current token holder may enter the critical section — no voting required.</p></div>
+        <div class="card"><h3>⭕ Token Ring is the simplest form</h3><p>A fixed circular hand-off order — <code style="color:var(--amber);">(tokenHolder + 1) % n</code> is the entire algorithm.</p></div>
+        <div class="card"><h3>🎙️ The microphone analogy sticks</h3><p>Only the holder speaks — everyone else simply waits their turn.</p></div>
+        <div class="card"><h3>📡 Suzuki–Kasami scales beyond a ring</h3><p>Broadcast requests plus a smart token (RN, Q, LN) let the token go directly to whoever needs it next.</p></div>
+      </div>
+      <p class="lead" style="margin-top:20px;">Next hour: comparing every algorithm we've studied — centralized, non-token-based, and token-based — side by side.</p>
+    </div>
+  </section>
+
+  <!-- SLIDE 11: QUIZ -->
+  <section class="slide">
+    <div class="kicker">QUICK CHECK</div>
+    <h2>Hour 15 quiz</h2>
+    <div class="content" id="quizContainer"></div>
+    <div style="margin-top:6px;" id="quizScoreRow"></div>
+  </section>
+
+</div>
+
+<div class="navbar">
+  <div class="brand">MERN Stack Bootcamp · <b>Hour 15</b> — Token-Based Algorithms</div>
+  <div class="nav-controls">
+    <button class="nav-btn" id="prevBtn" onclick="goTo(current-1)">← Prev</button>
+    <div class="dots" id="dots"></div>
+    <span class="slide-counter" id="counter">1 / 11</span>
+    <button class="nav-btn" id="nextBtn" onclick="goTo(current+1)">Next →</button>
+  </div>
+</div>
+
+<script>
+/* ---------- SLIDE NAVIGATION ---------- */
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+let current = 0;
+
+const dotsWrap = document.getElementById('dots');
+for(let i=0;i<total;i++){
+  const d = document.createElement('div');
+  d.className = 'dot' + (i===0?' active':'');
+  d.onclick = () => goTo(i);
+  dotsWrap.appendChild(d);
+}
+const dotEls = document.querySelectorAll('.dot');
+
+function goTo(i){
+  if(i<0||i>=total) return;
+  slides[current].classList.remove('active');
+  dotEls[current].classList.remove('active');
+  current = i;
+  slides[current].classList.add('active');
+  dotEls[current].classList.add('active');
+  document.getElementById('counter').textContent = (current+1)+' / '+total;
+  document.getElementById('prevBtn').disabled = current===0;
+  document.getElementById('nextBtn').disabled = current===total-1;
+  document.getElementById('progressFill').style.width = ((current+1)/total*100)+'%';
+}
+document.addEventListener('keydown', e=>{
+  if(e.key==='ArrowRight') goTo(current+1);
+  if(e.key==='ArrowLeft') goTo(current-1);
+});
+goTo(0);
+
+/* ---------- 3.4 LIVE TOKEN RING SIMULATOR ---------- */
+let tokenHolder = 0;
+const numProcesses = 4;
+
+function renderRing(){
+  for(let i=0;i<numProcesses;i++){
+    document.getElementById('ringP'+i).classList.toggle('holder', i === tokenHolder);
+  }
+}
+function addRingLog(text){
+  const log = document.getElementById('ringLog');
+  const div = document.createElement('div');
+  div.textContent = '› ' + text;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+function passTokenSim(){
+  addRingLog('P' + tokenHolder + ' has the token.');
+  addRingLog('P' + tokenHolder + ' enters critical section.');
+  addRingLog('P' + tokenHolder + ' exits critical section.');
+  tokenHolder = (tokenHolder + 1) % numProcesses;
+  renderRing();
+}
+function resetTokenSim(){
+  tokenHolder = 0;
+  renderRing();
+  document.getElementById('ringLog').innerHTML = '<div>Ready. P0 starts with the token — click "Pass token" to run passToken().</div>';
+}
+renderRing();
+
+/* ---------- QUIZ ---------- */
+const quizData = [
+  {
+    q: "In token-based mutual exclusion, who is allowed to enter the critical section?",
+    opts: [
+      "Any process that asks first",
+      "Only the process currently holding the token",
+      "All processes simultaneously",
+      "Whichever process has the lowest ID, regardless of the token"
+    ],
+    correct: 1
+  },
+  {
+    q: "In a 4-process Token Ring, if P2 currently holds the token, who gets it next?",
+    opts: ["P0", "P1", "P3", "P2 keeps it forever"],
+    correct: 2
+  },
+  {
+    q: "In the microphone analogy, what does the microphone represent?",
+    opts: ["A request message", "The token", "A reply message", "The critical section itself"],
+    correct: 1
+  },
+  {
+    q: "In the Java TokenRing class, what does `(tokenHolder + 1) % numberOfProcesses` do?",
+    opts: [
+      "Resets the token holder to 0 every time",
+      "Wraps the token holder back to the first process after the last one",
+      "Deletes a process from the ring",
+      "Crashes the program if tokenHolder is too high"
+    ],
+    correct: 1
+  },
+  {
+    q: "What problem does Suzuki–Kasami solve that a simple Token Ring doesn't handle well?",
+    opts: [
+      "It allows multiple processes in the critical section at once",
+      "It supports systems with no fixed ring, using broadcast requests and a token carrying bookkeeping (RN, Q, LN)",
+      "It removes the need for a token entirely",
+      "It only works with exactly two processes"
+    ],
+    correct: 1
+  }
+];
+
+let quizScore = 0;
+let quizAnswered = 0;
+const quizContainer = document.getElementById('quizContainer');
+quizData.forEach((item, qi)=>{
+  const wrap = document.createElement('div');
+  wrap.className = 'quiz-q';
+  const title = document.createElement('div');
+  title.className = 'q-title';
+  title.textContent = (qi+1) + '. ' + item.q;
+  wrap.appendChild(title);
+  item.opts.forEach((optText, oi)=>{
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = optText;
+    btn.onclick = () => {
+      const allOpts = wrap.querySelectorAll('.opt');
+      allOpts.forEach(o=>o.classList.add('disabled'));
+      if(oi === item.correct){
+        btn.classList.add('correct');
+        quizScore++;
+      } else {
+        btn.classList.add('incorrect');
+        allOpts[item.correct].classList.add('correct');
+      }
+      quizAnswered++;
+      updateScore();
+    };
+    wrap.appendChild(btn);
+  });
+  quizContainer.appendChild(wrap);
+});
+function updateScore(){
+  const row = document.getElementById('quizScoreRow');
+  row.innerHTML = '<span class="quiz-score">Score: '+quizScore+' / '+quizData.length+'</span>' +
+    (quizAnswered===quizData.length ? ' — Quiz complete! 🎉' : '');
+}
+</script>
+</body>
+</html>

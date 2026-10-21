@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hour 14 — Non-Token-Based Algorithms</title>
+<style>
+  :root{
+    --bg:#282a36;
+    --bg-alt:#21222c;
+    --panel:#2f3140;
+    --line:#44475a;
+    --fg:#f8f8f2;
+    --muted:#a9adc7;
+    --comment:#6272a4;
+    --cyan:#8be9fd;
+    --green:#50fa7b;
+    --amber:#ffb86c;
+    --pink:#ff79c6;
+    --purple:#bd93f9;
+    --red:#ff5555;
+    --yellow:#f1fa8c;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    background:radial-gradient(circle at 15% 10%, #31334a 0%, var(--bg) 45%) fixed;
+    color:var(--fg);
+    font-family:'Segoe UI', Roboto, -apple-system, sans-serif;
+    overflow:hidden;
+  }
+  .deck{position:relative;width:100vw;height:100vh;}
+  .slide{
+    position:absolute;inset:0;
+    display:none;
+    flex-direction:column;
+    padding:56px 80px 90px;
+    animation:fadeIn .45s ease;
+  }
+  .slide.active{display:flex;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+  .kicker{color:var(--amber);font-size:14px;letter-spacing:2px;font-weight:600;margin-bottom:6px;}
+  h1{font-size:40px;margin:0 0 6px;color:var(--fg);}
+  h2{font-size:30px;margin:0 0 18px;color:var(--fg);}
+  h3{font-size:20px;margin:0 0 10px;color:var(--cyan);}
+  p{line-height:1.6;color:var(--muted);font-size:16px;}
+  .lead{font-size:19px;color:var(--fg);max-width:760px;}
+
+  .topbar{position:fixed;top:0;left:0;right:0;height:6px;background:var(--line);z-index:50;}
+  .topbar-fill{height:100%;background:linear-gradient(90deg,var(--amber),var(--pink));transition:width .3s ease;}
+  .navbar{
+    position:fixed;bottom:0;left:0;right:0;height:64px;
+    background:rgba(33,34,44,.92);border-top:1px solid var(--line);
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 32px;backdrop-filter:blur(6px);z-index:50;
+  }
+  .navbar .brand{font-size:13px;color:var(--comment);}
+  .navbar .brand b{color:var(--amber);}
+  .nav-controls{display:flex;align-items:center;gap:14px;}
+  .nav-btn{
+    background:var(--panel);border:1px solid var(--line);color:var(--fg);
+    padding:8px 18px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;transition:.2s;
+  }
+  .nav-btn:hover{border-color:var(--amber);color:var(--amber);}
+  .nav-btn:disabled{opacity:.35;cursor:not-allowed;}
+  .slide-counter{color:var(--muted);font-size:13px;min-width:60px;text-align:center;}
+  .dots{display:flex;gap:5px;flex-wrap:wrap;max-width:340px;}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--line);cursor:pointer;transition:.2s;}
+  .dot.active{background:var(--amber);width:18px;border-radius:4px;}
+
+  .grid{display:grid;gap:16px;}
+  .grid-4{grid-template-columns:repeat(4,1fr);}
+  .grid-3{grid-template-columns:repeat(3,1fr);}
+  .grid-2{grid-template-columns:repeat(2,1fr);}
+  .content{flex:1;overflow-y:auto;padding-right:8px;}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;}
+  .badge{
+    display:inline-block;background:rgba(189,147,249,.15);color:var(--purple);
+    border:1px solid rgba(189,147,249,.4);padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;
+    margin-bottom:14px;letter-spacing:.5px;
+  }
+  .tag-warn{
+    display:inline-block;background:rgba(255,85,85,.12);color:var(--red);
+    border:1px solid rgba(255,85,85,.4);padding:4px 12px;border-radius:20px;
+    font-size:12px;font-weight:700;letter-spacing:1px;margin-bottom:10px;
+  }
+  .tag-good{
+    display:inline-block;background:rgba(80,250,123,.12);color:var(--green);
+    border:1px solid rgba(80,250,123,.4);padding:4px 12px;border-radius:20px;
+    font-size:12px;font-weight:700;letter-spacing:1px;margin-bottom:10px;
+  }
+
+  .resource-card{
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:16px;text-align:center;transition:.2s;
+  }
+  .resource-card:hover{border-color:var(--cyan);transform:translateY(-3px);}
+  .resource-card .ic{font-size:24px;margin-bottom:8px;display:block;}
+  .resource-card .lbl{font-size:13.5px;color:var(--fg);font-weight:600;}
+
+  /* CODE */
+  .code-wrap{background:var(--bg-alt);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;}
+  .code-head{display:flex;align-items:center;gap:8px;padding:10px 14px;background:#1c1d27;border-bottom:1px solid var(--line);}
+  .code-head .dotc{width:11px;height:11px;border-radius:50%;}
+  .code-head .filename{margin-left:8px;color:var(--comment);font-size:12px;font-family:'Consolas','Courier New',monospace;}
+  pre{margin:0;padding:16px 20px;overflow-x:auto;font-family:'Consolas','Courier New',monospace;font-size:13px;line-height:1.6;}
+  code{color:var(--fg);}
+  .tok-kw{color:var(--pink);}
+  .tok-type{color:var(--cyan);}
+  .tok-str{color:var(--yellow);}
+  .tok-fn{color:var(--green);}
+  .tok-num{color:var(--purple);}
+  .tok-an{color:var(--amber);}
+
+  .line-explainer{display:flex;gap:12px;padding:10px 0;border-bottom:1px dashed var(--line);align-items:flex-start;}
+  .line-explainer:last-child{border-bottom:none;}
+  .line-explainer .ln{
+    background:var(--bg-alt);color:var(--amber);font-family:'Consolas',monospace;font-size:12px;
+    padding:3px 8px;border-radius:5px;white-space:nowrap;border:1px solid var(--line);
+  }
+  .line-explainer .desc{font-size:14px;color:var(--muted);line-height:1.5;}
+  .line-explainer .desc b{color:var(--fg);}
+
+  /* Message flow diagram */
+  .flow-wrap{display:flex;flex-direction:column;align-items:center;padding:12px 0;}
+  .flow-node{
+    background:var(--panel);border:1px solid var(--line);border-radius:8px;
+    padding:12px 26px;font-weight:700;font-size:15px;color:var(--amber);min-width:120px;text-align:center;
+  }
+  .fan-out{display:flex;gap:16px;justify-content:center;margin:14px 0;flex-wrap:wrap;}
+  .fan-target{
+    background:var(--bg-alt);border:1px solid var(--cyan);color:var(--cyan);border-radius:8px;
+    padding:10px 20px;font-size:13.5px;font-weight:600;
+  }
+  .msg-label{font-size:12px;color:var(--comment);text-align:center;margin:6px 0;}
+  .flow-arrow{color:var(--comment);font-size:18px;}
+
+  /* Terminal */
+  .terminal{background:var(--bg-alt);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;}
+  .terminal-head{display:flex;align-items:center;gap:8px;padding:10px 14px;background:#1c1d27;border-bottom:1px solid var(--line);}
+  .terminal-body{padding:16px 20px;font-family:'Consolas',monospace;font-size:14px;line-height:2;color:var(--green);}
+
+  /* Request ordering cards */
+  .req-chip{
+    display:inline-flex;align-items:center;gap:6px;background:var(--bg-alt);border:1px solid var(--line);
+    border-radius:8px;padding:8px 16px;font-family:'Consolas',monospace;font-weight:700;font-size:16px;color:var(--amber);
+  }
+  .order-chain{display:flex;align-items:center;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:14px;}
+  .order-chain .arrow{color:var(--comment);font-size:18px;}
+
+  /* Live priority queue demo */
+  .demo-btn{
+    background:linear-gradient(135deg,var(--amber),#ff9d4d);color:#282a36;border:none;
+    padding:9px 18px;border-radius:8px;font-weight:700;cursor:pointer;font-size:13.5px;transition:.2s;
+  }
+  .demo-btn:hover{filter:brightness(1.1);}
+  .demo-btn:disabled{opacity:.4;cursor:not-allowed;}
+  .demo-btn.secondary{background:var(--line);color:var(--fg);}
+  .pq-input-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;}
+  .pq-input-row input{
+    background:var(--bg-alt);border:1px solid var(--line);color:var(--fg);border-radius:6px;
+    padding:8px 10px;font-family:'Consolas',monospace;font-size:14px;width:90px;
+  }
+  .pq-queue{display:flex;gap:10px;flex-wrap:wrap;min-height:50px;align-items:center;}
+  .pq-chip{
+    background:var(--bg-alt);border:1px solid var(--cyan);color:var(--cyan);border-radius:8px;
+    padding:8px 14px;font-family:'Consolas',monospace;font-weight:700;font-size:14px;
+  }
+  .pq-chip.popped{border-color:var(--green);color:var(--green);}
+
+  /* RA simulator */
+  .ra-row{display:flex;gap:16px;flex-wrap:wrap;}
+  .ra-panel{
+    flex:1;min-width:200px;background:var(--bg-alt);border:1px solid var(--line);border-radius:10px;padding:14px;
+    text-align:center;
+  }
+  .ra-panel h4{margin:0 0 8px;font-size:13px;color:var(--fg);}
+  .ra-ts{font-size:26px;font-weight:800;font-family:'Consolas',monospace;color:var(--amber);}
+  .ra-verdict{margin-top:8px;font-size:12.5px;font-weight:700;padding:4px 10px;border-radius:14px;display:inline-block;}
+  .ra-verdict.priority{background:rgba(80,250,123,.15);color:var(--green);border:1px solid var(--green);}
+  .ra-verdict.defer{background:rgba(255,85,85,.15);color:var(--red);border:1px solid var(--red);}
+
+  /* State fields grid */
+  .state-card{
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:16px;position:relative;
+  }
+  .state-card .field-name{
+    font-family:'Consolas',monospace;color:var(--amber);font-weight:700;font-size:14px;margin-bottom:6px;
+  }
+
+  /* Quiz */
+  .quiz-q{margin-bottom:22px;}
+  .quiz-q .q-title{font-size:16px;color:var(--fg);font-weight:600;margin-bottom:10px;}
+  .opt{
+    display:block;width:100%;text-align:left;background:var(--panel);border:1px solid var(--line);
+    color:var(--fg);padding:10px 14px;border-radius:8px;margin-bottom:8px;cursor:pointer;font-size:14px;transition:.15s;
+  }
+  .opt:hover{border-color:var(--cyan);}
+  .opt.correct{border-color:var(--green);background:rgba(80,250,123,.12);color:var(--green);}
+  .opt.incorrect{border-color:var(--red);background:rgba(255,85,85,.12);color:var(--red);}
+  .opt.disabled{pointer-events:none;}
+  .quiz-score{color:var(--amber);font-weight:700;font-size:16px;}
+
+  ::-webkit-scrollbar{width:8px;height:8px;}
+  ::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+
+  @media (max-width:900px){
+    .slide{padding:36px 24px 90px;}
+    .grid-4{grid-template-columns:repeat(2,1fr);}
+    .grid-3{grid-template-columns:repeat(2,1fr);}
+    .grid-2{grid-template-columns:1fr;}
+    h1{font-size:28px;}
+    h2{font-size:22px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar"><div class="topbar-fill" id="progressFill"></div></div>
+
+<div class="deck" id="deck">
+
+  <!-- SLIDE 1: TITLE -->
+  <section class="slide active">
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;">
+      <div class="kicker">MERN STACK BOOTCAMP · DISTRIBUTED SYSTEMS FOUNDATIONS</div>
+      <h1 style="font-size:52px;">Hour 14</h1>
+      <h2 style="color:var(--amber);font-size:34px;">Non-Token-Based Algorithms</h2>
+      <p class="lead">No token, no coordinator — just processes negotiating directly with each other through request and reply messages.</p>
+      <div style="margin-top:28px;display:flex;gap:12px;flex-wrap:wrap;">
+        <div class="card" style="padding:10px 18px;">📨 Lamport's Algorithm</div>
+        <div class="card" style="padding:10px 18px;">🧮 Priority Queue Bridge</div>
+        <div class="card" style="padding:10px 18px;">🤝 Ricart–Agrawala</div>
+        <div class="card" style="padding:10px 18px;">🧪 Live Simulators</div>
+      </div>
+    </div>
+    <p style="color:var(--comment);font-size:13px;">Instructor: Manish Rai</p>
+  </section>
+
+  <!-- SLIDE 2: AGENDA -->
+  <section class="slide">
+    <div class="kicker">SESSION MAP</div>
+    <h2>Two algorithms, one family</h2>
+    <div class="content">
+      <div class="grid grid-2" style="gap:16px;">
+        <div class="card"><h3>1. Lamport's Distributed Mutual Exclusion</h3><p>Request, reply, and release messages ordered by logical clock timestamps.</p></div>
+        <div class="card"><h3>2. Ricart–Agrawala Algorithm</h3><p>A leaner version — just request and reply, no separate release message.</p></div>
+      </div>
+      <div class="grid grid-2" style="margin-top:16px;">
+        <div class="card"><h3>2.1 – 2.3 Lamport's</h3><p>Message flow, request ordering with tie-breaking, and a Java priority queue bridge from logical clocks.</p></div>
+        <div class="card"><h3>2.4 – 2.6 Ricart–Agrawala</h3><p>Message flow, the priority rule, and a beginner Java simulation to extend in class.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 3: 2.1 LAMPORT'S ALGORITHM -->
+  <section class="slide">
+    <div class="badge">2.1 LAMPORT'S MUTUAL EXCLUSION ALGORITHM</div>
+    <h2>Three message types, one clock</h2>
+    <div class="content">
+      <div class="grid grid-4">
+        <div class="resource-card"><span class="ic">🕒</span><span class="lbl">Logical clocks</span></div>
+        <div class="resource-card"><span class="ic">📨</span><span class="lbl">Request messages</span></div>
+        <div class="resource-card"><span class="ic">↩️</span><span class="lbl">Reply messages</span></div>
+        <div class="resource-card"><span class="ic">🔓</span><span class="lbl">Release messages</span></div>
+      </div>
+      <h3 style="margin-top:20px;text-align:center;">Basic flow</h3>
+      <div class="flow-wrap">
+        <div class="flow-node">P1 wants CS</div>
+        <div class="msg-label">REQUEST(timestamp)</div>
+        <div class="fan-out">
+          <div class="fan-target">P2</div>
+          <div class="fan-target">P3</div>
+          <div class="fan-target">P4</div>
+        </div>
+        <div class="msg-label">REPLY from each</div>
+        <div class="flow-node" style="border-color:var(--green);color:var(--green);">P1 receives all replies</div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-node" style="border-color:var(--amber);color:var(--amber);">Enter CS</div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-node" style="border-color:var(--red);color:var(--red);">RELEASE</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 4: 2.2 REQUEST ORDERING -->
+  <section class="slide">
+    <div class="badge">2.2 REQUEST ORDERING</div>
+    <h2>Lower timestamp always wins</h2>
+    <div class="content">
+      <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+        <div class="req-chip">P1 → REQUEST(5)</div>
+        <div class="req-chip">P2 → REQUEST(7)</div>
+        <div class="req-chip">P3 → REQUEST(6)</div>
+      </div>
+      <p class="lead" style="text-align:center;margin-top:16px;">Because 5 &lt; 6 &lt; 7, the service order is:</p>
+      <div class="order-chain">
+        <div class="req-chip" style="border-color:var(--green);color:var(--green);">P1</div>
+        <span class="arrow">→</span>
+        <div class="req-chip" style="border-color:var(--cyan);color:var(--cyan);">P3</div>
+        <span class="arrow">→</span>
+        <div class="req-chip" style="border-color:var(--pink);color:var(--pink);">P2</div>
+      </div>
+      <div class="card" style="margin-top:20px;">
+        <div class="tag-warn">TIE-BREAKER</div>
+        <p style="margin:0;">If timestamps are equal, <b style="color:var(--fg);">process IDs</b> are used as a tie-breaker. For example:</p>
+        <div style="display:flex;gap:14px;justify-content:center;margin-top:10px;">
+          <div class="req-chip">(5, P1)</div>
+          <div class="req-chip">(5, P2)</div>
+        </div>
+        <p style="text-align:center;margin-top:10px;">then <b style="color:var(--fg);">(5, P1) &lt; (5, P2)</b> — P1 goes first.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 5: 2.3 JAVA REQUEST QUEUE -->
+  <section class="slide">
+    <div class="badge">2.3 JAVA REQUEST QUEUE</div>
+    <h2>Encoding the ordering rule in Java</h2>
+    <div class="content">
+      <div class="code-wrap">
+        <div class="code-head">
+          <div class="dotc" style="background:#ff5f56;"></div>
+          <div class="dotc" style="background:#ffbd2e;"></div>
+          <div class="dotc" style="background:#27c93f;"></div>
+          <span class="filename">Request.java</span>
+        </div>
+        <pre><code><span class="tok-kw">import</span> java.util.PriorityQueue;
+
+<span class="tok-kw">class</span> <span class="tok-type">Request</span> <span class="tok-kw">implements</span> <span class="tok-type">Comparable</span>&lt;<span class="tok-type">Request</span>&gt; {
+
+    <span class="tok-kw">int</span> timestamp;
+    <span class="tok-kw">int</span> processId;
+
+    <span class="tok-fn">Request</span>(<span class="tok-kw">int</span> timestamp, <span class="tok-kw">int</span> processId) {
+        <span class="tok-kw">this</span>.timestamp = timestamp;
+        <span class="tok-kw">this</span>.processId = processId;
+    }
+
+    <span class="tok-an">@Override</span>
+    <span class="tok-kw">public</span> <span class="tok-kw">int</span> <span class="tok-fn">compareTo</span>(<span class="tok-type">Request</span> other) {
+
+        <span class="tok-kw">if</span> (<span class="tok-kw">this</span>.timestamp != other.timestamp) {
+            <span class="tok-kw">return</span> <span class="tok-type">Integer</span>.compare(
+                    <span class="tok-kw">this</span>.timestamp, other.timestamp);
+        }
+
+        <span class="tok-kw">return</span> <span class="tok-type">Integer</span>.compare(
+                <span class="tok-kw">this</span>.processId, other.processId);
+    }
+
+    <span class="tok-an">@Override</span>
+    <span class="tok-kw">public</span> <span class="tok-type">String</span> <span class="tok-fn">toString</span>() {
+        <span class="tok-kw">return</span> <span class="tok-str">"("</span> + timestamp + <span class="tok-str">", P"</span> + processId + <span class="tok-str">")"</span>;
+    }
+}</code></pre>
+      </div>
+      <p style="margin-top:14px;">This provides an excellent bridge from <b style="color:var(--fg);">logical clocks</b> (the previous module) to <b style="color:var(--fg);">distributed mutual exclusion</b> — the comparator is just the happened-before tie-breaking rule, encoded directly.</p>
+    </div>
+  </section>
+
+  <!-- SLIDE 6: LIVE PRIORITY QUEUE DEMO -->
+  <section class="slide">
+    <div class="badge">🧪 LIVE REQUEST QUEUE SIMULATOR</div>
+    <h2>Add requests, watch them sort themselves</h2>
+    <div class="content">
+      <p>Add your own (timestamp, process) requests — just like <code style="color:var(--amber);">RequestQueueDemo</code> — then pop them off one at a time to see the exact service order.</p>
+      <div class="pq-input-row" style="margin-top:10px;">
+        <label style="font-size:13px;color:var(--muted);">Timestamp</label>
+        <input type="number" id="pqTimestamp" value="7" min="0">
+        <label style="font-size:13px;color:var(--muted);">Process ID</label>
+        <input type="number" id="pqProcessId" value="2" min="1">
+        <button class="demo-btn" onclick="pqAdd()">+ Add request</button>
+      </div>
+      <h3 style="font-size:14px;">Queue (unordered insertion)</h3>
+      <div class="pq-queue" id="pqQueue"></div>
+      <h3 style="font-size:14px;margin-top:16px;">Popped in priority order</h3>
+      <div class="pq-queue" id="pqPopped"></div>
+      <div style="display:flex;gap:12px;margin-top:16px;">
+        <button class="demo-btn" onclick="pqPopAll()">▶ Poll all (priority order)</button>
+        <button class="demo-btn secondary" onclick="pqReset()">↺ Reset</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 7: 2.4 RICART-AGRAWALA -->
+  <section class="slide">
+    <div class="badge">2.4 RICART–AGRAWALA ALGORITHM</div>
+    <h2>A leaner version — just two message types</h2>
+    <div class="content">
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="tag-warn">LAMPORT'S USES THREE</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;">
+            <span class="req-chip">REQUEST</span><span class="req-chip">REPLY</span><span class="req-chip">RELEASE</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="tag-good">RICART–AGRAWALA USES TWO</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;">
+            <span class="req-chip">REQUEST</span><span class="req-chip">REPLY</span>
+          </div>
+        </div>
+      </div>
+      <h3 style="margin-top:20px;text-align:center;">When P1 wants the critical section</h3>
+      <div class="flow-wrap">
+        <div class="flow-node">P1</div>
+        <div class="fan-out">
+          <div class="fan-target">REQUEST → P2</div>
+          <div class="fan-target">REQUEST → P3</div>
+          <div class="fan-target">REQUEST → P4</div>
+        </div>
+        <div class="msg-label">P1 waits for replies</div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-node" style="border-color:var(--amber);color:var(--amber);">Once all required replies arrive → P1 enters CS</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 8: 2.5 PRIORITY RULE -->
+  <section class="slide">
+    <div class="badge">2.5 PRIORITY RULE</div>
+    <h2>Whoever asked first, wins</h2>
+    <div class="content">
+      <div class="grid grid-2">
+        <div class="card" style="text-align:center;">
+          <div class="tag-good">CASE 1</div>
+          <div style="display:flex;gap:14px;justify-content:center;margin-top:10px;">
+            <div class="req-chip">P1 = 10</div>
+            <div class="req-chip">P2 = 15</div>
+          </div>
+          <p style="margin-top:12px;font-weight:700;color:var(--green);">P1 has priority.</p>
+        </div>
+        <div class="card" style="text-align:center;">
+          <div class="tag-good">CASE 2 (REVERSED)</div>
+          <div style="display:flex;gap:14px;justify-content:center;margin-top:10px;">
+            <div class="req-chip">P2 = 10</div>
+            <div class="req-chip">P1 = 15</div>
+          </div>
+          <p style="margin-top:12px;font-weight:700;color:var(--green);">P2 gets priority.</p>
+        </div>
+      </div>
+      <div class="card" style="margin-top:16px;">
+        <p style="margin:0;">It's always about the timestamp, never about identity — whichever process genuinely asked first (lower logical timestamp) gets to go first. This is the exact same ordering rule from 2.2, just applied without the separate RELEASE message.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 9: 2.6 JAVA SIMULATION -->
+  <section class="slide">
+    <div class="badge">2.6 BEGINNER-FRIENDLY JAVA SIMULATION</div>
+    <h2>A starting point to build on in class</h2>
+    <div class="content">
+      <div class="code-wrap">
+        <div class="code-head">
+          <div class="dotc" style="background:#ff5f56;"></div>
+          <div class="dotc" style="background:#ffbd2e;"></div>
+          <div class="dotc" style="background:#27c93f;"></div>
+          <span class="filename">RicartAgrawalaDemo.java</span>
+        </div>
+        <pre style="font-size:12px;"><code><span class="tok-kw">class</span> <span class="tok-type">Process</span> {
+
+    <span class="tok-kw">private final</span> <span class="tok-kw">int</span> id;
+    <span class="tok-kw">private</span> <span class="tok-kw">int</span> clock = <span class="tok-num">0</span>;
+
+    <span class="tok-kw">public</span> <span class="tok-fn">Process</span>(<span class="tok-kw">int</span> id) { <span class="tok-kw">this</span>.id = id; }
+
+    <span class="tok-kw">public</span> <span class="tok-kw">void</span> <span class="tok-fn">requestCriticalSection</span>() {
+        clock++;
+        <span class="tok-type">System</span>.out.println(
+                <span class="tok-str">"P"</span> + id + <span class="tok-str">" requests CS at clock "</span> + clock);
+    }
+
+    <span class="tok-kw">public</span> <span class="tok-kw">int</span> <span class="tok-fn">getClock</span>() { <span class="tok-kw">return</span> clock; }
+    <span class="tok-kw">public</span> <span class="tok-kw">int</span> <span class="tok-fn">getId</span>() { <span class="tok-kw">return</span> id; }
+}
+
+<span class="tok-kw">public class</span> <span class="tok-type">RicartAgrawalaDemo</span> {
+
+    <span class="tok-kw">public static</span> <span class="tok-kw">void</span> <span class="tok-fn">main</span>(<span class="tok-type">String</span>[] args) {
+
+        <span class="tok-type">Process</span> p1 = <span class="tok-kw">new</span> <span class="tok-fn">Process</span>(<span class="tok-num">1</span>);
+        <span class="tok-type">Process</span> p2 = <span class="tok-kw">new</span> <span class="tok-fn">Process</span>(<span class="tok-num">2</span>);
+        <span class="tok-type">Process</span> p3 = <span class="tok-kw">new</span> <span class="tok-fn">Process</span>(<span class="tok-num">3</span>);
+
+        p1.requestCriticalSection();
+        p2.requestCriticalSection();
+        p3.requestCriticalSection();
+
+        <span class="tok-type">System</span>.out.println(<span class="tok-str">"\nPriority based on timestamp:"</span>);
+    }
+}</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 10: EXTENDING + STATE FIELDS -->
+  <section class="slide">
+    <div class="badge">2.6 EXTENDING THE SIMULATION</div>
+    <h2>What a full implementation needs to track</h2>
+    <div class="content">
+      <p>For classroom purposes, extend this in a second step by maintaining four pieces of state per process:</p>
+      <div class="grid grid-2" style="margin-top:12px;">
+        <div class="state-card"><div class="field-name">requestTimestamp</div><p style="margin:0;">The logical clock value attached to this process's own pending request.</p></div>
+        <div class="state-card"><div class="field-name">repliesReceived</div><p style="margin:0;">A running count (or set) of which other processes have replied so far.</p></div>
+        <div class="state-card"><div class="field-name">deferredReplies</div><p style="margin:0;">Requests this process has deliberately held back a REPLY for, because its own request has priority.</p></div>
+        <div class="state-card"><div class="field-name">requestingState</div><p style="margin:0;">Whether this process is currently idle, requesting, or inside the critical section.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 11: LIVE RA PRIORITY SIMULATOR -->
+  <section class="slide">
+    <div class="badge">🧪 LIVE RICART–AGRAWALA PRIORITY CHECK</div>
+    <h2>Who gets the reply, who gets deferred?</h2>
+    <div class="content">
+      <p>Set two competing request timestamps and see which process wins priority — and which one's reply gets deferred.</p>
+      <div class="ra-row" style="margin-top:14px;">
+        <div class="ra-panel">
+          <h4>Process P1 request timestamp</h4>
+          <input type="number" id="raP1" value="10" style="background:var(--bg);border:1px solid var(--line);color:var(--amber);border-radius:6px;padding:8px;font-family:'Consolas',monospace;font-size:20px;width:100px;text-align:center;">
+          <div id="raP1Verdict"></div>
+        </div>
+        <div class="ra-panel">
+          <h4>Process P2 request timestamp</h4>
+          <input type="number" id="raP2" value="15" style="background:var(--bg);border:1px solid var(--line);color:var(--amber);border-radius:6px;padding:8px;font-family:'Consolas',monospace;font-size:20px;width:100px;text-align:center;">
+          <div id="raP2Verdict"></div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:center;margin-top:14px;">
+        <button class="demo-btn" onclick="raCompare()">▶ Compare priority</button>
+      </div>
+      <div class="card" style="margin-top:16px;text-align:center;" id="raResultCard">
+        <p style="margin:0;color:var(--comment);">Set two timestamps and click compare.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 12: RECAP -->
+  <section class="slide">
+    <div class="kicker">RECAP</div>
+    <h2>Hour 14 — Key takeaways</h2>
+    <div class="content">
+      <div class="grid grid-2">
+        <div class="card"><h3>📨 Lamport's: 3 messages</h3><p>REQUEST, REPLY, and RELEASE, ordered strictly by (timestamp, processId).</p></div>
+        <div class="card"><h3>🧮 Timestamps drive everything</h3><p>Lower timestamp always wins; equal timestamps fall back to process ID as a tie-breaker.</p></div>
+        <div class="card"><h3>🤝 Ricart–Agrawala: 2 messages</h3><p>Just REQUEST and REPLY — no separate release, since a deferred reply does that job instead.</p></div>
+        <div class="card"><h3>🗂️ Real implementations track state</h3><p>requestTimestamp, repliesReceived, deferredReplies, and requestingState turn the algorithm from theory into working code.</p></div>
+      </div>
+      <p class="lead" style="margin-top:20px;">Next hour: <b style="color:var(--fg);">Token-Based Algorithms</b> — Token Ring and Suzuki–Kasami.</p>
+    </div>
+  </section>
+
+  <!-- SLIDE 13: QUIZ -->
+  <section class="slide">
+    <div class="kicker">QUICK CHECK</div>
+    <h2>Hour 14 quiz</h2>
+    <div class="content" id="quizContainer"></div>
+    <div style="margin-top:6px;" id="quizScoreRow"></div>
+  </section>
+
+</div>
+
+<div class="navbar">
+  <div class="brand">MERN Stack Bootcamp · <b>Hour 14</b> — Non-Token-Based Algorithms</div>
+  <div class="nav-controls">
+    <button class="nav-btn" id="prevBtn" onclick="goTo(current-1)">← Prev</button>
+    <div class="dots" id="dots"></div>
+    <span class="slide-counter" id="counter">1 / 13</span>
+    <button class="nav-btn" id="nextBtn" onclick="goTo(current+1)">Next →</button>
+  </div>
+</div>
+
+<script>
+/* ---------- SLIDE NAVIGATION ---------- */
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+let current = 0;
+
+const dotsWrap = document.getElementById('dots');
+for(let i=0;i<total;i++){
+  const d = document.createElement('div');
+  d.className = 'dot' + (i===0?' active':'');
+  d.onclick = () => goTo(i);
+  dotsWrap.appendChild(d);
+}
+const dotEls = document.querySelectorAll('.dot');
+
+function goTo(i){
+  if(i<0||i>=total) return;
+  slides[current].classList.remove('active');
+  dotEls[current].classList.remove('active');
+  current = i;
+  slides[current].classList.add('active');
+  dotEls[current].classList.add('active');
+  document.getElementById('counter').textContent = (current+1)+' / '+total;
+  document.getElementById('prevBtn').disabled = current===0;
+  document.getElementById('nextBtn').disabled = current===total-1;
+  document.getElementById('progressFill').style.width = ((current+1)/total*100)+'%';
+}
+document.addEventListener('keydown', e=>{
+  if(e.key==='ArrowRight') goTo(current+1);
+  if(e.key==='ArrowLeft') goTo(current-1);
+});
+goTo(0);
+
+/* ---------- 2.3 LIVE PRIORITY QUEUE DEMO ---------- */
+let pqItems = [];
+function pqRenderQueue(){
+  const wrap = document.getElementById('pqQueue');
+  wrap.innerHTML = '';
+  if(pqItems.length === 0){
+    wrap.innerHTML = '<span style="color:var(--comment);font-size:13px;">No requests added yet.</span>';
+    return;
+  }
+  pqItems.forEach(it=>{
+    const chip = document.createElement('div');
+    chip.className = 'pq-chip';
+    chip.textContent = '(' + it.timestamp + ', P' + it.processId + ')';
+    wrap.appendChild(chip);
+  });
+}
+function pqAdd(){
+  const ts = parseInt(document.getElementById('pqTimestamp').value, 10);
+  const pid = parseInt(document.getElementById('pqProcessId').value, 10);
+  if(isNaN(ts) || isNaN(pid)) return;
+  pqItems.push({ timestamp: ts, processId: pid });
+  pqRenderQueue();
+  // auto-increment for convenience
+  document.getElementById('pqProcessId').value = pid + 1;
+}
+function pqPopAll(){
+  const sorted = pqItems.slice().sort((a,b)=>{
+    if(a.timestamp !== b.timestamp) return a.timestamp - b.timestamp;
+    return a.processId - b.processId;
+  });
+  const wrap = document.getElementById('pqPopped');
+  wrap.innerHTML = '';
+  sorted.forEach((it, idx)=>{
+    setTimeout(()=>{
+      const chip = document.createElement('div');
+      chip.className = 'pq-chip popped';
+      chip.textContent = (idx+1) + '. (' + it.timestamp + ', P' + it.processId + ')';
+      wrap.appendChild(chip);
+    }, idx * 350);
+  });
+}
+function pqReset(){
+  pqItems = [];
+  pqRenderQueue();
+  document.getElementById('pqPopped').innerHTML = '';
+}
+pqRenderQueue();
+
+/* ---------- 2.5/2.6 LIVE RICART-AGRAWALA PRIORITY CHECK ---------- */
+function raCompare(){
+  const t1 = parseInt(document.getElementById('raP1').value, 10);
+  const t2 = parseInt(document.getElementById('raP2').value, 10);
+  const v1 = document.getElementById('raP1Verdict');
+  const v2 = document.getElementById('raP2Verdict');
+  const result = document.getElementById('raResultCard');
+
+  if(isNaN(t1) || isNaN(t2)){
+    result.innerHTML = '<p style="margin:0;color:var(--red);">Enter valid timestamps for both processes.</p>';
+    return;
+  }
+
+  if(t1 < t2){
+    v1.innerHTML = '<div class="ra-verdict priority">✓ Priority — REPLY sent</div>';
+    v2.innerHTML = '<div class="ra-verdict defer">⏸ Deferred</div>';
+    result.innerHTML = '<p style="margin:0;"><b style="color:var(--green);">P1</b> requested first (timestamp ' + t1 + ' &lt; ' + t2 + '), so P2 holds its reply until P1 finishes with the critical section.</p>';
+  } else if(t2 < t1){
+    v1.innerHTML = '<div class="ra-verdict defer">⏸ Deferred</div>';
+    v2.innerHTML = '<div class="ra-verdict priority">✓ Priority — REPLY sent</div>';
+    result.innerHTML = '<p style="margin:0;"><b style="color:var(--green);">P2</b> requested first (timestamp ' + t2 + ' &lt; ' + t1 + '), so P1 holds its reply until P2 finishes with the critical section.</p>';
+  } else {
+    v1.innerHTML = '<div class="ra-verdict priority">✓ Priority (tie-break: lower ID)</div>';
+    v2.innerHTML = '<div class="ra-verdict defer">⏸ Deferred</div>';
+    result.innerHTML = '<p style="margin:0;">Timestamps are equal (' + t1 + ' = ' + t2 + ') — fall back to process ID as the tie-breaker. <b style="color:var(--green);">P1</b> (lower ID) wins.</p>';
+  }
+}
+
+/* ---------- QUIZ ---------- */
+const quizData = [
+  {
+    q: "Which three message types does Lamport's algorithm use?",
+    opts: ["REQUEST, ACK, CLOSE", "REQUEST, REPLY, RELEASE", "SEND, RECEIVE, ACK", "OPEN, LOCK, UNLOCK"],
+    correct: 1
+  },
+  {
+    q: "Given REQUEST(5), REQUEST(7), and REQUEST(6) from P1, P2, P3, what is the correct service order?",
+    opts: ["P1 → P2 → P3", "P2 → P3 → P1", "P1 → P3 → P2", "P3 → P1 → P2"],
+    correct: 2
+  },
+  {
+    q: "If two requests have the same timestamp, how is the tie broken?",
+    opts: ["Randomly", "By process ID", "By network latency", "The request is rejected"],
+    correct: 1
+  },
+  {
+    q: "How many message types does Ricart–Agrawala primarily use, compared to Lamport's three?",
+    opts: ["One", "Two — REQUEST and REPLY", "Four", "Zero — no messages needed"],
+    correct: 1
+  },
+  {
+    q: "In Ricart–Agrawala, if P1's request timestamp is 10 and P2's is 15, who gets priority?",
+    opts: ["P2, because it has the higher ID", "P1, because its timestamp is lower", "Neither — they must restart", "Whichever process has more replies pending"],
+    correct: 1
+  }
+];
+
+let quizScore = 0;
+let quizAnswered = 0;
+const quizContainer = document.getElementById('quizContainer');
+quizData.forEach((item, qi)=>{
+  const wrap = document.createElement('div');
+  wrap.className = 'quiz-q';
+  const title = document.createElement('div');
+  title.className = 'q-title';
+  title.textContent = (qi+1) + '. ' + item.q;
+  wrap.appendChild(title);
+  item.opts.forEach((optText, oi)=>{
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = optText;
+    btn.onclick = () => {
+      const allOpts = wrap.querySelectorAll('.opt');
+      allOpts.forEach(o=>o.classList.add('disabled'));
+      if(oi === item.correct){
+        btn.classList.add('correct');
+        quizScore++;
+      } else {
+        btn.classList.add('incorrect');
+        allOpts[item.correct].classList.add('correct');
+      }
+      quizAnswered++;
+      updateScore();
+    };
+    wrap.appendChild(btn);
+  });
+  quizContainer.appendChild(wrap);
+});
+function updateScore(){
+  const row = document.getElementById('quizScoreRow');
+  row.innerHTML = '<span class="quiz-score">Score: '+quizScore+' / '+quizData.length+'</span>' +
+    (quizAnswered===quizData.length ? ' — Quiz complete! 🎉' : '');
+}
+</script>
+</body>
+</html>
