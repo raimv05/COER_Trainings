@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arrays and Array Operations | Data Manipulation Training — Hour 14</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+<style>
+  :root{
+    --ink:#14181F; --paper:#F4F6F5; --panel:#FFFFFF; --line:#DCE3E1;
+    --teal:#0E7C86; --teal-soft:#E4F1F1;
+    --amber:#D98E31; --amber-soft:#FBEEDD;
+    --violet:#6E5A9E; --violet-soft:#EDE9F5;
+    --coral:#C0524A; --coral-soft:#F7E7E5;
+    --green:#3E8E5A; --green-soft:#E6F1EA;
+    --slate:#5B6570;
+    --radius:14px;
+    --shadow:0 10px 30px rgba(20,24,31,0.06);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif; line-height:1.65;
+  }
+  h1,h2,h3,h4{ font-family:'Space Grotesk', sans-serif; letter-spacing:-.01em; }
+  code, pre, .mono{ font-family:'IBM Plex Mono', monospace; }
+  a{color:var(--teal);}
+
+  .topbar{
+    position:sticky; top:0; z-index:60; background:rgba(244,246,245,0.92); backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line); padding:10px 24px;
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+  }
+  .brand{ display:flex; align-items:center; gap:10px; font-weight:700; font-family:'Space Grotesk'; }
+  .brand .logo{
+    width:30px;height:30px;border-radius:8px; background:linear-gradient(135deg,var(--teal),var(--violet));
+    display:flex;align-items:center;justify-content:center; color:#fff; font-weight:800; font-size:15px;
+  }
+  .progress-track{ flex:1; max-width:380px; height:7px; border-radius:20px; background:var(--line); overflow:hidden; }
+  .progress-fill{ height:100%; width:0%; background:linear-gradient(90deg,var(--teal),var(--violet)); transition:width .15s ease; }
+
+  .shell{ display:flex; max-width:1280px; margin:0 auto; align-items:flex-start; }
+  .toc{
+    width:252px; flex:0 0 auto; position:sticky; top:57px; height:calc(100vh - 57px);
+    overflow-y:auto; padding:28px 18px 60px; border-right:1px solid var(--line);
+  }
+  .toc h5{ font-size:11px; text-transform:uppercase; letter-spacing:1.2px; color:var(--slate); margin:0 0 10px; }
+  .toc a{
+    display:block; padding:7px 10px; border-radius:8px; color:var(--slate); text-decoration:none;
+    font-size:13.5px; margin-bottom:2px;
+  }
+  .toc a:hover, .toc a.active{ background:var(--teal-soft); color:var(--teal); font-weight:600; }
+  main{ flex:1; min-width:0; padding:0 36px 100px; max-width:960px; }
+  @media (max-width:900px){ .toc{ display:none; } main{ padding:0 20px 80px; } }
+
+  .hero{ padding:56px 0 36px; border-bottom:1px solid var(--line); }
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px; font-size:12px; letter-spacing:1.2px; text-transform:uppercase;
+    color:var(--teal); font-weight:700; background:var(--teal-soft); padding:6px 14px; border-radius:30px; margin-bottom:18px;
+  }
+  .hero h1{ font-size:clamp(28px,4.4vw,42px); margin:0 0 14px; font-weight:700; }
+  .hero p.sub{ max-width:680px; color:var(--slate); font-size:16px; margin:0 0 26px; }
+  .hero-meta{ display:flex; gap:12px; flex-wrap:wrap; }
+  .meta-chip{ background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:9px 14px; font-size:12.5px; color:var(--slate); }
+  .meta-chip b{ display:block; color:var(--ink); font-size:14px; }
+
+  section.sec{ padding:48px 0; border-bottom:1px dashed var(--line); scroll-margin-top:72px; }
+  section.sec:last-child{ border-bottom:none; }
+  .sec-head{ display:flex; align-items:center; gap:14px; margin-bottom:22px; }
+  .sec-num{
+    flex:0 0 auto; width:46px;height:46px;border-radius:12px; background:var(--panel); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:16px; color:var(--teal);
+  }
+  .sec-head h2{ margin:0; font-size:23px; font-weight:700; }
+  .sec-head p{ margin:2px 0 0; color:var(--slate); font-size:13.5px; }
+
+  .card{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:22px 24px; margin-bottom:20px; box-shadow:var(--shadow); }
+  .card h3{ margin:0 0 10px; font-size:16.5px; color:var(--ink); display:flex; align-items:center; gap:8px; }
+  .card p{ margin:8px 0; }
+  .card ul, .card ol{ margin:10px 0; padding-left:22px; }
+  .card li{ margin-bottom:6px; }
+
+  .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  .grid-3{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  @media (max-width:760px){ .grid-2,.grid-3{ grid-template-columns:1fr; } }
+
+  .callout{ border-radius:var(--radius); padding:16px 20px; margin:16px 0; border:1px solid; display:flex; gap:14px; font-size:14px; }
+  .callout .ico{ font-size:20px; line-height:1.2; }
+  .callout.tip{ background:var(--teal-soft); border-color:#b9dcdd; }
+  .callout.note{ background:var(--amber-soft); border-color:#eccb98; }
+  .callout.exercise{ background:var(--violet-soft); border-color:#cfc3e8; }
+  .callout b{ color:var(--ink); }
+
+  .code-panel{ background:#1a1d24; border-radius:12px; overflow:hidden; margin:16px 0; border:1px solid #2a2e38; }
+  .code-head{ display:flex; align-items:center; justify-content:space-between; background:#20232c; padding:9px 16px; font-size:12px; color:#9aa1b0; }
+  .code-dots{ display:flex; gap:6px; }
+  .code-dots span{ width:10px;height:10px;border-radius:50%; }
+  .code-dots span:nth-child(1){ background:#ff5f56;} .code-dots span:nth-child(2){ background:#ffbd2e;} .code-dots span:nth-child(3){ background:#27c93f;}
+  .copy-btn{ background:#2a2e38; color:#c7ccd8; border:none; border-radius:6px; padding:4px 10px; font-size:11.5px; cursor:pointer; font-family:inherit; }
+  .copy-btn:hover{ background:#363b48; }
+  pre.code-body{ margin:0; padding:18px 20px; overflow-x:auto; font-size:13.3px; line-height:1.75; }
+  pre.code-body code{ font-family:'IBM Plex Mono', monospace; background:none; }
+  .code-output{ background:#14161b; border-top:1px dashed #2a2e38; padding:12px 20px; font-size:12.8px; color:#7ee8a0; font-family:'IBM Plex Mono', monospace; white-space:pre-wrap; }
+  .code-output .lbl{ color:#7c8494; font-size:10.5px; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:6px; }
+
+  .steps{ counter-reset:stepnum; margin:18px 0; }
+  .step{ position:relative; padding:14px 18px 14px 54px; margin-bottom:12px; background:var(--panel); border:1px solid var(--line); border-radius:12px; }
+  .step::before{
+    counter-increment:stepnum; content:counter(stepnum); position:absolute; left:14px; top:50%; transform:translateY(-50%);
+    width:26px;height:26px;border-radius:50%; background:linear-gradient(135deg,var(--teal),var(--violet));
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12.5px; color:#fff;
+  }
+  .step h4{ margin:0 0 3px; font-size:14.5px; }
+  .step p{ margin:0; font-size:13.3px; color:var(--slate); }
+  .step code{ background:var(--teal-soft); color:var(--teal); padding:1px 6px; border-radius:5px; }
+
+  .flow{ display:flex; flex-direction:column; align-items:center; margin:28px 0; }
+  .flow-node{
+    background:var(--panel); border:1.5px solid var(--line); border-radius:12px; padding:12px 24px; font-weight:600; font-size:14px;
+    text-align:center; min-width:200px; box-shadow:var(--shadow);
+  }
+  .flow-node.accent-teal{ border-color:var(--teal); color:var(--teal); }
+  .flow-node.accent-amber{ border-color:var(--amber); color:var(--amber); }
+  .flow-node.accent-violet{ border-color:var(--violet); color:var(--violet); }
+  .flow-node.accent-green{ border-color:var(--green); color:var(--green); }
+  .flow-node.accent-coral{ border-color:var(--coral); color:var(--coral); }
+  .flow-arrow{ color:var(--slate); font-size:20px; margin:4px 0; }
+  .flow-caption{ text-align:center; font-size:12.5px; color:var(--slate); margin-top:6px; font-style:italic; max-width:560px; }
+
+  table.data-table{ width:100%; border-collapse:collapse; margin:14px 0; font-size:14px; }
+  table.data-table th, table.data-table td{ padding:10px 14px; border-bottom:1px solid var(--line); text-align:left; }
+  table.data-table th{ color:var(--amber); font-size:11.5px; text-transform:uppercase; letter-spacing:.5px; background:var(--amber-soft); }
+  table.data-table tr:hover td{ background:var(--teal-soft); }
+  table.data-table td.num{ font-family:'IBM Plex Mono'; color:var(--teal); font-weight:600; }
+
+  /* 1D array visual */
+  .array-wrap{ display:flex; justify-content:center; gap:0; margin:22px 0 32px; flex-wrap:wrap; }
+  .array-cell{
+    width:72px; height:56px; border:1.5px solid var(--line); background:var(--teal-soft);
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13.5px; color:var(--teal);
+    position:relative; font-family:'IBM Plex Mono';
+  }
+  .array-cell .idx{ position:absolute; bottom:-20px; font-size:10px; color:var(--slate); font-weight:400; white-space:nowrap; }
+  .array-cell.sel{ background:var(--amber-soft); color:var(--amber); border-color:var(--amber); }
+  .array-cell.sel2{ background:var(--violet-soft); color:var(--violet); border-color:var(--violet); }
+  .array-cell.dim{ opacity:.35; }
+
+  /* 2D matrix visual */
+  .matrix-wrap{ display:inline-flex; flex-direction:column; gap:4px; margin:20px auto; }
+  .matrix-row{ display:flex; gap:4px; align-items:center; }
+  .matrix-cell{
+    width:72px; height:50px; border-radius:8px; background:var(--panel); border:1.5px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-weight:700; color:var(--ink); font-family:'IBM Plex Mono'; font-size:13px;
+  }
+  .matrix-cell.hl-row{ background:var(--amber-soft); border-color:var(--amber); color:var(--amber); }
+  .matrix-cell.hl-col{ background:var(--teal-soft); border-color:var(--teal); color:var(--teal); }
+  .matrix-cell.hl-single{ background:var(--violet-soft); border-color:var(--violet); color:var(--violet); }
+  .matrix-label{ width:72px; text-align:center; font-size:11px; color:var(--slate); font-weight:600; }
+  .matrix-rowlabel{ width:60px; font-size:11.5px; color:var(--slate); font-weight:600; text-align:right; padding-right:6px; }
+  .matrix-center{ text-align:center; }
+
+  table.prop-table{ width:100%; border-collapse:collapse; margin:14px 0; font-size:13.8px; }
+  table.prop-table th, table.prop-table td{ padding:9px 12px; border:1px solid var(--line); text-align:left; }
+  table.prop-table th{ background:var(--teal-soft); color:var(--teal); font-size:11.5px; text-transform:uppercase; }
+  table.prop-table code{ color:var(--teal); font-weight:600; }
+
+  .op-chip-row{ display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin:16px 0; }
+  .op-chip{
+    background:var(--panel); border:1.5px solid var(--line); border-radius:10px; padding:10px 16px;
+    font-family:'IBM Plex Mono'; font-size:13px; text-align:center; min-width:90px;
+  }
+  .op-chip .osym{ font-size:17px; font-weight:700; color:var(--coral); display:block; margin-bottom:3px; }
+  .op-chip .olabel{ font-size:10.5px; color:var(--slate); }
+
+  /* broadcast diagram */
+  .broadcast-row{ display:flex; align-items:center; justify-content:center; gap:14px; margin:22px 0; flex-wrap:wrap; }
+  .bcast-box{ display:flex; gap:4px; }
+  .bcast-cell{
+    width:60px; height:46px; border-radius:8px; border:1.5px solid var(--line); background:var(--panel);
+    display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono'; font-size:12.5px; font-weight:700;
+  }
+  .bcast-scalar{
+    width:60px; height:46px; border-radius:50%; border:2px solid var(--amber); background:var(--amber-soft); color:var(--amber);
+    display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono'; font-size:13px; font-weight:800;
+  }
+  .bcast-op{ font-size:20px; color:var(--slate); }
+
+  .divider-label{ font-size:11px; text-transform:uppercase; letter-spacing:1.2px; color:var(--slate); margin:28px 0 10px; font-weight:700; }
+
+  footer{ text-align:center; padding:36px 20px; color:var(--slate); font-size:12.5px; border-top:1px solid var(--line); }
+
+  .scrolltop{
+    position:fixed; bottom:22px; right:22px; z-index:60; width:44px;height:44px;border-radius:50%;
+    background:linear-gradient(135deg,var(--teal),var(--violet)); display:flex; align-items:center; justify-content:center;
+    color:#fff; font-weight:900; cursor:pointer; box-shadow:var(--shadow); opacity:0; pointer-events:none; transition:.2s;
+  }
+  .scrolltop.show{ opacity:1; pointer-events:auto; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand"><div class="logo">N</div> Data Manipulation Training</div>
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+</div>
+
+<div class="shell">
+  <nav class="toc" id="toc">
+    <h5>On this page</h5>
+    <a href="#s21">2.1 Arithmetic Operations</a>
+    <a href="#s22">2.2 Indexing &amp; Slicing</a>
+    <a href="#s23">2.3 Two-Dimensional Arrays</a>
+    <a href="#s24">2.4 Aggregation by Axis</a>
+    <a href="#s25">2.5 Broadcasting</a>
+    <a href="#s26">2.6 Reshaping Arrays</a>
+    <a href="#exercise">Student Exercise</a>
+  </nav>
+
+  <main>
+    <div class="hero">
+      <span class="eyebrow">🐍 IT Training &middot; Data Manipulation Track &middot; Hour 14</span>
+      <h1>Arrays and Array Operations</h1>
+      <p class="sub">Picking up right where NumPy basics left off — this hour is about making arrays actually <em>do work</em>: arithmetic across whole datasets at once, pulling out exactly the values you need, and reshaping data into the structure your analysis requires.</p>
+      <div class="hero-meta">
+        <div class="meta-chip"><b>60 minutes</b>Session length</div>
+        <div class="meta-chip"><b>Beginner → Intermediate</b>Level</div>
+        <div class="meta-chip"><b>Arithmetic · Indexing · Slicing · Reshaping</b>Focus</div>
+        <div class="meta-chip"><b>6</b>Code walkthroughs</div>
+      </div>
+    </div>
+
+    <!-- 2.1 -->
+    <section class="sec" id="s21">
+      <div class="sec-head">
+        <div class="sec-num">2.1</div>
+        <div><h2>Arithmetic Operations</h2><p>Doing math across an entire array at once — no explicit loop required</p></div>
+      </div>
+
+      <div class="card">
+        <h3>🛒 Setting Up: A Small Store's Inventory</h3>
+        <p>Suppose a store sells three products. Their prices and quantities are:</p>
+        <table class="data-table">
+          <thead><tr><th>Product</th><th>Price (₹)</th><th>Quantity</th></tr></thead>
+          <tbody>
+            <tr><td>Laptop</td><td class="num">50,000</td><td class="num">2</td></tr>
+            <tr><td>Mouse</td><td class="num">500</td><td class="num">10</td></tr>
+            <tr><td>Keyboard</td><td class="num">1,500</td><td class="num">4</td></tr>
+          </tbody>
+        </table>
+        <p>NumPy lets us perform arithmetic on <b>entire arrays</b> without writing an explicit loop for every element.</p>
+
+        <div class="code-panel">
+          <div class="code-head"><span>store_revenue.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python">import numpy as np
+
+prices = np.array([50000, 500, 1500])
+quantities = np.array([2, 10, 4])
+
+revenue = prices * quantities
+
+print("Revenue per product:", revenue)
+print("Total revenue:", np.sum(revenue))</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>Revenue per product: [100000   5000   6000]
+Total revenue: 111000</div>
+        </div>
+
+        <div class="flow">
+          <div class="flow-node accent-teal">prices = [50000, 500, 1500]</div>
+          <div class="flow-arrow">×  (element-wise)</div>
+          <div class="flow-node accent-amber">quantities = [2, 10, 4]</div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-node accent-green">revenue = [100000, 5000, 6000]</div>
+        </div>
+        <p class="flow-caption">Each position multiplies against its matching position — index 0 with index 0, index 1 with index 1, and so on — all in one line.</p>
+      </div>
+
+      <div class="card">
+        <h3>➗ The Five Core Operations</h3>
+        <div class="code-panel">
+          <div class="code-head"><span>element_wise_ops.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python">a = np.array([10, 20, 30])
+b = np.array([2, 4, 5])
+
+print(a + b)
+print(a - b)
+print(a * b)
+print(a / b)
+print(a ** 2)</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>[12 24 35]
+[ 8 16 25]
+[ 20  80 150]
+[5.  5.  6. ]
+[100 400 900]</div>
+        </div>
+        <div class="op-chip-row">
+          <div class="op-chip"><span class="osym">+</span><span class="olabel">addition</span></div>
+          <div class="op-chip"><span class="osym">−</span><span class="olabel">subtraction</span></div>
+          <div class="op-chip"><span class="osym">×</span><span class="olabel">multiplication</span></div>
+          <div class="op-chip"><span class="osym">÷</span><span class="olabel">division</span></div>
+          <div class="op-chip"><span class="osym">**</span><span class="olabel">power</span></div>
+        </div>
+        <div class="callout tip">
+          <div class="ico">💡</div>
+          <div><b>The key word is "element-wise":</b> these operations run position-by-position across the arrays <i>when their shapes are compatible</i> — same length here. There's no hidden loop to write; NumPy handles the iteration internally and far faster than a Python <code>for</code> loop would.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2.2 -->
+    <section class="sec" id="s22">
+      <div class="sec-head">
+        <div class="sec-num">2.2</div>
+        <div><h2>Indexing and Slicing</h2><p>Pulling out exactly the elements you need, by position or by range</p></div>
+      </div>
+
+      <div class="card">
+        <h3>🔎 Five Ways to Access Array Data</h3>
+        <div class="code-panel">
+          <div class="code-head"><span>indexing_slicing.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python">import numpy as np
+
+sales = np.array([1000, 2000, 3000, 4000, 5000])
+
+print(sales[0])      # First element
+print(sales[-1])     # Last element
+print(sales[1:4])    # Index 1 through 3
+print(sales[:3])     # First three elements
+print(sales[::2])    # Every second element</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>1000
+5000
+[2000 3000 4000]
+[1000 2000 3000]
+[1000 3000 5000]</div>
+        </div>
+
+        <p><code>sales[0]</code> — the first element:</p>
+        <div class="array-wrap">
+          <div class="array-cell sel">1000<span class="idx">[0]</span></div>
+          <div class="array-cell">2000<span class="idx">[1]</span></div>
+          <div class="array-cell">3000<span class="idx">[2]</span></div>
+          <div class="array-cell">4000<span class="idx">[3]</span></div>
+          <div class="array-cell">5000<span class="idx">[4] / [-1]</span></div>
+        </div>
+
+        <p><code>sales[1:4]</code> — index 1 up to, but not including, index 4:</p>
+        <div class="array-wrap">
+          <div class="array-cell dim">1000<span class="idx">[0]</span></div>
+          <div class="array-cell sel">2000<span class="idx">[1]</span></div>
+          <div class="array-cell sel">3000<span class="idx">[2]</span></div>
+          <div class="array-cell sel">4000<span class="idx">[3]</span></div>
+          <div class="array-cell dim">5000<span class="idx">[4]</span></div>
+        </div>
+
+        <p><code>sales[::2]</code> — every second element, starting from index 0:</p>
+        <div class="array-wrap">
+          <div class="array-cell sel2">1000<span class="idx">[0]</span></div>
+          <div class="array-cell dim">2000<span class="idx">[1]</span></div>
+          <div class="array-cell sel2">3000<span class="idx">[2]</span></div>
+          <div class="array-cell dim">4000<span class="idx">[3]</span></div>
+          <div class="array-cell sel2">5000<span class="idx">[4]</span></div>
+        </div>
+
+        <div class="callout note">
+          <div class="ico">📝</div>
+          <div><b>Two rules to never forget:</b> Python indexing always starts at <code>0</code>, not <code>1</code>. And in a slice like <code>[1:4]</code>, the <b>ending position is excluded</b> — you get indexes 1, 2, and 3, never 4.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2.3 -->
+    <section class="sec" id="s23">
+      <div class="sec-head">
+        <div class="sec-num">2.3</div>
+        <div><h2>Two-Dimensional Arrays</h2><p>Rows and columns — and three different ways to slice into them</p></div>
+      </div>
+
+      <div class="card">
+        <h3>🏬 Sales Across Three Stores</h3>
+        <div class="code-panel">
+          <div class="code-head"><span>store_matrix.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python">import numpy as np
+
+# Rows represent stores; columns represent Monday, Tuesday, Wednesday
+sales = np.array([
+    [1000, 1200, 1500],
+    [2000, 1800, 2200],
+    [1500, 1700, 1600]
+])
+
+print("All sales:\n", sales)
+print("First store:", sales[0])
+print("Monday sales:", sales[:, 0])
+print("Second store, Tuesday:", sales[1, 1])</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>All sales:
+ [[1000 1200 1500]
+ [2000 1800 2200]
+ [1500 1700 1600]]
+First store: [1000 1200 1500]
+Monday sales: [1000 2000 1500]
+Second store, Tuesday: 1800</div>
+        </div>
+
+        <p><code>sales[0]</code> — the entire first row (Store 1, all three days):</p>
+        <div class="matrix-center">
+          <div class="matrix-wrap">
+            <div class="matrix-row"><div class="matrix-label"></div><div class="matrix-label">Mon</div><div class="matrix-label">Tue</div><div class="matrix-label">Wed</div></div>
+            <div class="matrix-row"><div class="matrix-rowlabel">Store 1</div><div class="matrix-cell hl-row">1000</div><div class="matrix-cell hl-row">1200</div><div class="matrix-cell hl-row">1500</div></div>
+            <div class="matrix-row"><div class="matrix-rowlabel">Store 2</div><div class="matrix-cell">2000</div><div class="matrix-cell">1800</div><div class="matrix-cell">2200</div></div>
+            <div class="matrix-row"><div class="matrix-rowlabel">Store 3</div><div class="matrix-cell">1500</div><div class="matrix-cell">1700</div><div class="matrix-cell">1600</div></div>
+          </div>
+        </div>
+
+        <p><code>sales[:, 0]</code> — the entire first column (every store's Monday):</p>
+        <div class="matrix-center">
+          <div class="matrix-wrap">
+            <div class="matrix-row"><div class="matrix-label"></div><div class="matrix-label">Mon</div><div class="matrix-label">Tue</div><div class="matrix-label">Wed</div></div>
+            <div class="matrix-row"><div class="matrix-rowlabel">Store 1</div><div class="matrix-cell hl-col">1000</div><div class="matrix-cell">1200</div><div class="matrix-cell">1500</div></div>
+            <div class="matrix-row"><div class="matrix-rowlabel">Store 2</div><div class="matrix-cell hl-col">2000</div><div class="matrix-cell">1800</div><div class="matrix-cell">2200</div></div>
+            <div class="matrix-row"><div class="matrix-rowlabel">Store 3</div><div class="matrix-cell hl-col">1500</div><div class="matrix-cell">1700</div><div class="matrix-cell">1600</div></div>
+          </div>
+        </div>
+
+        <p><code>sales[1, 1]</code> — one single cell (Store 2, Tuesday):</p>
+        <div class="matrix-center">
+          <div class="matrix-wrap">
+            <div class="matrix-row"><div class="matrix-label"></div><div class="matrix-label">Mon</div><div class="matrix-label">Tue</div><div class="matrix-label">Wed</div></div>
+            <div class="matrix-row"><div class="matrix-rowlabel">Store 1</div><div class="matrix-cell">1000</div><div class="matrix-cell">1200</div><div class="matrix-cell">1500</div></div>
+            <div class="matrix-row"><div class="matrix-rowlabel">Store 2</div><div class="matrix-cell">2000</div><div class="matrix-cell hl-single">1800</div><div class="matrix-cell">2200</div></div>
+            <div class="matrix-row"><div class="matrix-rowlabel">Store 3</div><div class="matrix-cell">1500</div><div class="matrix-cell">1700</div><div class="matrix-cell">1600</div></div>
+          </div>
+        </div>
+
+        <div class="callout tip">
+          <div class="ico">💡</div>
+          <div><b>Read <code>[row, column]</code> left to right, same as <code>shape</code>:</b> <code>sales[1, 1]</code> means "row index 1, column index 1." The colon <code>:</code> alone means "give me everything along this axis" — so <code>sales[:, 0]</code> reads as "every row, column 0 only."</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2.4 -->
+    <section class="sec" id="s24">
+      <div class="sec-head">
+        <div class="sec-num">2.4</div>
+        <div><h2>Aggregation by Axis</h2><p>Summing down columns vs summing across rows — and how to tell NumPy which one you mean</p></div>
+      </div>
+
+      <div class="card">
+        <h3>📊 Totals Three Different Ways</h3>
+        <div class="code-panel">
+          <div class="code-head"><span>axis_aggregation.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python">import numpy as np
+
+sales = np.array([
+    [1000, 1200, 1500],
+    [2000, 1800, 2200],
+    [1500, 1700, 1600]
+])
+
+print("Total sales:", sales.sum())
+print("Total for each day:", sales.sum(axis=0))
+print("Total for each store:", sales.sum(axis=1))</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>Total sales: 12500
+Total for each day: [4500 4700 5300]
+Total for each store: [3700 6000 4800]</div>
+        </div>
+
+        <div class="grid-2">
+          <div>
+            <p style="text-align:center;"><code>axis=0</code> — down the rows, one result per <b>column</b></p>
+            <div class="matrix-center">
+              <div class="matrix-wrap">
+                <div class="matrix-row"><div class="matrix-label"></div><div class="matrix-label">Mon</div><div class="matrix-label">Tue</div><div class="matrix-label">Wed</div></div>
+                <div class="matrix-row"><div class="matrix-rowlabel">Store 1</div><div class="matrix-cell hl-col">1000</div><div class="matrix-cell hl-col">1200</div><div class="matrix-cell hl-col">1500</div></div>
+                <div class="matrix-row"><div class="matrix-rowlabel">Store 2</div><div class="matrix-cell hl-col">2000</div><div class="matrix-cell hl-col">1800</div><div class="matrix-cell hl-col">2200</div></div>
+                <div class="matrix-row"><div class="matrix-rowlabel">Store 3</div><div class="matrix-cell hl-col">1500</div><div class="matrix-cell hl-col">1700</div><div class="matrix-cell hl-col">1600</div></div>
+                <div class="matrix-row"><div class="matrix-rowlabel">↓ sum</div><div class="matrix-cell hl-single">4500</div><div class="matrix-cell hl-single">4700</div><div class="matrix-cell hl-single">5300</div></div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <p style="text-align:center;"><code>axis=1</code> — across the columns, one result per <b>row</b></p>
+            <div class="matrix-center">
+              <div class="matrix-wrap">
+                <div class="matrix-row"><div class="matrix-label"></div><div class="matrix-label">Mon</div><div class="matrix-label">Tue</div><div class="matrix-label">Wed</div><div class="matrix-label">→ sum</div></div>
+                <div class="matrix-row"><div class="matrix-rowlabel">Store 1</div><div class="matrix-cell hl-row">1000</div><div class="matrix-cell hl-row">1200</div><div class="matrix-cell hl-row">1500</div><div class="matrix-cell hl-single">3700</div></div>
+                <div class="matrix-row"><div class="matrix-rowlabel">Store 2</div><div class="matrix-cell hl-row">2000</div><div class="matrix-cell hl-row">1800</div><div class="matrix-cell hl-row">2200</div><div class="matrix-cell hl-single">6000</div></div>
+                <div class="matrix-row"><div class="matrix-rowlabel">Store 3</div><div class="matrix-cell hl-row">1500</div><div class="matrix-cell hl-row">1700</div><div class="matrix-cell hl-row">1600</div><div class="matrix-cell hl-single">4800</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout note">
+          <div class="ico">📝</div>
+          <div><b><code>axis=0</code>:</b> calculate <i>down the rows</i>, producing one result <i>per column</i> (here, a total for each day). <b><code>axis=1</code>:</b> calculate <i>across the columns</i>, producing one result <i>per row</i> (here, a total for each store).</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2.5 -->
+    <section class="sec" id="s25">
+      <div class="sec-head">
+        <div class="sec-num">2.5</div>
+        <div><h2>Broadcasting</h2><p>Operating an array against a single scalar value, with no manual duplication</p></div>
+      </div>
+
+      <div class="card">
+        <h3>📈 Example: A 10% Price Increase</h3>
+        <p><b>Broadcasting</b> allows compatible arrays and scalar values to participate in the same operation without you manually copying that scalar to match the array's length.</p>
+
+        <div class="code-panel">
+          <div class="code-head"><span>broadcasting.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python">import numpy as np
+
+prices = np.array([100, 200, 300])
+updated_prices = prices * 1.10
+
+print("Original prices:", prices)
+print("Updated prices:", updated_prices)</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>Original prices: [100 200 300]
+Updated prices: [110. 220. 330.]</div>
+        </div>
+
+        <div class="broadcast-row">
+          <div class="bcast-box">
+            <div class="bcast-cell">100</div><div class="bcast-cell">200</div><div class="bcast-cell">300</div>
+          </div>
+          <div class="bcast-op">×</div>
+          <div class="bcast-scalar">1.10</div>
+          <div class="bcast-op">=</div>
+          <div class="bcast-box">
+            <div class="bcast-cell">110</div><div class="bcast-cell">220</div><div class="bcast-cell">330</div>
+          </div>
+        </div>
+        <p class="flow-caption">NumPy automatically "stretches" the single scalar <code>1.10</code> across every element of <code>prices</code> — you write one multiplication, and it applies everywhere.</p>
+
+        <div class="callout tip">
+          <div class="ico">💡</div>
+          <div><b>Without broadcasting</b>, you'd have had to build a same-length array of <code>1.10</code> values yourself just to multiply element-by-element. Broadcasting removes that step entirely whenever the shapes are compatible.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2.6 -->
+    <section class="sec" id="s26">
+      <div class="sec-head">
+        <div class="sec-num">2.6</div>
+        <div><h2>Reshaping Arrays</h2><p>Changing the shape of your data without changing its values</p></div>
+      </div>
+
+      <div class="card">
+        <h3>🧩 From a Flat List to a Grid</h3>
+        <div class="code-panel">
+          <div class="code-head"><span>reshaping.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python">import numpy as np
+
+values = np.arange(1, 13)
+matrix = values.reshape(3, 4)
+
+print("Original array:", values)
+print("Reshaped array:\n", matrix)</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>Original array: [ 1  2  3  4  5  6  7  8  9 10 11 12]
+Reshaped array:
+ [[ 1  2  3  4]
+ [ 5  6  7  8]
+ [ 9 10 11 12]]</div>
+        </div>
+
+        <p><code>values</code> — one flat array of 12 elements:</p>
+        <div class="array-wrap">
+          <div class="array-cell">1</div><div class="array-cell">2</div><div class="array-cell">3</div><div class="array-cell">4</div>
+          <div class="array-cell">5</div><div class="array-cell">6</div><div class="array-cell">7</div><div class="array-cell">8</div>
+          <div class="array-cell">9</div><div class="array-cell">10</div><div class="array-cell">11</div><div class="array-cell">12</div>
+        </div>
+
+        <div class="flow" style="margin-top:8px;">
+          <div class="flow-arrow">↓ .reshape(3, 4)</div>
+        </div>
+
+        <p><code>matrix</code> — the exact same 12 values, now arranged 3 rows × 4 columns:</p>
+        <div class="matrix-center">
+          <div class="matrix-wrap">
+            <div class="matrix-row"><div class="matrix-cell">1</div><div class="matrix-cell">2</div><div class="matrix-cell">3</div><div class="matrix-cell">4</div></div>
+            <div class="matrix-row"><div class="matrix-cell">5</div><div class="matrix-cell">6</div><div class="matrix-cell">7</div><div class="matrix-cell">8</div></div>
+            <div class="matrix-row"><div class="matrix-cell">9</div><div class="matrix-cell">10</div><div class="matrix-cell">11</div><div class="matrix-cell">12</div></div>
+          </div>
+        </div>
+
+        <div class="callout note">
+          <div class="ico">📝</div>
+          <div><b>The non-negotiable rule:</b> the total number of elements must stay compatible with the requested shape. 12 elements can become <code>(3, 4)</code>, <code>(4, 3)</code>, <code>(2, 6)</code>, or <code>(12, 1)</code> — but never <code>(3, 5)</code>, since 3 × 5 = 15 ≠ 12.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- EXERCISE -->
+    <section class="sec" id="exercise">
+      <div class="sec-head">
+        <div class="sec-num">✎</div>
+        <div><h2>Student Exercise</h2><p>Put all six techniques from this hour to work in one problem</p></div>
+      </div>
+
+      <div class="card">
+        <h3>🏬 Given Data</h3>
+        <div class="code-panel">
+          <div class="code-head"><span>exercise_data.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python">sales = np.array([
+    [1200, 1400, 1600, 1800],
+    [2000, 2200, 2100, 2500],
+    [900, 1100, 1300, 1000]
+])</code></pre>
+        </div>
+      </div>
+
+      <div class="callout exercise">
+        <div class="ico">🎯</div>
+        <div><b>Your task:</b> calculate the <b>total sales for each store</b> and the <b>total sales for each day</b> from the array above. You must use <code>indexing</code>, <code>slicing</code>, <code>sum()</code>, and <code>reshape()</code> — the goal is to prove you can combine everything from 2.1 through 2.6 in one working script, not just recall each technique in isolation.</div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer>Data Manipulation Training — Hour 14: Arrays and Array Operations &middot; Prepared for IT Training Cohort &middot; Confidential Training Material</footer>
+
+<div class="scrolltop" id="scrollTop">↑</div>
+
+<script>
+  hljs.highlightAll();
+
+  const progressFill = document.getElementById('progressFill');
+  const scrollTopBtn = document.getElementById('scrollTop');
+  const sections = document.querySelectorAll('section.sec');
+  const navLinks = document.querySelectorAll('#toc a');
+
+  window.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const scrolled = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+    progressFill.style.width = scrolled + '%';
+    scrollTopBtn.classList.toggle('show', h.scrollTop > 500);
+
+    let current = '';
+    sections.forEach(sec => {
+      const rect = sec.getBoundingClientRect();
+      if (rect.top <= 140 && rect.bottom >= 140) current = sec.id;
+    });
+    navLinks.forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+    });
+  });
+
+  scrollTopBtn.addEventListener('click', () => window.scrollTo({top:0, behavior:'smooth'}));
+
+  function copyCode(btn){
+    const pre = btn.closest('.code-panel').querySelector('pre.code-body');
+    navigator.clipboard.writeText(pre.innerText).then(() => {
+      const orig = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = orig, 1400);
+    });
+  }
+</script>
+
+</body>
+</html>

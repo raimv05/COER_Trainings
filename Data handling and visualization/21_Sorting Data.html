@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sorting Data | Data Manipulation Training — Hour 21</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+<style>
+  :root{
+    --ink:#14181F; --paper:#F4F6F5; --panel:#FFFFFF; --line:#DCE3E1;
+    --teal:#0E7C86; --teal-soft:#E4F1F1;
+    --amber:#D98E31; --amber-soft:#FBEEDD;
+    --violet:#6E5A9E; --violet-soft:#EDE9F5;
+    --coral:#C0524A; --coral-soft:#F7E7E5;
+    --green:#3E8E5A; --green-soft:#E6F1EA;
+    --slate:#5B6570;
+    --radius:14px;
+    --shadow:0 10px 30px rgba(20,24,31,0.06);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif; line-height:1.65;
+  }
+  h1,h2,h3,h4{ font-family:'Space Grotesk', sans-serif; letter-spacing:-.01em; }
+  code, pre, .mono{ font-family:'IBM Plex Mono', monospace; }
+  a{color:var(--teal);}
+
+  .topbar{
+    position:sticky; top:0; z-index:60; background:rgba(244,246,245,0.92); backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line); padding:10px 24px;
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+  }
+  .brand{ display:flex; align-items:center; gap:10px; font-weight:700; font-family:'Space Grotesk'; }
+  .brand .logo{
+    width:30px;height:30px;border-radius:8px; background:linear-gradient(135deg,var(--teal),var(--violet));
+    display:flex;align-items:center;justify-content:center; color:#fff; font-weight:800; font-size:15px;
+  }
+  .progress-track{ flex:1; max-width:380px; height:7px; border-radius:20px; background:var(--line); overflow:hidden; }
+  .progress-fill{ height:100%; width:0%; background:linear-gradient(90deg,var(--teal),var(--violet)); transition:width .15s ease; }
+
+  .shell{ display:flex; max-width:1280px; margin:0 auto; align-items:flex-start; }
+  .toc{
+    width:252px; flex:0 0 auto; position:sticky; top:57px; height:calc(100vh - 57px);
+    overflow-y:auto; padding:28px 18px 60px; border-right:1px solid var(--line);
+  }
+  .toc h5{ font-size:11px; text-transform:uppercase; letter-spacing:1.2px; color:var(--slate); margin:0 0 10px; }
+  .toc a{
+    display:block; padding:7px 10px; border-radius:8px; color:var(--slate); text-decoration:none;
+    font-size:13.5px; margin-bottom:2px;
+  }
+  .toc a:hover, .toc a.active{ background:var(--teal-soft); color:var(--teal); font-weight:600; }
+  main{ flex:1; min-width:0; padding:0 36px 100px; max-width:960px; }
+  @media (max-width:900px){ .toc{ display:none; } main{ padding:0 20px 80px; } }
+
+  .hero{ padding:56px 0 36px; border-bottom:1px solid var(--line); }
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px; font-size:12px; letter-spacing:1.2px; text-transform:uppercase;
+    color:var(--teal); font-weight:700; background:var(--teal-soft); padding:6px 14px; border-radius:30px; margin-bottom:18px;
+  }
+  .hero h1{ font-size:clamp(28px,4.4vw,42px); margin:0 0 14px; font-weight:700; }
+  .hero p.sub{ max-width:680px; color:var(--slate); font-size:16px; margin:0 0 26px; }
+  .hero-meta{ display:flex; gap:12px; flex-wrap:wrap; }
+  .meta-chip{ background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:9px 14px; font-size:12.5px; color:var(--slate); }
+  .meta-chip b{ display:block; color:var(--ink); font-size:14px; }
+
+  section.sec{ padding:48px 0; border-bottom:1px dashed var(--line); scroll-margin-top:72px; }
+  section.sec:last-child{ border-bottom:none; }
+  .sec-head{ display:flex; align-items:center; gap:14px; margin-bottom:22px; }
+  .sec-num{
+    flex:0 0 auto; width:46px;height:46px;border-radius:12px; background:var(--panel); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:16px; color:var(--teal);
+  }
+  .sec-head h2{ margin:0; font-size:23px; font-weight:700; }
+  .sec-head p{ margin:2px 0 0; color:var(--slate); font-size:13.5px; }
+
+  .card{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:22px 24px; margin-bottom:20px; box-shadow:var(--shadow); }
+  .card h3{ margin:0 0 10px; font-size:16.5px; color:var(--ink); display:flex; align-items:center; gap:8px; }
+  .card p{ margin:8px 0; }
+  .card ul, .card ol{ margin:10px 0; padding-left:22px; }
+  .card li{ margin-bottom:6px; }
+
+  .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  @media (max-width:760px){ .grid-2{ grid-template-columns:1fr; } }
+
+  .callout{ border-radius:var(--radius); padding:16px 20px; margin:16px 0; border:1px solid; display:flex; gap:14px; font-size:14px; }
+  .callout .ico{ font-size:20px; line-height:1.2; }
+  .callout.tip{ background:var(--teal-soft); border-color:#b9dcdd; }
+  .callout.note{ background:var(--amber-soft); border-color:#eccb98; }
+  .callout.exercise{ background:var(--violet-soft); border-color:#cfc3e8; }
+  .callout b{ color:var(--ink); }
+
+  .code-panel{ background:#1a1d24; border-radius:12px; overflow:hidden; margin:16px 0; border:1px solid #2a2e38; }
+  .code-head{ display:flex; align-items:center; justify-content:space-between; background:#20232c; padding:9px 16px; font-size:12px; color:#9aa1b0; }
+  .code-dots{ display:flex; gap:6px; }
+  .code-dots span{ width:10px;height:10px;border-radius:50%; }
+  .code-dots span:nth-child(1){ background:#ff5f56;} .code-dots span:nth-child(2){ background:#ffbd2e;} .code-dots span:nth-child(3){ background:#27c93f;}
+  .copy-btn{ background:#2a2e38; color:#c7ccd8; border:none; border-radius:6px; padding:4px 10px; font-size:11.5px; cursor:pointer; font-family:inherit; }
+  .copy-btn:hover{ background:#363b48; }
+  pre.code-body{ margin:0; padding:18px 20px; overflow-x:auto; font-size:13.3px; line-height:1.75; }
+  pre.code-body code{ font-family:'IBM Plex Mono', monospace; background:none; }
+  .code-output{ background:#14161b; border-top:1px dashed #2a2e38; padding:12px 20px; font-size:12.5px; color:#7ee8a0; font-family:'IBM Plex Mono', monospace; white-space:pre-wrap; }
+  .code-output .lbl{ color:#7c8494; font-size:10.5px; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:6px; }
+
+  .flow{ display:flex; flex-direction:column; align-items:center; margin:28px 0; }
+  .flow-node{
+    background:var(--panel); border:1.5px solid var(--line); border-radius:12px; padding:12px 24px; font-weight:600; font-size:14px;
+    text-align:center; min-width:200px; box-shadow:var(--shadow);
+  }
+  .flow-node.accent-teal{ border-color:var(--teal); color:var(--teal); }
+  .flow-node.accent-amber{ border-color:var(--amber); color:var(--amber); }
+  .flow-node.accent-violet{ border-color:var(--violet); color:var(--violet); }
+  .flow-node.accent-green{ border-color:var(--green); color:var(--green); }
+  .flow-node.accent-coral{ border-color:var(--coral); color:var(--coral); }
+  .flow-arrow{ color:var(--slate); font-size:20px; margin:4px 0; }
+  .flow-caption{ text-align:center; font-size:12.5px; color:var(--slate); margin-top:6px; font-style:italic; max-width:600px; }
+
+  /* series visual - labeled vertical list */
+  .series-wrap{ display:flex; justify-content:center; margin:20px 0 28px; }
+  table.series-table{ border-collapse:collapse; font-family:'IBM Plex Mono'; font-size:13.5px; }
+  table.series-table th{ background:var(--violet-soft); color:var(--violet); padding:8px 20px; font-size:11px; text-transform:uppercase; }
+  table.series-table td{ border:1px solid var(--line); padding:9px 22px; text-align:center; }
+  table.series-table td.idx-cell{ background:var(--amber-soft); color:var(--amber); font-weight:700; }
+  table.series-table td.val-cell{ background:var(--panel); color:var(--teal); font-weight:700; }
+  table.series-table tr.hl td{ background:var(--teal-soft); }
+
+  /* dataframe table visual */
+  .df-wrap{ display:flex; justify-content:center; margin:20px 0; overflow-x:auto; }
+  table.df-table{ border-collapse:collapse; font-family:'IBM Plex Mono'; font-size:12.8px; }
+  table.df-table th, table.df-table td{ border:1px solid var(--line); padding:8px 16px; text-align:center; white-space:nowrap; }
+  table.df-table th{ background:var(--green-soft); color:var(--green); font-weight:700; font-size:11px; text-transform:uppercase; }
+  table.df-table td.idxcol{ background:var(--amber-soft); color:var(--amber); font-weight:700; }
+  table.df-table th.newcol, table.df-table td.newcol{ background:var(--teal-soft); color:var(--teal); font-weight:700; }
+  table.df-table th.rmcol, table.df-table td.rmcol{ background:var(--coral-soft); color:var(--coral); text-decoration:line-through; }
+  table.df-table td.updcell{ background:var(--violet-soft); color:var(--violet); font-weight:700; }
+  table.df-table th.renamecol{ background:var(--violet-soft); color:var(--violet); }
+
+  .divider-label{ font-size:11px; text-transform:uppercase; letter-spacing:1.2px; color:var(--slate); margin:28px 0 10px; font-weight:700; }
+
+  footer{ text-align:center; padding:36px 20px; color:var(--slate); font-size:12.5px; border-top:1px solid var(--line); }
+
+  .scrolltop{
+    position:fixed; bottom:22px; right:22px; z-index:60; width:44px;height:44px;border-radius:50%;
+    background:linear-gradient(135deg,var(--teal),var(--violet)); display:flex; align-items:center; justify-content:center;
+    color:#fff; font-weight:900; cursor:pointer; box-shadow:var(--shadow); opacity:0; pointer-events:none; transition:.2s;
+  }
+  .scrolltop.show{ opacity:1; pointer-events:auto; }
+  .goal-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px; margin:16px 0; }
+  .goal{ background:var(--panel); border:1px solid var(--line); border-top:4px solid var(--teal); border-radius:12px; padding:14px 14px 12px; font-size:13.5px; }
+  .goal:nth-child(2){ border-top-color:var(--amber);} .goal:nth-child(3){ border-top-color:var(--violet);}
+  .goal:nth-child(4){ border-top-color:var(--green);} .goal:nth-child(5){ border-top-color:var(--coral);}
+  .goal .q{ font-weight:600; display:block; margin-bottom:6px; }
+  .goal .fn{ font-family:'IBM Plex Mono'; font-size:12px; color:var(--teal); background:var(--teal-soft); padding:2px 7px; border-radius:6px; }
+  .funnel{ display:flex; align-items:center; justify-content:center; gap:14px; flex-wrap:wrap; margin:26px 0 6px; }
+  .funnel .box{ background:var(--panel); border:1.5px solid var(--line); border-radius:12px; padding:12px 18px; text-align:center; font-size:13px; box-shadow:var(--shadow); }
+  .funnel .box b{ display:block; font-size:15px; }
+  .funnel .box.many{ border-color:var(--amber); color:var(--amber); }
+  .funnel .box.few{ border-color:var(--teal); color:var(--teal); }
+  .funnel .arr{ font-size:22px; color:var(--slate); }
+  .funnel .fn-mid{ background:var(--violet-soft); color:var(--violet); border:1.5px dashed var(--violet); border-radius:12px; padding:10px 16px; font-family:'IBM Plex Mono'; font-size:12.5px; font-weight:600; }
+  .method-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:14px; margin:16px 0; }
+  .method{ background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px 16px; font-size:13.5px; }
+  .method code.m{ display:inline-block; background:var(--violet-soft); color:var(--violet); padding:2px 9px; border-radius:6px; font-size:13px; font-weight:600; margin-bottom:6px; }
+  .method .res{ font-family:'IBM Plex Mono'; font-size:12.5px; color:var(--teal); font-weight:600; }
+  .method p{ margin:4px 0; }
+  .pctbars{ max-width:640px; margin:22px auto; }
+  .pbar{ display:grid; grid-template-columns:96px 1fr 70px; gap:10px; align-items:center; margin:8px 0; font-size:12.5px; font-family:'IBM Plex Mono'; }
+  .pbar .track{ background:var(--line); border-radius:6px; height:20px; overflow:hidden; }
+  .pbar .fill{ height:100%; background:linear-gradient(90deg,var(--teal),var(--violet)); border-radius:6px; }
+  .pbar .val{ text-align:right; font-weight:700; color:var(--teal); }
+  table.df-table td.hlcell{ background:var(--teal-soft); color:var(--teal); font-weight:700; }
+  table.df-table tr.total td{ background:var(--violet-soft); color:var(--violet); font-weight:700; }
+
+  .sac{ display:grid; grid-template-columns:1fr auto 1fr auto 1fr; gap:10px; align-items:stretch; margin:22px 0 6px; }
+  @media (max-width:760px){ .sac{ grid-template-columns:1fr; } .sac .arr{ transform:rotate(90deg); text-align:center; } }
+  .sac .stage{ background:var(--panel); border:1.5px solid var(--line); border-radius:12px; padding:12px; box-shadow:var(--shadow); }
+  .sac .stage h4{ margin:0 0 8px; font-size:13px; text-transform:uppercase; letter-spacing:1px; color:var(--slate); }
+  .sac .arr{ align-self:center; font-size:24px; color:var(--slate); }
+  .chip{ display:inline-block; font-family:'IBM Plex Mono'; font-size:11.5px; padding:3px 9px; border-radius:6px; margin:2px 3px 2px 0; font-weight:600; }
+  .chip.d{ background:var(--teal-soft); color:var(--teal); } .chip.m{ background:var(--amber-soft); color:var(--amber); } .chip.p{ background:var(--violet-soft); color:var(--violet); }
+  .grp{ border-left:4px solid; border-radius:6px; padding:6px 10px; margin:6px 0; font-size:12.5px; background:#fafbfb; }
+  .grp.d{ border-color:var(--teal);} .grp.m{ border-color:var(--amber);} .grp.p{ border-color:var(--violet);}
+  .grp b{ display:block; font-size:12px; }
+  .hbars{ max-width:640px; margin:20px auto; }
+  .hbar{ display:grid; grid-template-columns:80px 1fr 90px; gap:10px; align-items:center; margin:8px 0; font-family:'IBM Plex Mono'; font-size:12.5px; }
+  .hbar .track{ background:var(--line); border-radius:6px; height:22px; overflow:hidden; }
+  .hbar .fill{ height:100%; border-radius:6px; }
+  .hbar .val{ text-align:right; font-weight:700; }
+  table.df-table tr.cd td.rowtag, table.df-table td.cd{ background:var(--teal-soft); } table.df-table td.cm{ background:var(--amber-soft); } table.df-table td.cp{ background:var(--violet-soft); }
+  .vs{ display:grid; grid-template-columns:1fr 1fr; gap:18px; margin:16px 0; } @media (max-width:760px){ .vs{ grid-template-columns:1fr; } }
+  .vs .side{ background:var(--panel); border:1.5px solid var(--line); border-radius:12px; padding:14px 16px; font-size:13.5px; }
+  .vs .side.a{ border-color:var(--violet);} .vs .side.b{ border-color:var(--teal);}
+  .vs .side h4{ margin:0 0 6px; } .vs .side code{ font-size:12.5px; }
+
+  .rankrow{ display:grid; grid-template-columns:34px 80px 1fr 74px; gap:10px; align-items:center; margin:7px 0; font-family:'IBM Plex Mono'; font-size:12.5px; }
+  .rankrow .medal{ width:30px;height:30px;border-radius:50%; display:flex;align-items:center;justify-content:center; font-weight:700; color:#fff; background:var(--slate); }
+  .rankrow .medal.r1{ background:var(--amber);} .rankrow .medal.r2{ background:var(--teal);} .rankrow .medal.r3{ background:var(--violet);}
+  .rankrow .track{ background:var(--line); border-radius:6px; height:20px; overflow:hidden; } .rankrow .fill{ height:100%; background:linear-gradient(90deg,var(--teal),var(--violet)); border-radius:6px; }
+  .rankrow .val{ text-align:right; font-weight:700; }
+  .rankbox{ max-width:640px; margin:20px auto; }
+  table.df-table td.keycol, table.df-table th.keycol{ background:var(--violet-soft); color:var(--violet); font-weight:700; }
+  table.df-table td.dim{ color:#aab2ad; }
+  .dir{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:16px 0; } @media (max-width:760px){ .dir{ grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand"><div class="logo">N</div> Data Manipulation Training</div>
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+</div>
+
+<div class="shell">
+  <nav class="toc" id="toc">
+    <h5>On this page</h5>
+    <a href="#s91">9.1 What is Sorting?</a>
+    <a href="#s92">9.2 Create the Dataset</a>
+    <a href="#s93">9.3 Ascending Order</a>
+    <a href="#s94">9.4 Descending Order</a>
+    <a href="#s95">9.5 Multiple Columns</a>
+    <a href="#s96">9.6 Generate Rankings</a>
+    <a href="#s97">9.7 Sort by Index</a>
+    <a href="#exercise">Student Exercise</a>
+  </nav>
+
+  <main>
+    <div class="hero">
+      <span class="eyebrow">🐼 IT Training &middot; Data Manipulation Track &middot; Hour 21</span>
+      <h1>Sorting Data</h1>
+      <p class="sub">Put records in the order people actually want to read them — highest salary first, cheapest product first, top performers at the top — and learn to attach a rank to each row.</p>
+      <div class="hero-meta">
+        <div class="meta-chip"><b>60 minutes</b>Session length</div>
+        <div class="meta-chip"><b>Beginner</b>Level</div>
+        <div class="meta-chip"><b>Ranking &amp; Organizing Data</b>Focus</div>
+        <div class="meta-chip"><b>6</b>Code walkthroughs</div>
+      </div>
+    </div>
+
+    <section class="sec" id="s91">
+      <div class="sec-head"><div class="sec-num">9.1</div><div><h2>What is Sorting?</h2><p>Arranging records in a meaningful order</p></div></div>
+      <div class="card">
+        <h3>📘 Definition</h3>
+        <p><b>Sorting</b> arranges records in a particular order — highest salary first, lowest price first, or newest order first.</p>
+        <div class="goal-grid">
+          <div class="goal"><span class="q">Best-selling products</span><span class="fn">high → low</span></div>
+          <div class="goal"><span class="q">Employees ranked by performance</span><span class="fn">high → low</span></div>
+          <div class="goal"><span class="q">Most expensive products</span><span class="fn">high → low</span></div>
+          <div class="goal"><span class="q">Cheapest deals first</span><span class="fn">low → high</span></div>
+          <div class="goal"><span class="q">Newest order first</span><span class="fn">new → old</span></div>
+        </div>
+        <div class="flow">
+          <div class="flow-node accent-amber">Unordered rows</div><div class="flow-arrow">↓</div>
+          <div class="flow-node accent-violet">sort_values(by=..., ascending=...)</div><div class="flow-arrow">↓</div>
+          <div class="flow-node accent-teal">Same rows, new order</div>
+        </div>
+        <p class="flow-caption">Sorting never changes <i>what</i> the data says — only the order it is shown in.</p>
+      </div>
+    </section>
+
+    <section class="sec" id="s92">
+      <div class="sec-head"><div class="sec-num">9.2</div><div><h2>Create the Dataset</h2><p>Five employees across three departments</p></div></div>
+      <div class="card">
+        <h3>👥 Building the data</h3>
+        <div class="code-panel">
+          <div class="code-head"><span>scripts/hour09_sorting.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python">import pandas as pd
+
+employees = pd.DataFrame({
+    &quot;name&quot;: [&quot;Rahul&quot;, &quot;Priya&quot;, &quot;Amit&quot;, &quot;Sneha&quot;, &quot;Vikas&quot;],
+    &quot;department&quot;: [&quot;IT&quot;, &quot;HR&quot;, &quot;IT&quot;, &quot;Finance&quot;, &quot;HR&quot;],
+    &quot;salary&quot;: [45000, 60000, 55000, 50000, 40000],
+    &quot;experience&quot;: [2, 4, 3, 5, 1]
+})
+
+print(&quot;Original data:&quot;)
+print(employees)</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>Original data:
+    name department  salary  experience
+0  Rahul         IT   45000           2
+1  Priya         HR   60000           4
+2   Amit         IT   55000           3
+3  Sneha    Finance   50000           5
+4  Vikas         HR   40000           1</div>
+        </div>
+        <div class="df-wrap"><table class="df-table"><tr><th></th><th class="">name</th><th class="">department</th><th class="">salary</th><th class="">experience</th></tr><tr><td class="idxcol">0</td><td class="">Rahul</td><td class="">IT</td><td class="">45000</td><td class="">2</td></tr><tr><td class="idxcol">1</td><td class="">Priya</td><td class="">HR</td><td class="">60000</td><td class="">4</td></tr><tr><td class="idxcol">2</td><td class="">Amit</td><td class="">IT</td><td class="">55000</td><td class="">3</td></tr><tr><td class="idxcol">3</td><td class="">Sneha</td><td class="">Finance</td><td class="">50000</td><td class="">5</td></tr><tr><td class="idxcol">4</td><td class="">Vikas</td><td class="">HR</td><td class="">40000</td><td class="">1</td></tr></table></div>
+        <p class="flow-caption">Notice the amber index on the left (0–4). Every sort moves the rows, but each row keeps its original index label.</p>
+        <div class="divider-label">Implementation steps</div>
+        <ol><li>Create the file <code>scripts/hour09_sorting.py</code>.</li><li>Import Pandas as <code>pd</code>.</li><li>Build the <code>employees</code> DataFrame — four columns, five rows.</li><li>Print it with a label so you can compare with later outputs.</li></ol>
+      </div>
+    </section>
+
+    <section class="sec" id="s93">
+      <div class="sec-head"><div class="sec-num">9.3</div><div><h2>Sort in Ascending Order</h2><p>Smallest value first</p></div></div>
+      <div class="card">
+        <h3>⬆️ <code>ascending=True</code></h3>
+        <div class="code-panel">
+          <div class="code-head"><span>sort_ascending.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python">sorted_employees = employees.sort_values(
+    by=&quot;salary&quot;,
+    ascending=True
+)
+
+print(sorted_employees)</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>    name department  salary  experience
+4  Vikas         HR   40000           1
+0  Rahul         IT   45000           2
+3  Sneha    Finance   50000           5
+2   Amit         IT   55000           3
+1  Priya         HR   60000           4</div>
+        </div>
+        <div class="df-wrap"><table class="df-table"><tr><th></th><th class="">name</th><th class="">department</th><th class="keycol">salary</th><th class="">experience</th></tr><tr><td class="idxcol">4</td><td class="">Vikas</td><td class="">HR</td><td class="keycol">40000</td><td class="">1</td></tr><tr><td class="idxcol">0</td><td class="">Rahul</td><td class="">IT</td><td class="keycol">45000</td><td class="">2</td></tr><tr><td class="idxcol">3</td><td class="">Sneha</td><td class="">Finance</td><td class="keycol">50000</td><td class="">5</td></tr><tr><td class="idxcol">2</td><td class="">Amit</td><td class="">IT</td><td class="keycol">55000</td><td class="">3</td></tr><tr><td class="idxcol">1</td><td class="">Priya</td><td class="">HR</td><td class="keycol">60000</td><td class="">4</td></tr></table></div>
+        <p class="flow-caption">The lowest salary (Vikas, 40000) appears first. The violet column is the one we sorted by.</p>
+        <div class="callout tip"><div class="ico">💡</div><div><code>ascending=True</code> is the <b>default</b>, so <code>sort_values(by="salary")</code> gives the same result. Writing it explicitly makes your intent obvious to readers.</div></div>
+      </div>
+    </section>
+
+    <section class="sec" id="s94">
+      <div class="sec-head"><div class="sec-num">9.4</div><div><h2>Sort in Descending Order</h2><p>Largest value first</p></div></div>
+      <div class="card">
+        <h3>⬇️ <code>ascending=False</code></h3>
+        <div class="code-panel">
+          <div class="code-head"><span>sort_descending.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python">sorted_employees = employees.sort_values(
+    by=&quot;salary&quot;,
+    ascending=False
+)
+
+print(sorted_employees)</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>    name department  salary  experience
+1  Priya         HR   60000           4
+2   Amit         IT   55000           3
+3  Sneha    Finance   50000           5
+0  Rahul         IT   45000           2
+4  Vikas         HR   40000           1</div>
+        </div>
+        <div class="df-wrap"><table class="df-table"><tr><th></th><th class="">name</th><th class="">department</th><th class="keycol">salary</th><th class="">experience</th></tr><tr><td class="idxcol">1</td><td class="">Priya</td><td class="">HR</td><td class="keycol">60000</td><td class="">4</td></tr><tr><td class="idxcol">2</td><td class="">Amit</td><td class="">IT</td><td class="keycol">55000</td><td class="">3</td></tr><tr><td class="idxcol">3</td><td class="">Sneha</td><td class="">Finance</td><td class="keycol">50000</td><td class="">5</td></tr><tr><td class="idxcol">0</td><td class="">Rahul</td><td class="">IT</td><td class="keycol">45000</td><td class="">2</td></tr><tr><td class="idxcol">4</td><td class="">Vikas</td><td class="">HR</td><td class="keycol">40000</td><td class="">1</td></tr></table></div>
+        <div class="rankbox"><div class="rankrow"><span class="medal r1">1</span><span>Priya</span><div class="track"><div class="fill" style="width:100.0%"></div></div><span class="val">60000</span></div><div class="rankrow"><span class="medal r2">2</span><span>Amit</span><div class="track"><div class="fill" style="width:91.7%"></div></div><span class="val">55000</span></div><div class="rankrow"><span class="medal r3">3</span><span>Sneha</span><div class="track"><div class="fill" style="width:83.3%"></div></div><span class="val">50000</span></div><div class="rankrow"><span class="medal">4</span><span>Rahul</span><div class="track"><div class="fill" style="width:75.0%"></div></div><span class="val">45000</span></div><div class="rankrow"><span class="medal">5</span><span>Vikas</span><div class="track"><div class="fill" style="width:66.7%"></div></div><span class="val">40000</span></div></div>
+        <p class="flow-caption">The highest salary (Priya, 60000) appears first. The bars make the order visible at a glance.</p>
+      </div>
+    </section>
+
+    <section class="sec" id="s95">
+      <div class="sec-head"><div class="sec-num">9.5</div><div><h2>Sort by Multiple Columns</h2><p>Department first, then salary within each department</p></div></div>
+      <div class="card">
+        <h3>🗂️ Two-level sorting</h3>
+        <p>HR wants employees sorted by <b>department</b>, and within each department by <b>salary, highest first</b>. Give <code>by</code> a list of columns and <code>ascending</code> a matching list of directions.</p>
+        <div class="code-panel">
+          <div class="code-head"><span>sort_multiple.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python">sorted_employees = employees.sort_values(
+    by=[&quot;department&quot;, &quot;salary&quot;],
+    ascending=[True, False]
+)
+
+print(sorted_employees)</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>    name department  salary  experience
+3  Sneha    Finance   50000           5
+1  Priya         HR   60000           4
+4  Vikas         HR   40000           1
+2   Amit         IT   55000           3
+0  Rahul         IT   45000           2</div>
+        </div>
+        <div class="df-wrap"><table class="df-table"><tr><th></th><th class="">name</th><th class="keycol">department</th><th class="keycol">salary</th><th class="">experience</th></tr><tr><td class="idxcol">3</td><td class="">Sneha</td><td class="keycol">Finance</td><td class="keycol">50000</td><td class="">5</td></tr><tr><td class="idxcol">1</td><td class="">Priya</td><td class="keycol">HR</td><td class="keycol">60000</td><td class="">4</td></tr><tr><td class="idxcol">4</td><td class="">Vikas</td><td class="keycol">HR</td><td class="keycol">40000</td><td class="">1</td></tr><tr><td class="idxcol">2</td><td class="">Amit</td><td class="keycol">IT</td><td class="keycol">55000</td><td class="">3</td></tr><tr><td class="idxcol">0</td><td class="">Rahul</td><td class="keycol">IT</td><td class="keycol">45000</td><td class="">2</td></tr></table></div>
+        <div class="dir">
+          <div class="method" style="background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:13.5px"><b>Level 1 — department</b><br><code>ascending=True</code> → Finance, HR, IT (A → Z)</div>
+          <div class="method" style="background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:13.5px"><b>Level 2 — salary</b><br><code>ascending=False</code> → inside HR: Priya 60000 before Vikas 40000; inside IT: Amit 55000 before Rahul 45000</div>
+        </div>
+        <div class="callout note"><div class="ico">⚠️</div><div><b>Order of the lists matters:</b> the first item in <code>by</code> pairs with the first item in <code>ascending</code>. Pandas sorts by the first column, and only uses the second to break ties.</div></div>
+      </div>
+    </section>
+
+    <section class="sec" id="s96">
+      <div class="sec-head"><div class="sec-num">9.6</div><div><h2>Generate Rankings</h2><p>Turn values into rank positions with rank()</p></div></div>
+      <div class="card">
+        <h3>🏅 <code>rank(method="dense", ascending=False)</code></h3>
+        <div class="code-panel">
+          <div class="code-head"><span>salary_rank.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python">employees[&quot;salary_rank&quot;] = employees[&quot;salary&quot;].rank(
+    method=&quot;dense&quot;,
+    ascending=False
+)
+
+print(employees.sort_values(&quot;salary_rank&quot;))</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>    name department  salary  experience  salary_rank
+1  Priya         HR   60000           4          1.0
+2   Amit         IT   55000           3          2.0
+3  Sneha    Finance   50000           5          3.0
+0  Rahul         IT   45000           2          4.0
+4  Vikas         HR   40000           1          5.0</div>
+        </div>
+        <div class="df-wrap"><table class="df-table"><tr><th></th><th class="">name</th><th class="">department</th><th class="keycol">salary</th><th class="">experience</th><th class="newcol">salary_rank</th></tr><tr><td class="idxcol">1</td><td class="">Priya</td><td class="">HR</td><td class="keycol">60000</td><td class="">4</td><td class="newcol">1.0</td></tr><tr><td class="idxcol">2</td><td class="">Amit</td><td class="">IT</td><td class="keycol">55000</td><td class="">3</td><td class="newcol">2.0</td></tr><tr><td class="idxcol">3</td><td class="">Sneha</td><td class="">Finance</td><td class="keycol">50000</td><td class="">5</td><td class="newcol">3.0</td></tr><tr><td class="idxcol">0</td><td class="">Rahul</td><td class="">IT</td><td class="keycol">45000</td><td class="">2</td><td class="newcol">4.0</td></tr><tr><td class="idxcol">4</td><td class="">Vikas</td><td class="">HR</td><td class="keycol">40000</td><td class="">1</td><td class="newcol">5.0</td></tr></table></div>
+        <p class="flow-caption"><code>salary_rank</code> (teal) is new. With <code>ascending=False</code>, the highest salary gets rank 1. Ranks come back as decimals (1.0, 2.0 …) because <code>rank()</code> returns floats.</p>
+        <div class="divider-label">Implementation steps</div>
+        <ol><li>Call <code>rank()</code> on the <code>salary</code> column.</li><li>Choose <code>ascending=False</code> so the biggest salary becomes rank 1.</li><li>Store the result in a new column, <code>salary_rank</code>.</li><li>Sort by that column to show the leaderboard.</li></ol>
+
+        <div class="divider-label">Ties — added illustration</div>
+        <p><code>rank()</code> assigns rankings based on values, and <b>different ranking methods handle ties differently</b>. The example below is an <b>added illustration</b> (not from your dataset, which has no ties): B and C both earn 55000.</p>
+        <div class="code-panel">
+          <div class="code-head"><span>rank_ties.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python">import pandas as pd
+
+salary = pd.Series([60000, 55000, 55000, 40000], index=[&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;])
+
+for method in [&quot;average&quot;, &quot;min&quot;, &quot;max&quot;, &quot;first&quot;, &quot;dense&quot;]:
+    print(method, salary.rank(method=method, ascending=False).tolist())</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>average [1.0, 2.5, 2.5, 4.0]
+min [1.0, 2.0, 2.0, 4.0]
+max [1.0, 3.0, 3.0, 4.0]
+first [1.0, 2.0, 3.0, 4.0]
+dense [1.0, 2.0, 2.0, 3.0]</div>
+        </div>
+        <div class="df-wrap"><table class="df-table">
+          <tr><th>salary</th><th>average</th><th>min</th><th>max</th><th>first</th><th>dense</th></tr>
+          <tr><td class="idxcol">60000</td><td>1.0</td><td>1.0</td><td>1.0</td><td>1.0</td><td>1.0</td></tr>
+          <tr><td class="idxcol">55000 (B)</td><td class="keycol">2.5</td><td class="keycol">2.0</td><td class="keycol">3.0</td><td class="keycol">2.0</td><td class="keycol">2.0</td></tr>
+          <tr><td class="idxcol">55000 (C)</td><td class="keycol">2.5</td><td class="keycol">2.0</td><td class="keycol">3.0</td><td class="keycol">3.0</td><td class="keycol">2.0</td></tr>
+          <tr><td class="idxcol">40000</td><td>4.0</td><td>4.0</td><td>4.0</td><td>4.0</td><td>3.0</td></tr>
+        </table></div>
+        <p class="flow-caption">With <code>dense</code> there are no gaps after a tie (next rank is 3). With <code>min</code> the next rank skips to 4, as in sports rankings.</p>
+      </div>
+    </section>
+
+    <section class="sec" id="s97">
+      <div class="sec-head"><div class="sec-num">9.7</div><div><h2>Sort Using the Index</h2><p>Restore the original row order</p></div></div>
+      <div class="card">
+        <h3>🔢 <code>sort_index()</code></h3>
+        <div class="code-panel">
+          <div class="code-head"><span>sort_index.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python">print(employees.sort_index())</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>    name department  salary  experience  salary_rank
+0  Rahul         IT   45000           2          4.0
+1  Priya         HR   60000           4          1.0
+2   Amit         IT   55000           3          2.0
+3  Sneha    Finance   50000           5          3.0
+4  Vikas         HR   40000           1          5.0</div>
+        </div>
+        <div class="df-wrap"><table class="df-table"><tr><th></th><th class="">name</th><th class="">department</th><th class="">salary</th><th class="">experience</th><th class="newcol">salary_rank</th></tr><tr><td class="idxcol">0</td><td class="">Rahul</td><td class="">IT</td><td class="">45000</td><td class="">2</td><td class="newcol">4.0</td></tr><tr><td class="idxcol">1</td><td class="">Priya</td><td class="">HR</td><td class="">60000</td><td class="">4</td><td class="newcol">1.0</td></tr><tr><td class="idxcol">2</td><td class="">Amit</td><td class="">IT</td><td class="">55000</td><td class="">3</td><td class="newcol">2.0</td></tr><tr><td class="idxcol">3</td><td class="">Sneha</td><td class="">Finance</td><td class="">50000</td><td class="">5</td><td class="newcol">3.0</td></tr><tr><td class="idxcol">4</td><td class="">Vikas</td><td class="">HR</td><td class="">40000</td><td class="">1</td><td class="newcol">5.0</td></tr></table></div>
+        <p class="flow-caption"><code>sort_index()</code> orders rows by their index labels (0, 1, 2 …), putting them back in the original sequence — now with the <code>salary_rank</code> column attached.</p>
+        <div class="callout tip"><div class="ico">🏭</div><div><b>Industry tip:</b> sorting changes the order of the <i>returned</i> DataFrame. If you need to preserve the original ordering for later calculations, assign the sorted result to a <b>new variable</b> (for example <code>sorted_employees</code>), exactly as the examples in this hour do.</div></div>
+      </div>
+    </section>
+
+    <section class="sec" id="exercise">
+      <div class="sec-head"><div class="sec-num">✍️</div><div><h2>Student Exercise</h2><p>Practice on the employee dataset from 9.2</p></div></div>
+      <div class="card">
+        <h3>🎯 Your tasks</h3>
+        <ol>
+          <li>Display the <b>three highest-paid</b> employees.</li>
+          <li>Sort by <b>experience</b> from highest to lowest.</li>
+          <li>Sort by <b>department</b> and then by <b>name</b>.</li>
+          <li>Add a <b>salary ranking</b> column.</li>
+          <li>Display the <b>top two employees</b> by salary.</li>
+        </ol>
+        <div class="code-panel">
+          <div class="code-head"><span>hint</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+          <pre class="code-body"><code class="language-python">employees.sort_values(by="...", ascending=...).head(n)</code></pre>
+        </div>
+      </div>
+      <div class="callout exercise"><div class="ico">🎯</div><div><b>Think in two steps:</b> "top N" is just <i>sort descending, then take the first N rows</i>. <code>head(n)</code> keeps the first <i>n</i> rows of any DataFrame — you can chain it straight after <code>sort_values()</code>.</div></div>
+      <div class="callout tip"><div class="ico">✅</div><div><b>Check your answers:</b> (1) Priya 60000, Amit 55000, Sneha 50000 · (2) Sneha 5, Priya 4, Amit 3, Rahul 2, Vikas 1 · (3) Sneha (Finance), Priya and Vikas (HR), Amit and Rahul (IT) · (4) ranks Priya 1, Amit 2, Sneha 3, Rahul 4, Vikas 5 · (5) Priya and Amit.</div></div>
+    </section>
+
+  </main>
+</div>
+
+<footer>Data Manipulation Training — Hour 21: Sorting Data &middot; Prepared for IT Training Cohort &middot; Confidential Training Material</footer>
+
+<div class="scrolltop" id="scrollTop">↑</div>
+
+<script>
+  hljs.highlightAll();
+
+  const progressFill = document.getElementById('progressFill');
+  const scrollTopBtn = document.getElementById('scrollTop');
+  const sections = document.querySelectorAll('section.sec');
+  const navLinks = document.querySelectorAll('#toc a');
+
+  window.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const scrolled = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+    progressFill.style.width = scrolled + '%';
+    scrollTopBtn.classList.toggle('show', h.scrollTop > 500);
+
+    let current = '';
+    sections.forEach(sec => {
+      const rect = sec.getBoundingClientRect();
+      if (rect.top <= 140 && rect.bottom >= 140) current = sec.id;
+    });
+    navLinks.forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+    });
+  });
+
+  scrollTopBtn.addEventListener('click', () => window.scrollTo({top:0, behavior:'smooth'}));
+
+  function copyCode(btn){
+    const pre = btn.closest('.code-panel').querySelector('pre.code-body');
+    navigator.clipboard.writeText(pre.innerText).then(() => {
+      const orig = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = orig, 1400);
+    });
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Selection and Filtering: Part 1 | Data Manipulation Training — Hour 17</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+<style>
+  :root{
+    --ink:#14181F; --paper:#F4F6F5; --panel:#FFFFFF; --line:#DCE3E1;
+    --teal:#0E7C86; --teal-soft:#E4F1F1;
+    --amber:#D98E31; --amber-soft:#FBEEDD;
+    --violet:#6E5A9E; --violet-soft:#EDE9F5;
+    --coral:#C0524A; --coral-soft:#F7E7E5;
+    --green:#3E8E5A; --green-soft:#E6F1EA;
+    --slate:#5B6570;
+    --radius:14px;
+    --shadow:0 10px 30px rgba(20,24,31,0.06);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{ margin:0; background:var(--paper); color:var(--ink); font-family:'IBM Plex Sans', sans-serif; line-height:1.65; }
+  h1,h2,h3,h4{ font-family:'Space Grotesk', sans-serif; letter-spacing:-.01em; }
+  code, pre, .mono{ font-family:'IBM Plex Mono', monospace; }
+  p code, li code, td code, .callout code, h3 code, .flow-caption code{ background:#EAEFEE; padding:1px 6px; border-radius:5px; font-size:.88em; color:#0b5f67; }
+  a{color:var(--teal);}
+
+  .topbar{ position:sticky; top:0; z-index:60; background:rgba(244,246,245,0.92); backdrop-filter:blur(8px); border-bottom:1px solid var(--line); padding:10px 24px; display:flex; align-items:center; justify-content:space-between; gap:16px; }
+  .brand{ display:flex; align-items:center; gap:10px; font-weight:700; font-family:'Space Grotesk'; }
+  .brand .logo{ width:30px;height:30px;border-radius:8px; background:linear-gradient(135deg,var(--teal),var(--violet)); display:flex;align-items:center;justify-content:center; color:#fff; font-weight:800; font-size:15px; }
+  .progress-track{ flex:1; max-width:380px; height:7px; border-radius:20px; background:var(--line); overflow:hidden; }
+  .progress-fill{ height:100%; width:0%; background:linear-gradient(90deg,var(--teal),var(--violet)); transition:width .15s ease; }
+
+  .shell{ display:flex; max-width:1280px; margin:0 auto; align-items:flex-start; }
+  .toc{ width:252px; flex:0 0 auto; position:sticky; top:57px; height:calc(100vh - 57px); overflow-y:auto; padding:28px 18px 60px; border-right:1px solid var(--line); }
+  .toc h5{ font-size:11px; text-transform:uppercase; letter-spacing:1.2px; color:var(--slate); margin:0 0 10px; }
+  .toc a{ display:block; padding:7px 10px; border-radius:8px; color:var(--slate); text-decoration:none; font-size:13.5px; margin-bottom:2px; }
+  .toc a:hover, .toc a.active{ background:var(--teal-soft); color:var(--teal); font-weight:600; }
+  main{ flex:1; min-width:0; padding:0 36px 100px; max-width:960px; }
+  @media (max-width:900px){ .toc{ display:none; } main{ padding:0 20px 80px; } }
+
+  .hero{ padding:56px 0 36px; border-bottom:1px solid var(--line); }
+  .eyebrow{ display:inline-flex; align-items:center; gap:8px; font-size:12px; letter-spacing:1.2px; text-transform:uppercase; color:var(--teal); font-weight:700; background:var(--teal-soft); padding:6px 14px; border-radius:30px; margin-bottom:18px; }
+  .hero h1{ font-size:clamp(28px,4.4vw,42px); margin:0 0 14px; font-weight:700; }
+  .hero p.sub{ max-width:680px; color:var(--slate); font-size:16px; margin:0 0 26px; }
+  .hero-meta{ display:flex; gap:12px; flex-wrap:wrap; }
+  .meta-chip{ background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:9px 14px; font-size:12.5px; color:var(--slate); }
+  .meta-chip b{ display:block; color:var(--ink); font-size:14px; }
+
+  .objectives{ margin-top:28px; }
+  .objectives h4{ margin:0 0 10px; font-size:13px; text-transform:uppercase; letter-spacing:1.2px; color:var(--slate); }
+  .obj-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; }
+  .obj{ background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px 16px; font-size:13.5px; display:flex; gap:10px; }
+  .obj .n{ flex:0 0 auto; width:24px;height:24px; border-radius:50%; background:var(--teal); color:#fff; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; }
+
+  section.sec{ padding:48px 0; border-bottom:1px dashed var(--line); scroll-margin-top:72px; }
+  section.sec:last-child{ border-bottom:none; }
+  .sec-head{ display:flex; align-items:center; gap:14px; margin-bottom:22px; }
+  .sec-num{ flex:0 0 auto; width:46px;height:46px;border-radius:12px; background:var(--panel); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:16px; color:var(--teal); }
+  .sec-head h2{ margin:0; font-size:23px; font-weight:700; }
+  .sec-head p{ margin:2px 0 0; color:var(--slate); font-size:13.5px; }
+
+  .card{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:22px 24px; margin-bottom:20px; box-shadow:var(--shadow); }
+  .card h3{ margin:0 0 10px; font-size:16.5px; color:var(--ink); display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .card p{ margin:8px 0; }
+  .card ul, .card ol{ margin:10px 0; padding-left:22px; }
+  .card li{ margin-bottom:6px; }
+
+  .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  @media (max-width:760px){ .grid-2{ grid-template-columns:1fr; } }
+
+  .callout{ border-radius:var(--radius); padding:16px 20px; margin:16px 0; border:1px solid; display:flex; gap:14px; font-size:14px; }
+  .callout .ico{ font-size:20px; line-height:1.2; }
+  .callout.tip{ background:var(--teal-soft); border-color:#b9dcdd; }
+  .callout.note{ background:var(--amber-soft); border-color:#eccb98; }
+  .callout.exercise{ background:var(--violet-soft); border-color:#cfc3e8; }
+  .callout.warn{ background:var(--coral-soft); border-color:#e6bdb9; }
+  .callout b{ color:var(--ink); }
+
+  .code-panel{ background:#1a1d24; border-radius:12px; overflow:hidden; margin:16px 0; border:1px solid #2a2e38; }
+  .code-head{ display:flex; align-items:center; justify-content:space-between; background:#20232c; padding:9px 16px; font-size:12px; color:#9aa1b0; }
+  .code-dots{ display:flex; gap:6px; }
+  .code-dots span{ width:10px;height:10px;border-radius:50%; }
+  .code-dots span:nth-child(1){ background:#ff5f56;} .code-dots span:nth-child(2){ background:#ffbd2e;} .code-dots span:nth-child(3){ background:#27c93f;}
+  .copy-btn{ background:#2a2e38; color:#c7ccd8; border:none; border-radius:6px; padding:4px 10px; font-size:11.5px; cursor:pointer; font-family:inherit; }
+  .copy-btn:hover{ background:#363b48; }
+  pre.code-body{ margin:0; padding:18px 20px; overflow-x:auto; font-size:13.3px; line-height:1.75; }
+  pre.code-body code{ font-family:'IBM Plex Mono', monospace; background:none; padding:0; color:inherit; font-size:inherit; }
+  .code-output{ background:#14161b; border-top:1px dashed #2a2e38; padding:12px 20px; font-size:12.5px; color:#7ee8a0; font-family:'IBM Plex Mono', monospace; white-space:pre; overflow-x:auto; }
+  .code-output .lbl{ color:#7c8494; font-size:10.5px; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:6px; }
+
+  /* flow (vertical + horizontal) */
+  .flow{ display:flex; flex-direction:column; align-items:center; margin:28px 0; }
+  .flow-h{ display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:10px; margin:26px 0; }
+  .flow-node{ background:var(--panel); border:1.5px solid var(--line); border-radius:12px; padding:12px 20px; font-weight:600; font-size:13.5px; text-align:center; min-width:150px; box-shadow:var(--shadow); }
+  .flow-node small{ display:block; font-weight:400; color:var(--slate); font-size:11.5px; margin-top:2px; }
+  .flow-node.accent-teal{ border-color:var(--teal); color:var(--teal); }
+  .flow-node.accent-amber{ border-color:var(--amber); color:var(--amber); }
+  .flow-node.accent-violet{ border-color:var(--violet); color:var(--violet); }
+  .flow-node.accent-green{ border-color:var(--green); color:var(--green); }
+  .flow-node.accent-coral{ border-color:var(--coral); color:var(--coral); }
+  .flow-arrow{ color:var(--slate); font-size:20px; margin:4px 0; }
+  .flow-h .flow-arrow{ margin:0 2px; }
+  .flow-caption{ text-align:center; font-size:12.5px; color:var(--slate); margin-top:6px; font-style:italic; max-width:640px; margin-left:auto; margin-right:auto; }
+
+  /* implementation steps */
+  .steps-title{ display:flex; align-items:center; gap:8px; margin:26px 0 12px; font-family:'Space Grotesk'; font-size:15px; font-weight:700; color:var(--teal); }
+  .steps-title::after{ content:""; flex:1; height:1px; background:var(--line); }
+  ol.steps{ list-style:none; counter-reset:st; margin:0; padding:0; }
+  ol.steps li{ counter-increment:st; position:relative; padding:0 0 18px 50px; margin:0; }
+  ol.steps li::before{ content:counter(st); position:absolute; left:0; top:0; width:32px; height:32px; border-radius:50%; background:var(--teal); color:#fff; font-weight:700; font-family:'Space Grotesk'; display:flex; align-items:center; justify-content:center; font-size:14px; z-index:1; }
+  ol.steps li::after{ content:""; position:absolute; left:15px; top:32px; bottom:2px; width:2px; background:var(--line); }
+  ol.steps li:last-child::after{ display:none; }
+  ol.steps li b.st{ display:block; font-family:'Space Grotesk'; font-size:14.5px; margin-bottom:2px; }
+  ol.steps li span.d{ color:var(--slate); font-size:13.5px; display:block; }
+  ol.steps li code.line{ display:inline-block; margin-top:6px; background:#1a1d24; color:#e6e9f0; padding:5px 12px; border-radius:8px; font-size:12.5px; }
+
+  /* tables */
+  .df-wrap{ display:flex; justify-content:center; margin:20px 0; overflow-x:auto; }
+  table.df-table{ border-collapse:collapse; font-family:'IBM Plex Mono'; font-size:12.8px; }
+  table.df-table th, table.df-table td{ border:1px solid var(--line); padding:8px 16px; text-align:center; white-space:nowrap; transition:background .2s, color .2s; }
+  table.df-table th{ background:var(--green-soft); color:var(--green); font-weight:700; font-size:11px; text-transform:uppercase; }
+  table.df-table td.idxcol{ background:var(--amber-soft); color:var(--amber); font-weight:700; }
+  table.df-table td.sel, table.df-table th.sel{ background:var(--teal); color:#fff; font-weight:700; }
+  table.df-table td.sel.idxcol{ background:var(--teal); color:#fff; }
+  table.df-table td.dim{ color:#b4bcc0; }
+  table.df-table td.excl{ background:var(--coral-soft); color:var(--coral); text-decoration:line-through; }
+  table.df-table tr.pos th, table.df-table tr.pos td{ border:none; font-size:10.5px; color:var(--slate); background:none; font-weight:600; text-transform:none; padding:3px 16px; }
+  table.df-table td.poscol{ color:var(--slate); font-size:10.5px; border:none; background:none; font-weight:600; }
+  table.df-table td.poscol{ padding:8px 10px; }
+
+  table.series-table{ border-collapse:collapse; font-family:'IBM Plex Mono'; font-size:13.5px; }
+  table.series-table th{ background:var(--violet-soft); color:var(--violet); padding:8px 20px; font-size:11px; text-transform:uppercase; }
+  table.series-table td{ border:1px solid var(--line); padding:9px 22px; text-align:center; }
+  table.series-table td.idx-cell{ background:var(--amber-soft); color:var(--amber); font-weight:700; }
+  table.series-table td.val-cell{ background:var(--panel); color:var(--teal); font-weight:700; }
+
+  table.cmp{ width:100%; border-collapse:separate; border-spacing:0; font-size:13.5px; margin:14px 0; border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+  table.cmp th{ background:var(--teal); color:#fff; text-align:left; padding:10px 14px; font-family:'Space Grotesk'; font-size:13px; }
+  table.cmp td{ padding:10px 14px; border-top:1px solid var(--line); vertical-align:top; background:var(--panel); }
+  table.cmp tr:nth-child(even) td{ background:#FAFCFB; }
+  table.cmp td:first-child{ font-weight:600; }
+
+  .divider-label{ font-size:11px; text-transform:uppercase; letter-spacing:1.2px; color:var(--slate); margin:28px 0 10px; font-weight:700; }
+
+  /* playground */
+  .play{ display:grid; grid-template-columns:260px 1fr; gap:18px; align-items:start; }
+  @media (max-width:820px){ .play{ grid-template-columns:1fr; } }
+  .play-btns{ display:flex; flex-direction:column; gap:8px; }
+  .pbtn{ text-align:left; background:var(--panel); border:1.5px solid var(--line); border-radius:10px; padding:9px 12px; font-family:'IBM Plex Mono'; font-size:12px; cursor:pointer; color:var(--ink); transition:.15s; }
+  .pbtn:hover{ border-color:var(--teal); }
+  .pbtn.on{ background:var(--teal-soft); border-color:var(--teal); color:var(--teal); font-weight:600; }
+  .play-view .df-wrap{ margin:8px 0 14px; justify-content:flex-start; }
+  .play-meta{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
+  .badge{ font-size:11.5px; font-weight:700; padding:4px 12px; border-radius:20px; }
+  .badge.t{ background:var(--violet-soft); color:var(--violet); }
+  .badge.r{ background:var(--amber-soft); color:var(--amber); }
+  .badge.g{ background:var(--green-soft); color:var(--green); }
+
+  /* slice strip */
+  .strip{ display:flex; justify-content:center; gap:6px; margin:10px 0 4px; flex-wrap:wrap; }
+  .strip .c{ width:54px; height:54px; border-radius:10px; border:1.5px solid var(--line); display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:'IBM Plex Mono'; font-size:15px; font-weight:700; background:var(--panel); }
+  .strip .c small{ font-size:9.5px; font-weight:500; color:var(--slate); }
+  .strip .c.in{ background:var(--teal); border-color:var(--teal); color:#fff; }
+  .strip .c.in small{ color:#d6eef0; }
+  .strip .c.out{ background:var(--coral-soft); border:1.5px dashed var(--coral); color:var(--coral); }
+  .strip-label{ text-align:center; font-size:12px; color:var(--slate); margin-bottom:16px; font-weight:600; }
+
+  svg.diagram{ width:100%; height:auto; display:block; margin:18px auto; max-width:820px; }
+  svg.diagram text{ font-family:'IBM Plex Sans', sans-serif; }
+  svg.diagram .mono{ font-family:'IBM Plex Mono', monospace; }
+
+  /* exercise */
+  details.sol{ border:1px solid var(--line); border-radius:12px; margin:12px 0; background:var(--panel); overflow:hidden; }
+  details.sol summary{ cursor:pointer; padding:12px 16px; font-weight:600; font-size:14px; display:flex; align-items:center; gap:10px; list-style:none; }
+  details.sol summary::-webkit-details-marker{ display:none; }
+  details.sol summary .q{ width:26px;height:26px;border-radius:50%; background:var(--violet); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex:0 0 auto; }
+  details.sol summary .rev{ margin-left:auto; font-size:11.5px; color:var(--violet); font-weight:600; }
+  details.sol[open] summary{ background:var(--violet-soft); }
+  details.sol .inner{ padding:4px 16px 14px; }
+
+  /* quiz */
+  .quiz-q{ margin-bottom:18px; }
+  .quiz-q p{ font-weight:600; margin:0 0 8px; }
+  .opt{ display:block; width:100%; text-align:left; background:var(--panel); border:1.5px solid var(--line); border-radius:10px; padding:9px 14px; margin-bottom:6px; cursor:pointer; font-family:'IBM Plex Mono'; font-size:12.5px; }
+  .opt:hover{ border-color:var(--teal); }
+  .opt.right{ background:var(--green-soft); border-color:var(--green); color:var(--green); font-weight:600; }
+  .opt.wrong{ background:var(--coral-soft); border-color:var(--coral); color:var(--coral); }
+  .fb{ font-size:13px; color:var(--slate); margin-top:4px; min-height:20px; }
+  .score{ font-family:'Space Grotesk'; font-weight:700; color:var(--teal); }
+
+  footer{ text-align:center; padding:36px 20px; color:var(--slate); font-size:12.5px; border-top:1px solid var(--line); }
+
+  .scrolltop{ position:fixed; bottom:22px; right:22px; z-index:60; width:44px;height:44px;border-radius:50%; background:linear-gradient(135deg,var(--teal),var(--violet)); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:900; cursor:pointer; box-shadow:var(--shadow); opacity:0; pointer-events:none; transition:.2s; }
+  .scrolltop.show{ opacity:1; pointer-events:auto; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand"><div class="logo">N</div> Data Manipulation Training</div>
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+</div>
+
+<div class="shell">
+  <nav class="toc" id="toc">
+    <h5>On this page</h5>
+    <a href="#s51">5.1 Why Data Selection?</a>
+    <a href="#s52">5.2 Select Columns</a>
+    <a href="#s53">5.3 Using loc</a>
+    <a href="#s54">5.4 Using iloc</a>
+    <a href="#s55">5.5 Single Value: at / iat</a>
+    <a href="#compare">Compare &amp; Choose</a>
+    <a href="#playground">Interactive Playground</a>
+    <a href="#mistakes">Common Mistakes</a>
+    <a href="#exercise">Student Exercise</a>
+    <a href="#quiz">Quick Check</a>
+  </nav>
+
+  <main>
+    <div class="hero">
+      <span class="eyebrow">🐼 IT Training &middot; Data Manipulation Track &middot; Hour 17</span>
+      <h1>Data Selection and Filtering: Part 1</h1>
+      <p class="sub">Real datasets are large. Before you can analyse anything, you must be able to pull out exactly the rows and columns you need. This session covers the five core Pandas selectors: <code>[]</code>, <code>loc</code>, <code>iloc</code>, <code>at</code> and <code>iat</code>.</p>
+      <div class="hero-meta">
+        <div class="meta-chip"><b>60 minutes</b>Session length</div>
+        <div class="meta-chip"><b>Beginner</b>Level</div>
+        <div class="meta-chip"><b>Selecting Rows &amp; Columns</b>Focus</div>
+        <div class="meta-chip"><b>5</b>Code walkthroughs</div>
+      </div>
+
+      <div class="objectives">
+        <h4>By the end of this session you will be able to</h4>
+        <div class="obj-grid">
+          <div class="obj"><div class="n">1</div><div>Explain why we select only the data we need</div></div>
+          <div class="obj"><div class="n">2</div><div>Select one or many columns with <code>[]</code></div></div>
+          <div class="obj"><div class="n">3</div><div>Select by <b>label</b> using <code>loc</code></div></div>
+          <div class="obj"><div class="n">4</div><div>Select by <b>position</b> using <code>iloc</code></div></div>
+          <div class="obj"><div class="n">5</div><div>Read a single value with <code>at</code> / <code>iat</code></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5.1 -->
+    <section class="sec" id="s51">
+      <div class="sec-head">
+        <div class="sec-num">5.1</div>
+        <div><h2>Why is Data Selection Important?</h2><p>Show only what is needed, not the entire dataset</p></div>
+      </div>
+
+      <div class="card">
+        <h3>🏢 Real-World Scenario</h3>
+        <p>A company has <b>10,000 employee records</b>, but the HR team only wants the <b>names and salaries of IT employees</b>. Displaying the entire dataset would be slow, noisy and hard to read. Instead, we <b>select only the required information</b>.</p>
+
+        <div class="divider-label">Selection pipeline</div>
+        <div class="flow-h">
+          <div class="flow-node accent-slate" style="border-color:var(--slate);color:var(--slate)">Full Dataset<small>10,000 rows × all columns</small></div>
+          <div class="flow-arrow">➜</div>
+          <div class="flow-node accent-amber">Select Columns<small>name, salary</small></div>
+          <div class="flow-arrow">➜</div>
+          <div class="flow-node accent-violet">Select Rows<small>department = IT</small></div>
+          <div class="flow-arrow">➜</div>
+          <div class="flow-node accent-green">Result<small>only what HR needs</small></div>
+        </div>
+        <p class="flow-caption">Today's session covers column selection and row selection by label and position. Condition-based filtering (such as <code>department == "IT"</code>) continues in Part 2.</p>
+      </div>
+
+      <div class="card">
+        <h3>🧪 Create the Dataset</h3>
+        <p>We will use this small employee DataFrame for every example in this session.</p>
+
+        <div class="code-panel">
+          <div class="code-head"><span>create_dataset.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python">import pandas as pd
+
+employees = pd.DataFrame({
+    "employee_id": [101, 102, 103, 104, 105],
+    "name": ["Rahul", "Priya", "Amit", "Sneha", "Vikas"],
+    "department": ["IT", "HR", "IT", "Finance", "IT"],
+    "salary": [45000, 40000, 60000, 50000, 52000],
+    "experience": [2, 1, 4, 3, 2]
+})
+
+print(employees)</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>   employee_id   name department  salary  experience
+0          101  Rahul         IT   45000           2
+1          102  Priya         HR   40000           1
+2          103   Amit         IT   60000           4
+3          104  Sneha    Finance   50000           3
+4          105  Vikas         IT   52000           2</div>
+        </div>
+
+        <div class="steps-title">⚙️ Implementation Steps</div>
+        <ol class="steps">
+          <li><b class="st">Import Pandas</b><span class="d">Load the library and give it the standard alias <code>pd</code>.</span><code class="line">import pandas as pd</code></li>
+          <li><b class="st">Prepare the data as a dictionary</b><span class="d">Each key becomes a column name; each list becomes that column's values. All lists must have the same length (5 here).</span></li>
+          <li><b class="st">Build the DataFrame</b><span class="d">Pass the dictionary to <code>pd.DataFrame()</code> and store it in a variable.</span><code class="line">employees = pd.DataFrame({...})</code></li>
+          <li><b class="st">Print and verify</b><span class="d">Confirm 5 rows (index 0–4) and 5 columns appear.</span><code class="line">print(employees)</code></li>
+        </ol>
+
+        <div class="divider-label">Anatomy: every cell has two addresses</div>
+        <div class="df-wrap">
+          <table class="df-table">
+            <tr class="pos"><td class="poscol"></td><th></th><th>col 0</th><th>col 1</th><th>col 2</th><th>col 3</th><th>col 4</th></tr>
+            <tr><td class="poscol"></td><th></th><th>employee_id</th><th>name</th><th>department</th><th>salary</th><th>experience</th></tr>
+            <tr><td class="poscol">row 0</td><td class="idxcol">0</td><td>101</td><td>Rahul</td><td>IT</td><td>45000</td><td>2</td></tr>
+            <tr><td class="poscol">row 1</td><td class="idxcol">1</td><td>102</td><td>Priya</td><td>HR</td><td>40000</td><td>1</td></tr>
+            <tr><td class="poscol">row 2</td><td class="idxcol">2</td><td>103</td><td>Amit</td><td>IT</td><td>60000</td><td>4</td></tr>
+            <tr><td class="poscol">row 3</td><td class="idxcol">3</td><td>104</td><td>Sneha</td><td>Finance</td><td>50000</td><td>3</td></tr>
+            <tr><td class="poscol">row 4</td><td class="idxcol">4</td><td>105</td><td>Vikas</td><td>IT</td><td>52000</td><td>2</td></tr>
+          </table>
+        </div>
+        <p class="flow-caption">The <b>names</b> (amber index and green headers) are <b>labels</b>, used by <code>loc</code> and <code>at</code>. The grey <b>row 0… / col 0…</b> numbers are <b>positions</b>, used by <code>iloc</code> and <code>iat</code>. Here the row labels happen to equal the row positions, which is why beginners often confuse the two.</p>
+
+        <div class="callout note">
+          <div class="ico">📝</div>
+          <div><b>Remember:</b> a label is a name you can read in the table; a position is simply the count from the top-left corner, always starting at <b>0</b>.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5.2 -->
+    <section class="sec" id="s52">
+      <div class="sec-head">
+        <div class="sec-num">5.2</div>
+        <div><h2>Select One or Multiple Columns</h2><p>Using square brackets on the column label(s)</p></div>
+      </div>
+
+      <div class="card">
+        <h3>📘 Two Forms, Two Return Types</h3>
+        <div class="grid-2">
+          <div>
+            <p><b style="color:var(--violet)">One column</b> → <code>df["name"]</code><br>Single brackets, one label. Returns a <b>Series</b>.</p>
+          </div>
+          <div>
+            <p><b style="color:var(--green)">Multiple columns</b> → <code>df[["name", "salary"]]</code><br>A <b>list</b> inside the brackets. Returns a <b>DataFrame</b>.</p>
+          </div>
+        </div>
+
+        <div class="code-panel">
+          <div class="code-head"><span>select_columns.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python"># One column: returns a Series
+print(employees["name"])
+
+# Multiple columns: returns a DataFrame
+print(employees[["name", "salary"]])</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>0    Rahul
+1    Priya
+2     Amit
+3    Sneha
+4    Vikas
+Name: name, dtype: str
+
+    name  salary
+0  Rahul   45000
+1  Priya   40000
+2   Amit   60000
+3  Sneha   50000
+4  Vikas   52000</div>
+        </div>
+
+        <div class="callout note">
+          <div class="ico">📝</div>
+          <div><b>About <code>dtype: str</code>:</b> in pandas 3.x, text columns display as <code>str</code>. On older versions the same line shows <code>dtype: object</code>. The data is identical.</div>
+        </div>
+
+        <div class="divider-label">What each form extracts</div>
+        <div class="grid-2">
+          <div>
+            <p style="text-align:center;font-size:13px;margin-bottom:0"><code>employees["name"]</code> → Series</p>
+            <div class="df-wrap">
+              <table class="df-table">
+                <tr><th></th><th>employee_id</th><th class="sel">name</th><th>department</th><th>salary</th><th>exp.</th></tr>
+                <tr><td class="idxcol">0</td><td class="dim">101</td><td class="sel">Rahul</td><td class="dim">IT</td><td class="dim">45000</td><td class="dim">2</td></tr>
+                <tr><td class="idxcol">1</td><td class="dim">102</td><td class="sel">Priya</td><td class="dim">HR</td><td class="dim">40000</td><td class="dim">1</td></tr>
+                <tr><td class="idxcol">2</td><td class="dim">103</td><td class="sel">Amit</td><td class="dim">IT</td><td class="dim">60000</td><td class="dim">4</td></tr>
+                <tr><td class="idxcol">3</td><td class="dim">104</td><td class="sel">Sneha</td><td class="dim">Fin.</td><td class="dim">50000</td><td class="dim">3</td></tr>
+                <tr><td class="idxcol">4</td><td class="dim">105</td><td class="sel">Vikas</td><td class="dim">IT</td><td class="dim">52000</td><td class="dim">2</td></tr>
+              </table>
+            </div>
+          </div>
+          <div>
+            <p style="text-align:center;font-size:13px;margin-bottom:0"><code>employees[["name","salary"]]</code> → DataFrame</p>
+            <div class="df-wrap">
+              <table class="df-table">
+                <tr><th></th><th>employee_id</th><th class="sel">name</th><th>department</th><th class="sel">salary</th><th>exp.</th></tr>
+                <tr><td class="idxcol">0</td><td class="dim">101</td><td class="sel">Rahul</td><td class="dim">IT</td><td class="sel">45000</td><td class="dim">2</td></tr>
+                <tr><td class="idxcol">1</td><td class="dim">102</td><td class="sel">Priya</td><td class="dim">HR</td><td class="sel">40000</td><td class="dim">1</td></tr>
+                <tr><td class="idxcol">2</td><td class="dim">103</td><td class="sel">Amit</td><td class="dim">IT</td><td class="sel">60000</td><td class="dim">4</td></tr>
+                <tr><td class="idxcol">3</td><td class="dim">104</td><td class="sel">Sneha</td><td class="dim">Fin.</td><td class="sel">50000</td><td class="dim">3</td></tr>
+                <tr><td class="idxcol">4</td><td class="dim">105</td><td class="sel">Vikas</td><td class="dim">IT</td><td class="sel">52000</td><td class="dim">2</td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="steps-title">⚙️ Implementation Steps</div>
+        <ol class="steps">
+          <li><b class="st">Decide how many columns you need</b><span class="d">One column gives a Series; two or more give a DataFrame.</span></li>
+          <li><b class="st">Single column: write the label in quotes inside <code>[ ]</code></b><span class="d">The label must match the column name exactly, including capital letters.</span><code class="line">employees["name"]</code></li>
+          <li><b class="st">Multiple columns: put the labels in a Python list</b><span class="d">Note the double brackets. The outer pair is the selector; the inner pair is the list.</span><code class="line">employees[["name", "salary"]]</code></li>
+          <li><b class="st">Print and check the type</b><span class="d">Use <code>type()</code> to confirm what came back.</span><code class="line">print(type(employees["name"]))   # Series</code></li>
+        </ol>
+
+        <div class="callout tip">
+          <div class="ico">💡</div>
+          <div><b>Want a one-column DataFrame?</b> Use a list with a single label: <code>employees[["name"]]</code>. Single brackets give a Series; double brackets always give a DataFrame.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5.3 -->
+    <section class="sec" id="s53">
+      <div class="sec-head">
+        <div class="sec-num">5.3</div>
+        <div><h2>Using <code style="font-size:.85em">loc</code></h2><p>Select data by row and column <b>labels</b></p></div>
+      </div>
+
+      <div class="card">
+        <h3>🏷️ Label-Based Selection</h3>
+        <p>Syntax: <code>df.loc[row_labels, column_labels]</code>. With one argument, <code>loc</code> selects entire rows.</p>
+
+        <div class="code-panel">
+          <div class="code-head"><span>loc_examples.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python">print(employees.loc[0])
+
+print(employees.loc[0:2, ["name", "salary"]])</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>employee_id      101
+name           Rahul
+department        IT
+salary         45000
+experience         2
+Name: 0, dtype: object
+
+    name  salary
+0  Rahul   45000
+1  Priya   40000
+2   Amit   60000</div>
+        </div>
+
+        <div class="callout warn">
+          <div class="ico">⚠️</div>
+          <div><b>Key rule:</b> in the second statement, rows with labels <b>0, 1 and 2</b> are selected. With <code>loc</code>, the end label of a slice is <b>included</b>.</div>
+        </div>
+
+        <div class="divider-label">Visual: <code>employees.loc[0:2, ["name", "salary"]]</code></div>
+        <div class="df-wrap">
+          <table class="df-table">
+            <tr><th></th><th>employee_id</th><th class="sel">name</th><th>department</th><th class="sel">salary</th><th>experience</th></tr>
+            <tr><td class="idxcol sel">0</td><td class="dim">101</td><td class="sel">Rahul</td><td class="dim">IT</td><td class="sel">45000</td><td class="dim">2</td></tr>
+            <tr><td class="idxcol sel">1</td><td class="dim">102</td><td class="sel">Priya</td><td class="dim">HR</td><td class="sel">40000</td><td class="dim">1</td></tr>
+            <tr><td class="idxcol sel">2</td><td class="dim">103</td><td class="sel">Amit</td><td class="dim">IT</td><td class="sel">60000</td><td class="dim">4</td></tr>
+            <tr><td class="idxcol">3</td><td class="dim">104</td><td class="dim">Sneha</td><td class="dim">Finance</td><td class="dim">50000</td><td class="dim">3</td></tr>
+            <tr><td class="idxcol">4</td><td class="dim">105</td><td class="dim">Vikas</td><td class="dim">IT</td><td class="dim">52000</td><td class="dim">2</td></tr>
+          </table>
+        </div>
+        <p class="flow-caption">Teal cells are the result. Row labels 0, 1 <i>and 2</i> are all selected, and only the <code>name</code> and <code>salary</code> columns come along.</p>
+
+        <div class="divider-label">Row-slice behaviour: label range <code>0:2</code></div>
+        <div class="strip">
+          <div class="c in"><small>label</small>0</div>
+          <div class="c in"><small>label</small>1</div>
+          <div class="c in"><small>label</small>2 ✓</div>
+          <div class="c"><small>label</small>3</div>
+          <div class="c"><small>label</small>4</div>
+        </div>
+        <div class="strip-label">loc includes the end label → 3 rows returned</div>
+
+        <div class="steps-title">⚙️ Implementation Steps</div>
+        <ol class="steps">
+          <li><b class="st">Identify the labels you need</b><span class="d">Look at the index (rows) and the header (columns). Here the row labels are 0–4.</span></li>
+          <li><b class="st">Select one complete row</b><span class="d">Pass a single row label. The result is a Series whose index is the column names.</span><code class="line">employees.loc[0]</code></li>
+          <li><b class="st">Select a range of rows</b><span class="d">Use <code>start:end</code>. Remember the end is inclusive.</span><code class="line">employees.loc[0:2]</code></li>
+          <li><b class="st">Add a list of column labels after a comma</b><span class="d">Rows first, then columns, separated by a comma.</span><code class="line">employees.loc[0:2, ["name", "salary"]]</code></li>
+          <li><b class="st">Print and verify</b><span class="d">Check that exactly 3 rows and 2 columns came back.</span></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- 5.4 -->
+    <section class="sec" id="s54">
+      <div class="sec-head">
+        <div class="sec-num">5.4</div>
+        <div><h2>Using <code style="font-size:.85em">iloc</code></h2><p>Select data by <b>integer position</b></p></div>
+      </div>
+
+      <div class="card">
+        <h3>🔢 Position-Based Selection</h3>
+        <p>Syntax: <code>df.iloc[row_positions, column_positions]</code>. Positions always start at 0 and ignore whatever the labels are.</p>
+
+        <div class="code-panel">
+          <div class="code-head"><span>iloc_examples.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python">print(employees.iloc[0])
+
+print(employees.iloc[0:3, 1:4])</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>employee_id      101
+name           Rahul
+department        IT
+salary         45000
+experience         2
+Name: 0, dtype: object
+
+    name department  salary
+0  Rahul         IT   45000
+1  Priya         HR   40000
+2   Amit         IT   60000</div>
+        </div>
+
+        <div class="callout warn">
+          <div class="ico">⚠️</div>
+          <div><b>Key rule:</b> the end position of an <code>iloc</code> slice is <b>excluded</b>. So <code>0:3</code> gives positions 0, 1, 2, and <code>1:4</code> gives columns 1, 2, 3.</div>
+        </div>
+
+        <div class="divider-label">Visual: <code>employees.iloc[0:3, 1:4]</code></div>
+        <div class="df-wrap">
+          <table class="df-table">
+            <tr class="pos"><td class="poscol"></td><th></th><th>col 0</th><th>col 1</th><th>col 2</th><th>col 3</th><th>col 4</th></tr>
+            <tr><td class="poscol"></td><th></th><th>employee_id</th><th class="sel">name</th><th class="sel">department</th><th class="sel">salary</th><th>experience</th></tr>
+            <tr><td class="poscol">row 0</td><td class="idxcol">0</td><td class="dim">101</td><td class="sel">Rahul</td><td class="sel">IT</td><td class="sel">45000</td><td class="dim">2</td></tr>
+            <tr><td class="poscol">row 1</td><td class="idxcol">1</td><td class="dim">102</td><td class="sel">Priya</td><td class="sel">HR</td><td class="sel">40000</td><td class="dim">1</td></tr>
+            <tr><td class="poscol">row 2</td><td class="idxcol">2</td><td class="dim">103</td><td class="sel">Amit</td><td class="sel">IT</td><td class="sel">60000</td><td class="dim">4</td></tr>
+            <tr><td class="poscol">row 3</td><td class="idxcol">3</td><td class="excl">104</td><td class="excl">Sneha</td><td class="excl">Finance</td><td class="excl">50000</td><td class="excl">3</td></tr>
+          </table>
+        </div>
+        <p class="flow-caption">Row position 3 and column position 4 are the <b>excluded ends</b> (shown in red), so they are not returned.</p>
+
+        <div class="divider-label">Row-slice behaviour: position range <code>0:3</code></div>
+        <div class="strip">
+          <div class="c in"><small>pos</small>0</div>
+          <div class="c in"><small>pos</small>1</div>
+          <div class="c in"><small>pos</small>2</div>
+          <div class="c out"><small>pos</small>3 ✗</div>
+          <div class="c"><small>pos</small>4</div>
+        </div>
+        <div class="strip-label">iloc stops <i>before</i> the end position → 3 rows returned</div>
+
+        <div class="grid-2">
+          <div class="callout note" style="margin:6px 0"><div class="ico">🏷️</div><div><b>loc[0:2]</b><br>3 rows. The end label <b>is included</b>.</div></div>
+          <div class="callout tip" style="margin:6px 0"><div class="ico">🔢</div><div><b>iloc[0:3]</b><br>3 rows. The end position <b>is excluded</b>.</div></div>
+        </div>
+
+        <div class="steps-title">⚙️ Implementation Steps</div>
+        <ol class="steps">
+          <li><b class="st">Count positions from zero</b><span class="d">Rows: 0–4. Columns: <code>employee_id</code>=0, <code>name</code>=1, <code>department</code>=2, <code>salary</code>=3, <code>experience</code>=4.</span></li>
+          <li><b class="st">Select one row by position</b><span class="d">Returns the first row as a Series.</span><code class="line">employees.iloc[0]</code></li>
+          <li><b class="st">Choose the row range (end excluded)</b><span class="d">To get the first three rows, write <code>0:3</code>.</span></li>
+          <li><b class="st">Choose the column range (end excluded)</b><span class="d">To get <code>name</code>, <code>department</code>, <code>salary</code> (positions 1, 2, 3), write <code>1:4</code>.</span></li>
+          <li><b class="st">Combine rows and columns</b><span class="d">Row selector, comma, column selector.</span><code class="line">employees.iloc[0:3, 1:4]</code></li>
+        </ol>
+      </div>
+
+      <div class="callout tip">
+        <div class="ico">📚</div>
+        <div><b>Best practice:</b> the pandas documentation recommends explicit indexing methods such as <code>loc</code> and <code>iloc</code> for clear and predictable data access. Prefer them over ambiguous shortcuts as your scripts grow.</div>
+      </div>
+    </section>
+
+    <!-- 5.5 -->
+    <section class="sec" id="s55">
+      <div class="sec-head">
+        <div class="sec-num">5.5</div>
+        <div><h2>Select a Single Value</h2><p><code>at</code> for labels, <code>iat</code> for positions</p></div>
+      </div>
+
+      <div class="card">
+        <h3>🎯 One Cell, Fast</h3>
+        <p>When you need exactly <b>one value</b>, <code>at</code> and <code>iat</code> return the bare value, not a Series or DataFrame.</p>
+
+        <div class="code-panel">
+          <div class="code-head"><span>at_iat.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python"># Label-based access
+print(employees.at[0, "name"])
+
+# Position-based access
+print(employees.iat[0, 1])</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>Rahul
+Rahul</div>
+        </div>
+
+        <div class="divider-label">Two routes to the same cell</div>
+        <svg class="diagram" viewBox="0 0 760 210" role="img" aria-label="at uses row label 0 and column label name; iat uses row position 0 and column position 1; both reach Rahul">
+          <defs>
+            <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5B6570"/></marker>
+          </defs>
+          <rect x="20" y="20" width="190" height="64" rx="12" fill="#FBEEDD" stroke="#D98E31" stroke-width="1.5"/>
+          <text x="115" y="46" text-anchor="middle" font-size="13" font-weight="700" fill="#D98E31">at  (labels)</text>
+          <text x="115" y="68" text-anchor="middle" font-size="12.5" class="mono" fill="#14181F">at[0, "name"]</text>
+
+          <rect x="20" y="126" width="190" height="64" rx="12" fill="#EDE9F5" stroke="#6E5A9E" stroke-width="1.5"/>
+          <text x="115" y="152" text-anchor="middle" font-size="13" font-weight="700" fill="#6E5A9E">iat  (positions)</text>
+          <text x="115" y="174" text-anchor="middle" font-size="12.5" class="mono" fill="#14181F">iat[0, 1]</text>
+
+          <path d="M212 52 L420 96" stroke="#5B6570" stroke-width="1.6" fill="none" marker-end="url(#ah)"/>
+          <path d="M212 158 L420 112" stroke="#5B6570" stroke-width="1.6" fill="none" marker-end="url(#ah)"/>
+
+          <rect x="424" y="68" width="150" height="70" rx="12" fill="#0E7C86"/>
+          <text x="499" y="96" text-anchor="middle" font-size="11" fill="#d6eef0">row 0 · column "name"</text>
+          <text x="499" y="122" text-anchor="middle" font-size="20" font-weight="700" fill="#fff" class="mono">Rahul</text>
+
+          <path d="M576 103 L630 103" stroke="#5B6570" stroke-width="1.6" fill="none" marker-end="url(#ah)"/>
+          <rect x="634" y="78" width="104" height="50" rx="10" fill="#E6F1EA" stroke="#3E8E5A" stroke-width="1.5"/>
+          <text x="686" y="100" text-anchor="middle" font-size="12" font-weight="700" fill="#3E8E5A">Returns</text>
+          <text x="686" y="117" text-anchor="middle" font-size="11.5" fill="#3E8E5A">a single value</text>
+        </svg>
+
+        <div class="steps-title">⚙️ Implementation Steps</div>
+        <ol class="steps">
+          <li><b class="st">Pick the exact cell</b><span class="d">Row 0 (Rahul's record) and the <code>name</code> column.</span></li>
+          <li><b class="st">Use <code>at</code> when you know labels</b><span class="d">Row label first, column label second.</span><code class="line">employees.at[0, "name"]</code></li>
+          <li><b class="st">Use <code>iat</code> when you know positions</b><span class="d">Row position first, column position second (<code>name</code> is column 1).</span><code class="line">employees.iat[0, 1]</code></li>
+          <li><b class="st">Confirm both give the same answer</b><span class="d">Both print <code>Rahul</code>.</span></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- COMPARE -->
+    <section class="sec" id="compare">
+      <div class="sec-head">
+        <div class="sec-num">⚖</div>
+        <div><h2>Compare and Choose the Right Selector</h2><p>The differences you need to teach and remember</p></div>
+      </div>
+
+      <div class="card">
+        <h3>📋 Selector Reference</h3>
+        <table class="cmp">
+          <tr><th>Method</th><th>Selection method</th><th>Example</th><th>Returns</th></tr>
+          <tr><td><code>df["name"]</code></td><td>Column label</td><td>One column</td><td>Series</td></tr>
+          <tr><td><code>loc</code></td><td>Row and column <b>labels</b></td><td><code>df.loc[0, "name"]</code></td><td>Value, Series or DataFrame</td></tr>
+          <tr><td><code>iloc</code></td><td>Integer <b>positions</b></td><td><code>df.iloc[0, 1]</code></td><td>Value, Series or DataFrame</td></tr>
+          <tr><td><code>at</code></td><td>Single labeled value</td><td><code>df.at[0, "name"]</code></td><td>Single value</td></tr>
+          <tr><td><code>iat</code></td><td>Single positional value</td><td><code>df.iat[0, 1]</code></td><td>Single value</td></tr>
+        </table>
+
+        <div class="divider-label">Decision flowchart: which selector should I use?</div>
+        <svg class="diagram" viewBox="0 0 820 480" role="img" aria-label="Decision flowchart for choosing between df bracket, loc, iloc, at and iat">
+          <defs>
+            <marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5B6570"/></marker>
+          </defs>
+
+          <!-- Q1 -->
+          <rect x="320" y="14" width="200" height="50" rx="25" fill="#E4F1F1" stroke="#0E7C86" stroke-width="1.6"/>
+          <text x="420" y="43" text-anchor="middle" font-size="13" font-weight="700" fill="#0E7C86">Only whole columns?</text>
+          <path d="M320 39 L226 39" stroke="#5B6570" stroke-width="1.6" marker-end="url(#ah2)"/>
+          <text x="272" y="31" text-anchor="middle" font-size="11.5" font-weight="700" fill="#3E8E5A">YES</text>
+          <rect x="30" y="14" width="194" height="50" rx="10" fill="#E6F1EA" stroke="#3E8E5A" stroke-width="1.6"/>
+          <text x="127" y="36" text-anchor="middle" font-size="12" font-weight="700" fill="#3E8E5A" class="mono">df["name"]</text>
+          <text x="127" y="53" text-anchor="middle" font-size="11" font-weight="600" fill="#3E8E5A" class="mono">df[["name","salary"]]</text>
+
+          <path d="M420 64 L420 112" stroke="#5B6570" stroke-width="1.6" marker-end="url(#ah2)"/>
+          <text x="436" y="92" font-size="11.5" font-weight="700" fill="#C0524A">NO</text>
+
+          <!-- Q2 -->
+          <rect x="320" y="114" width="200" height="50" rx="25" fill="#E4F1F1" stroke="#0E7C86" stroke-width="1.6"/>
+          <text x="420" y="143" text-anchor="middle" font-size="13" font-weight="700" fill="#0E7C86">Just ONE cell?</text>
+          <path d="M320 139 L226 139" stroke="#5B6570" stroke-width="1.6" marker-end="url(#ah2)"/>
+          <text x="272" y="131" text-anchor="middle" font-size="11.5" font-weight="700" fill="#3E8E5A">YES</text>
+
+          <!-- Q3 (single value) -->
+          <rect x="30" y="114" width="194" height="50" rx="25" fill="#FBEEDD" stroke="#D98E31" stroke-width="1.6"/>
+          <text x="127" y="143" text-anchor="middle" font-size="12.5" font-weight="700" fill="#D98E31">Labels or positions?</text>
+          <path d="M80 164 L80 238" stroke="#5B6570" stroke-width="1.6" marker-end="url(#ah2)"/>
+          <text x="66" y="206" text-anchor="end" font-size="11" font-weight="700" fill="#D98E31">labels</text>
+          <path d="M175 164 L175 238" stroke="#5B6570" stroke-width="1.6" marker-end="url(#ah2)"/>
+          <text x="189" y="206" font-size="11" font-weight="700" fill="#6E5A9E">positions</text>
+
+          <rect x="20" y="240" width="120" height="50" rx="10" fill="#FBEEDD" stroke="#D98E31" stroke-width="1.6"/>
+          <text x="80" y="262" text-anchor="middle" font-size="12.5" font-weight="700" fill="#D98E31" class="mono">at</text>
+          <text x="80" y="279" text-anchor="middle" font-size="10.5" fill="#14181F" class="mono">at[0,"name"]</text>
+          <rect x="150" y="240" width="120" height="50" rx="10" fill="#EDE9F5" stroke="#6E5A9E" stroke-width="1.6"/>
+          <text x="210" y="262" text-anchor="middle" font-size="12.5" font-weight="700" fill="#6E5A9E" class="mono">iat</text>
+          <text x="210" y="279" text-anchor="middle" font-size="10.5" fill="#14181F" class="mono">iat[0,1]</text>
+
+          <path d="M420 164 L420 212" stroke="#5B6570" stroke-width="1.6" marker-end="url(#ah2)"/>
+          <text x="436" y="192" font-size="11.5" font-weight="700" fill="#C0524A">NO</text>
+
+          <!-- Q4 -->
+          <rect x="320" y="214" width="200" height="50" rx="25" fill="#E4F1F1" stroke="#0E7C86" stroke-width="1.6"/>
+          <text x="420" y="243" text-anchor="middle" font-size="13" font-weight="700" fill="#0E7C86">Labels or positions?</text>
+
+          <path d="M370 264 L370 328" stroke="#5B6570" stroke-width="1.6" marker-end="url(#ah2)"/>
+          <text x="356" y="300" text-anchor="end" font-size="11" font-weight="700" fill="#D98E31">labels</text>
+          <path d="M470 264 L470 328" stroke="#5B6570" stroke-width="1.6" marker-end="url(#ah2)"/>
+          <text x="484" y="300" font-size="11" font-weight="700" fill="#6E5A9E">positions</text>
+
+          <rect x="290" y="330" width="160" height="62" rx="10" fill="#FBEEDD" stroke="#D98E31" stroke-width="1.6"/>
+          <text x="370" y="355" text-anchor="middle" font-size="13" font-weight="700" fill="#D98E31" class="mono">loc</text>
+          <text x="370" y="376" text-anchor="middle" font-size="10.5" fill="#14181F" class="mono">end label INCLUDED</text>
+          <rect x="470" y="330" width="160" height="62" rx="10" fill="#EDE9F5" stroke="#6E5A9E" stroke-width="1.6"/>
+          <text x="550" y="355" text-anchor="middle" font-size="13" font-weight="700" fill="#6E5A9E" class="mono">iloc</text>
+          <text x="550" y="376" text-anchor="middle" font-size="10.5" fill="#14181F" class="mono">end position EXCLUDED</text>
+
+          <text x="420" y="440" text-anchor="middle" font-size="12" fill="#5B6570">Start at the top and follow the YES / NO arrows to the right selector.</text>
+        </svg>
+      </div>
+
+      <div class="card">
+        <h3>🔍 Series or DataFrame? What comes back</h3>
+        <div class="flow-h">
+          <div class="flow-node accent-violet"><span class="mono">employees["name"]</span><small>one label</small></div>
+          <div class="flow-arrow">➜</div>
+          <div class="flow-node accent-violet">Series</div>
+          <div style="width:30px"></div>
+          <div class="flow-node accent-green"><span class="mono">employees[["name"]]</span><small>list of labels</small></div>
+          <div class="flow-arrow">➜</div>
+          <div class="flow-node accent-green">DataFrame</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PLAYGROUND -->
+    <section class="sec" id="playground">
+      <div class="sec-head">
+        <div class="sec-num">🎮</div>
+        <div><h2>Interactive Selector Playground</h2><p>Click a statement to see exactly which cells it selects</p></div>
+      </div>
+
+      <div class="card">
+        <div class="play">
+          <div class="play-btns" id="playBtns"></div>
+          <div class="play-view">
+            <div class="play-meta" id="playMeta"></div>
+            <div class="df-wrap"><table class="df-table" id="playTable"></table></div>
+            <div class="code-panel" style="margin:0">
+              <div class="code-head"><span>python</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+              <pre class="code-body" style="padding:12px 18px"><code class="language-python" id="playCode"></code></pre>
+              <div class="code-output" id="playOut"></div>
+            </div>
+          </div>
+        </div>
+        <p class="flow-caption" style="margin-top:14px">Teal = selected. Grey = not selected. Try the two slice statements back to back to compare <code>loc</code> and <code>iloc</code> end-point rules.</p>
+      </div>
+    </section>
+
+    <!-- MISTAKES -->
+    <section class="sec" id="mistakes">
+      <div class="sec-head">
+        <div class="sec-num">⚠</div>
+        <div><h2>Common Mistakes</h2><p>Errors students make most often in this topic</p></div>
+      </div>
+
+      <div class="card">
+        <div class="grid-2">
+          <div class="callout warn" style="margin:0"><div class="ico">1️⃣</div><div><b>Forgetting the list for several columns</b><br><code>df["name", "salary"]</code> raises a <code>KeyError</code>. Use <code>df[["name", "salary"]]</code>.</div></div>
+          <div class="callout warn" style="margin:0"><div class="ico">2️⃣</div><div><b>Mixing up the slice end</b><br><code>loc[0:2]</code> gives 3 rows; <code>iloc[0:2]</code> gives only 2 rows (positions 0 and 1).</div></div>
+          <div class="callout warn" style="margin:0"><div class="ico">3️⃣</div><div><b>Using a position inside <code>loc</code></b><br>Column names go in <code>loc</code>; <code>loc[0, 1]</code> fails because 1 is not a column label.</div></div>
+          <div class="callout warn" style="margin:0"><div class="ico">4️⃣</div><div><b>Wrong capitalisation</b><br>Labels are case-sensitive: <code>df["Name"]</code> is not <code>df["name"]</code>.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- EXERCISE -->
+    <section class="sec" id="exercise">
+      <div class="sec-head">
+        <div class="sec-num">✎</div>
+        <div><h2>Student Exercise</h2><p>Practice every selector on the employee dataset</p></div>
+      </div>
+
+      <div class="card">
+        <h3>🎓 The Task</h3>
+        <p>Using the <code>employees</code> DataFrame from Section 5.1, write the code for each of the five requirements below. Try each one yourself first, then open the solution to check.</p>
+
+        <details class="sol"><summary><span class="q">1</span>Display only employee names.<span class="rev">Show solution</span></summary>
+          <div class="inner">
+            <div class="code-panel"><div class="code-head"><span>solution_1.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre class="code-body"><code class="language-python">print(employees["name"])</code></pre>
+<div class="code-output"><span class="lbl">Output</span>0    Rahul
+1    Priya
+2     Amit
+3    Sneha
+4    Vikas
+Name: name, dtype: str</div></div>
+          </div>
+        </details>
+
+        <details class="sol"><summary><span class="q">2</span>Display employee names and salaries.<span class="rev">Show solution</span></summary>
+          <div class="inner">
+            <div class="code-panel"><div class="code-head"><span>solution_2.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre class="code-body"><code class="language-python">print(employees[["name", "salary"]])</code></pre>
+<div class="code-output"><span class="lbl">Output</span>    name  salary
+0  Rahul   45000
+1  Priya   40000
+2   Amit   60000
+3  Sneha   50000
+4  Vikas   52000</div></div>
+          </div>
+        </details>
+
+        <details class="sol"><summary><span class="q">3</span>Select the first three employees.<span class="rev">Show solution</span></summary>
+          <div class="inner">
+            <div class="code-panel"><div class="code-head"><span>solution_3.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre class="code-body"><code class="language-python">print(employees.iloc[0:3])
+# or: employees.loc[0:2]   (end label included)</code></pre>
+<div class="code-output"><span class="lbl">Output</span>   employee_id   name department  salary  experience
+0          101  Rahul         IT   45000           2
+1          102  Priya         HR   40000           1
+2          103   Amit         IT   60000           4</div></div>
+          </div>
+        </details>
+
+        <details class="sol"><summary><span class="q">4</span>Select the second employee's department.<span class="rev">Show solution</span></summary>
+          <div class="inner">
+            <div class="code-panel"><div class="code-head"><span>solution_4.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre class="code-body"><code class="language-python">print(employees.loc[1, "department"])
+# or: employees.at[1, "department"]
+# or: employees.iat[1, 2]</code></pre>
+<div class="code-output"><span class="lbl">Output</span>HR</div></div>
+          </div>
+        </details>
+
+        <details class="sol"><summary><span class="q">5</span>Display the first four rows and the first two columns.<span class="rev">Show solution</span></summary>
+          <div class="inner">
+            <div class="code-panel"><div class="code-head"><span>solution_5.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre class="code-body"><code class="language-python">print(employees.iloc[0:4, 0:2])</code></pre>
+<div class="code-output"><span class="lbl">Output</span>   employee_id   name
+0          101  Rahul
+1          102  Priya
+2          103   Amit
+3          104  Sneha</div></div>
+          </div>
+        </details>
+
+        <div class="callout exercise">
+          <div class="ico">🎯</div>
+          <div><b>Stuck?</b> Ask yourself two questions: <i>do I know the labels or the positions?</i> and <i>do I need one cell, or a block?</i> The decision flowchart in the Compare section answers both.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- QUIZ -->
+    <section class="sec" id="quiz">
+      <div class="sec-head">
+        <div class="sec-num">?</div>
+        <div><h2>Quick Check</h2><p>Four questions to test understanding</p></div>
+      </div>
+
+      <div class="card" id="quizBox">
+        <div class="quiz-q" data-ans="1"><p>1. Which statement returns a <b>DataFrame</b> with two columns?</p>
+          <button class="opt">employees["name", "salary"]</button>
+          <button class="opt">employees[["name", "salary"]]</button>
+          <button class="opt">employees.at[0, "name"]</button>
+          <div class="fb"></div></div>
+        <div class="quiz-q" data-ans="2"><p>2. How many rows does <code>employees.loc[0:2]</code> return?</p>
+          <button class="opt">2 rows</button>
+          <button class="opt">4 rows</button>
+          <button class="opt">3 rows</button>
+          <div class="fb"></div></div>
+        <div class="quiz-q" data-ans="0"><p>3. How many rows does <code>employees.iloc[0:2]</code> return?</p>
+          <button class="opt">2 rows</button>
+          <button class="opt">3 rows</button>
+          <button class="opt">1 row</button>
+          <div class="fb"></div></div>
+        <div class="quiz-q" data-ans="2"><p>4. Which pair returns the same single value?</p>
+          <button class="opt">at[0, 1] and iat[0, "name"]</button>
+          <button class="opt">loc[0, 1] and iloc[0, "name"]</button>
+          <button class="opt">at[0, "name"] and iat[0, 1]</button>
+          <div class="fb"></div></div>
+        <p>Score: <span class="score" id="score">0 / 4</span></p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer>Data Manipulation Training — Hour 17: Data Selection and Filtering, Part 1 &middot; Prepared for IT Training Cohort &middot; Confidential Training Material</footer>
+
+<div class="scrolltop" id="scrollTop">↑</div>
+
+<script>
+  hljs.highlightAll();
+
+  /* progress + scroll-spy */
+  const progressFill = document.getElementById('progressFill');
+  const scrollTopBtn = document.getElementById('scrollTop');
+  const sections = document.querySelectorAll('section.sec');
+  const navLinks = document.querySelectorAll('#toc a');
+  window.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const scrolled = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+    progressFill.style.width = scrolled + '%';
+    scrollTopBtn.classList.toggle('show', h.scrollTop > 500);
+    let current = '';
+    sections.forEach(sec => {
+      const rect = sec.getBoundingClientRect();
+      if (rect.top <= 140 && rect.bottom >= 140) current = sec.id;
+    });
+    navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + current));
+  });
+  scrollTopBtn.addEventListener('click', () => window.scrollTo({top:0, behavior:'smooth'}));
+
+  function copyCode(btn){
+    const pre = btn.closest('.code-panel').querySelector('pre.code-body');
+    navigator.clipboard.writeText(pre.innerText).then(() => {
+      const orig = btn.textContent; btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = orig, 1400);
+    });
+  }
+
+  /* ---------- Playground ---------- */
+  const COLS = ["employee_id","name","department","salary","experience"];
+  const ROWS = [[101,"Rahul","IT",45000,2],[102,"Priya","HR",40000,1],[103,"Amit","IT",60000,4],[104,"Sneha","Finance",50000,3],[105,"Vikas","IT",52000,2]];
+  const ALL_R = [0,1,2,3,4], ALL_C = [0,1,2,3,4];
+  const CASES = [
+    {code:'employees["name"]', r:ALL_R, c:[1], type:'Series', rule:'column label',
+     out:'0    Rahul\n1    Priya\n2     Amit\n3    Sneha\n4    Vikas\nName: name, dtype: str'},
+    {code:'employees[["name", "salary"]]', r:ALL_R, c:[1,3], type:'DataFrame', rule:'list of column labels',
+     out:'    name  salary\n0  Rahul   45000\n1  Priya   40000\n2   Amit   60000\n3  Sneha   50000\n4  Vikas   52000'},
+    {code:'employees.loc[0]', r:[0], c:ALL_C, type:'Series', rule:'row label 0',
+     out:'employee_id      101\nname           Rahul\ndepartment        IT\nsalary         45000\nexperience         2\nName: 0, dtype: object'},
+    {code:'employees.loc[0:2, ["name", "salary"]]', r:[0,1,2], c:[1,3], type:'DataFrame', rule:'end label INCLUDED',
+     out:'    name  salary\n0  Rahul   45000\n1  Priya   40000\n2   Amit   60000'},
+    {code:'employees.iloc[0]', r:[0], c:ALL_C, type:'Series', rule:'row position 0',
+     out:'employee_id      101\nname           Rahul\ndepartment        IT\nsalary         45000\nexperience         2\nName: 0, dtype: object'},
+    {code:'employees.iloc[0:3, 1:4]', r:[0,1,2], c:[1,2,3], type:'DataFrame', rule:'end position EXCLUDED',
+     out:'    name department  salary\n0  Rahul         IT   45000\n1  Priya         HR   40000\n2   Amit         IT   60000'},
+    {code:'employees.at[0, "name"]', r:[0], c:[1], type:'Single value', rule:'labels',
+     out:'Rahul'},
+    {code:'employees.iat[0, 1]', r:[0], c:[1], type:'Single value', rule:'positions',
+     out:'Rahul'}
+  ];
+  const btnBox = document.getElementById('playBtns');
+  CASES.forEach((cs,i) => {
+    const b = document.createElement('button');
+    b.className = 'pbtn'; b.textContent = cs.code;
+    b.onclick = () => showCase(i);
+    btnBox.appendChild(b);
+  });
+  function showCase(i){
+    const cs = CASES[i];
+    [...btnBox.children].forEach((b,j) => b.classList.toggle('on', i===j));
+    let h = '<tr><th></th>' + COLS.map((c,ci) => `<th class="${cs.c.includes(ci)?'sel':''}">${c}</th>`).join('') + '</tr>';
+    ROWS.forEach((row,ri) => {
+      h += `<tr><td class="idxcol ${cs.r.includes(ri)?'sel':''}">${ri}</td>` +
+        row.map((v,ci) => {
+          const on = cs.r.includes(ri) && cs.c.includes(ci);
+          return `<td class="${on?'sel':'dim'}">${v}</td>`;
+        }).join('') + '</tr>';
+    });
+    document.getElementById('playTable').innerHTML = h;
+    document.getElementById('playMeta').innerHTML =
+      `<span class="badge t">Returns: ${cs.type}</span><span class="badge r">${cs.rule}</span><span class="badge g">${cs.r.length} row(s) × ${cs.c.length} col(s)</span>`;
+    const codeEl = document.getElementById('playCode');
+    codeEl.textContent = 'print(' + cs.code + ')';
+    codeEl.removeAttribute('data-highlighted');
+    hljs.highlightElement(codeEl);
+    document.getElementById('playOut').innerHTML = '<span class="lbl">Output</span>' + cs.out.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  }
+  showCase(3);
+
+  /* ---------- Quiz ---------- */
+  let score = 0, answered = 0;
+  document.querySelectorAll('#quizBox .quiz-q').forEach(q => {
+    const ans = +q.dataset.ans;
+    const opts = q.querySelectorAll('.opt');
+    opts.forEach((o,i) => o.addEventListener('click', () => {
+      if (q.dataset.done) return;
+      q.dataset.done = 1; answered++;
+      const fb = q.querySelector('.fb');
+      if (i === ans){ o.classList.add('right'); score++; fb.textContent = '✅ Correct!'; }
+      else { o.classList.add('wrong'); opts[ans].classList.add('right'); fb.textContent = '❌ Not quite. The correct answer is highlighted.'; }
+      document.getElementById('score').textContent = score + ' / 4';
+    }));
+  });
+</script>
+
+</body>
+</html>

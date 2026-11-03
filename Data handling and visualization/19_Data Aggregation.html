@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Aggregation | Data Manipulation Training — Hour 19</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+<style>
+  :root{
+    --ink:#14181F; --paper:#F4F6F5; --panel:#FFFFFF; --line:#DCE3E1;
+    --teal:#0E7C86; --teal-soft:#E4F1F1;
+    --amber:#D98E31; --amber-soft:#FBEEDD;
+    --violet:#6E5A9E; --violet-soft:#EDE9F5;
+    --coral:#C0524A; --coral-soft:#F7E7E5;
+    --green:#3E8E5A; --green-soft:#E6F1EA;
+    --slate:#5B6570;
+    --radius:14px;
+    --shadow:0 10px 30px rgba(20,24,31,0.06);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{ margin:0; background:var(--paper); color:var(--ink); font-family:'IBM Plex Sans', sans-serif; line-height:1.65; }
+  h1,h2,h3,h4{ font-family:'Space Grotesk', sans-serif; letter-spacing:-.01em; }
+  code, pre, .mono{ font-family:'IBM Plex Mono', monospace; }
+  p code, li code, td code, .callout code, h3 code, h2 code, .flow-caption code, .divider-label code, .fb code, .opt code{ background:#EAEFEE; padding:1px 6px; border-radius:5px; font-size:.88em; color:#0b5f67; }
+  a{color:var(--teal);}
+
+  .topbar{ position:sticky; top:0; z-index:60; background:rgba(244,246,245,0.92); backdrop-filter:blur(8px); border-bottom:1px solid var(--line); padding:10px 24px; display:flex; align-items:center; justify-content:space-between; gap:16px; }
+  .brand{ display:flex; align-items:center; gap:10px; font-weight:700; font-family:'Space Grotesk'; }
+  .brand .logo{ width:30px;height:30px;border-radius:8px; background:linear-gradient(135deg,var(--teal),var(--violet)); display:flex;align-items:center;justify-content:center; color:#fff; font-weight:800; font-size:15px; }
+  .progress-track{ flex:1; max-width:380px; height:7px; border-radius:20px; background:var(--line); overflow:hidden; }
+  .progress-fill{ height:100%; width:0%; background:linear-gradient(90deg,var(--teal),var(--violet)); transition:width .15s ease; }
+
+  .shell{ display:flex; max-width:1280px; margin:0 auto; align-items:flex-start; }
+  .toc{ width:252px; flex:0 0 auto; position:sticky; top:57px; height:calc(100vh - 57px); overflow-y:auto; padding:28px 18px 60px; border-right:1px solid var(--line); }
+  .toc h5{ font-size:11px; text-transform:uppercase; letter-spacing:1.2px; color:var(--slate); margin:0 0 10px; }
+  .toc a{ display:block; padding:7px 10px; border-radius:8px; color:var(--slate); text-decoration:none; font-size:13.5px; margin-bottom:2px; }
+  .toc a:hover, .toc a.active{ background:var(--teal-soft); color:var(--teal); font-weight:600; }
+  main{ flex:1; min-width:0; padding:0 36px 100px; max-width:960px; }
+  @media (max-width:900px){ .toc{ display:none; } main{ padding:0 20px 80px; } }
+
+  .hero{ padding:56px 0 36px; border-bottom:1px solid var(--line); }
+  .eyebrow{ display:inline-flex; align-items:center; gap:8px; font-size:12px; letter-spacing:1.2px; text-transform:uppercase; color:var(--teal); font-weight:700; background:var(--teal-soft); padding:6px 14px; border-radius:30px; margin-bottom:18px; }
+  .hero h1{ font-size:clamp(28px,4.4vw,42px); margin:0 0 14px; font-weight:700; }
+  .hero p.sub{ max-width:700px; color:var(--slate); font-size:16px; margin:0 0 26px; }
+  .hero-meta{ display:flex; gap:12px; flex-wrap:wrap; }
+  .meta-chip{ background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:9px 14px; font-size:12.5px; color:var(--slate); }
+  .meta-chip b{ display:block; color:var(--ink); font-size:14px; }
+
+  .objectives{ margin-top:28px; }
+  .objectives h4{ margin:0 0 10px; font-size:13px; text-transform:uppercase; letter-spacing:1.2px; color:var(--slate); }
+  .obj-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px; }
+  .obj{ background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px 16px; font-size:13.5px; display:flex; gap:10px; }
+  .obj .n{ flex:0 0 auto; width:24px;height:24px; border-radius:50%; background:var(--teal); color:#fff; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; }
+
+  section.sec{ padding:48px 0; border-bottom:1px dashed var(--line); scroll-margin-top:72px; }
+  section.sec:last-child{ border-bottom:none; }
+  .sec-head{ display:flex; align-items:center; gap:14px; margin-bottom:22px; }
+  .sec-num{ flex:0 0 auto; width:46px;height:46px;border-radius:12px; background:var(--panel); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:16px; color:var(--teal); }
+  .sec-head h2{ margin:0; font-size:23px; font-weight:700; }
+  .sec-head p{ margin:2px 0 0; color:var(--slate); font-size:13.5px; }
+
+  .card{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:22px 24px; margin-bottom:20px; box-shadow:var(--shadow); }
+  .card h3{ margin:0 0 10px; font-size:16.5px; color:var(--ink); display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .card p{ margin:8px 0; }
+  .card ul, .card ol{ margin:10px 0; padding-left:22px; }
+  .card li{ margin-bottom:6px; }
+
+  .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  @media (max-width:760px){ .grid-2{ grid-template-columns:1fr; } }
+
+  .callout{ border-radius:var(--radius); padding:16px 20px; margin:16px 0; border:1px solid; display:flex; gap:14px; font-size:14px; }
+  .callout .ico{ font-size:20px; line-height:1.2; }
+  .callout.tip{ background:var(--teal-soft); border-color:#b9dcdd; }
+  .callout.note{ background:var(--amber-soft); border-color:#eccb98; }
+  .callout.exercise{ background:var(--violet-soft); border-color:#cfc3e8; }
+  .callout.warn{ background:var(--coral-soft); border-color:#e6bdb9; }
+  .callout b{ color:var(--ink); }
+
+  .code-panel{ background:#1a1d24; border-radius:12px; overflow:hidden; margin:16px 0; border:1px solid #2a2e38; }
+  .code-head{ display:flex; align-items:center; justify-content:space-between; background:#20232c; padding:9px 16px; font-size:12px; color:#9aa1b0; }
+  .code-dots{ display:flex; gap:6px; }
+  .code-dots span{ width:10px;height:10px;border-radius:50%; }
+  .code-dots span:nth-child(1){ background:#ff5f56;} .code-dots span:nth-child(2){ background:#ffbd2e;} .code-dots span:nth-child(3){ background:#27c93f;}
+  .copy-btn{ background:#2a2e38; color:#c7ccd8; border:none; border-radius:6px; padding:4px 10px; font-size:11.5px; cursor:pointer; font-family:inherit; }
+  .copy-btn:hover{ background:#363b48; }
+  pre.code-body{ margin:0; padding:18px 20px; overflow-x:auto; font-size:13.3px; line-height:1.75; }
+  pre.code-body code{ font-family:'IBM Plex Mono', monospace; background:none; padding:0; color:inherit; font-size:inherit; }
+  .code-output{ background:#14161b; border-top:1px dashed #2a2e38; padding:12px 20px; font-size:12.5px; color:#7ee8a0; font-family:'IBM Plex Mono', monospace; white-space:pre; overflow-x:auto; }
+  .code-output .lbl{ color:#7c8494; font-size:10.5px; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:6px; }
+
+  .flow{ display:flex; flex-direction:column; align-items:center; margin:28px 0; }
+  .flow-h{ display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:10px; margin:26px 0; }
+  .flow-node{ background:var(--panel); border:1.5px solid var(--line); border-radius:12px; padding:12px 18px; font-weight:600; font-size:13.5px; text-align:center; min-width:140px; box-shadow:var(--shadow); }
+  .flow-node small{ display:block; font-weight:400; color:var(--slate); font-size:11.5px; margin-top:2px; }
+  .flow-node.accent-teal{ border-color:var(--teal); color:var(--teal); }
+  .flow-node.accent-amber{ border-color:var(--amber); color:var(--amber); }
+  .flow-node.accent-violet{ border-color:var(--violet); color:var(--violet); }
+  .flow-node.accent-green{ border-color:var(--green); color:var(--green); }
+  .flow-node.accent-coral{ border-color:var(--coral); color:var(--coral); }
+  .flow-node.accent-slate{ border-color:var(--slate); color:var(--slate); }
+  .flow-arrow{ color:var(--slate); font-size:20px; margin:4px 0; }
+  .flow-h .flow-arrow{ margin:0 2px; }
+  .flow-caption{ text-align:center; font-size:12.5px; color:var(--slate); margin-top:6px; font-style:italic; max-width:680px; margin-left:auto; margin-right:auto; }
+
+  /* implementation steps */
+  .steps-title{ display:flex; align-items:center; gap:8px; margin:26px 0 12px; font-family:'Space Grotesk'; font-size:15px; font-weight:700; color:var(--teal); }
+  .steps-title::after{ content:""; flex:1; height:1px; background:var(--line); }
+  ol.steps{ list-style:none; counter-reset:st; margin:0; padding:0; }
+  ol.steps li{ counter-increment:st; position:relative; padding:0 0 18px 50px; margin:0; }
+  ol.steps li::before{ content:counter(st); position:absolute; left:0; top:0; width:32px; height:32px; border-radius:50%; background:var(--teal); color:#fff; font-weight:700; font-family:'Space Grotesk'; display:flex; align-items:center; justify-content:center; font-size:14px; z-index:1; }
+  ol.steps li::after{ content:""; position:absolute; left:15px; top:32px; bottom:2px; width:2px; background:var(--line); }
+  ol.steps li:last-child::after{ display:none; }
+  ol.steps li b.st{ display:block; font-family:'Space Grotesk'; font-size:14.5px; margin-bottom:2px; }
+  ol.steps li span.d{ color:var(--slate); font-size:13.5px; display:block; }
+  ol.steps li code.line{ display:inline-block; margin-top:6px; background:#1a1d24; color:#e6e9f0; padding:5px 12px; border-radius:8px; font-size:12.5px; white-space:pre; }
+
+  /* tables */
+  .df-wrap{ display:flex; justify-content:center; margin:20px 0; overflow-x:auto; }
+  table.df-table{ border-collapse:collapse; font-family:'IBM Plex Mono'; font-size:12.8px; }
+  table.df-table th, table.df-table td{ border:1px solid var(--line); padding:8px 14px; text-align:center; white-space:nowrap; transition:background .2s, color .2s; }
+  table.df-table th{ background:var(--green-soft); color:var(--green); font-weight:700; font-size:11px; text-transform:uppercase; }
+  table.df-table th.new{ background:var(--teal); color:#fff; }
+  table.df-table th.q{ background:var(--violet-soft); color:var(--violet); }
+  table.df-table th.r{ background:var(--teal-soft); color:var(--teal); }
+  table.df-table td.idxcol{ background:var(--amber-soft); color:var(--amber); font-weight:700; }
+  table.df-table td.newcol{ background:var(--teal-soft); color:var(--teal); font-weight:700; }
+  table.df-table td.op{ border:none; background:none; font-weight:700; color:var(--slate); padding:8px 6px; font-size:15px; }
+  table.df-table td.qcol{ background:var(--violet-soft); color:var(--violet); font-weight:700; }
+  table.df-table td.rcol{ background:var(--teal-soft); color:var(--teal); font-weight:700; }
+  table.df-table td.nan{ color:var(--coral); font-weight:700; font-style:italic; background:var(--coral-soft); }
+  table.df-table td.colhl{ background:var(--teal-soft); color:var(--ink); }
+  table.df-table td.hit{ background:var(--teal); color:#fff; font-weight:700; }
+  table.df-table td.dimc{ color:#aab3b8; }
+  table.df-table th.hlcol{ background:var(--teal); color:#fff; }
+
+  table.cmp{ width:100%; border-collapse:separate; border-spacing:0; font-size:13.5px; margin:14px 0; border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+  table.cmp th{ background:var(--teal); color:#fff; text-align:left; padding:10px 14px; font-family:'Space Grotesk'; font-size:13px; }
+  table.cmp td{ padding:10px 14px; border-top:1px solid var(--line); vertical-align:top; background:var(--panel); }
+  table.cmp tr:nth-child(even) td{ background:#FAFCFB; }
+  table.cmp td:first-child{ font-weight:600; }
+
+  .divider-label{ font-size:11px; text-transform:uppercase; letter-spacing:1.2px; color:var(--slate); margin:28px 0 10px; font-weight:700; }
+
+  svg.diagram{ width:100%; height:auto; display:block; margin:14px auto; max-width:820px; }
+  svg.diagram text{ font-family:'IBM Plex Sans', sans-serif; }
+  svg.diagram .mono{ font-family:'IBM Plex Mono', monospace; }
+
+  /* value strips */
+  .strip{ display:flex; justify-content:center; gap:6px; margin:10px 0 4px; flex-wrap:wrap; }
+  .strip .c{ min-width:74px; padding:6px 8px; height:56px; border-radius:10px; border:1.5px solid var(--line); display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:'IBM Plex Mono'; font-size:13.5px; font-weight:700; background:var(--panel); }
+  .strip .c small{ font-size:9.5px; font-weight:500; color:var(--slate); }
+  .strip .c.mid{ background:var(--teal); border-color:var(--teal); color:#fff; }
+  .strip .c.mid small{ color:#d6eef0; }
+  .strip .c.na{ background:var(--coral-soft); border:1.5px dashed var(--coral); color:var(--coral); }
+  .strip .c.ok{ background:var(--green-soft); border-color:var(--green); color:var(--green); }
+  .strip-label{ text-align:center; font-size:12px; color:var(--slate); margin-bottom:12px; font-weight:600; }
+
+  /* explorer */
+  .builder{ display:grid; grid-template-columns:290px 1fr; gap:20px; align-items:start; }
+  @media (max-width:860px){ .builder{ grid-template-columns:1fr; } }
+  .ctrl{ background:#FAFCFB; border:1px solid var(--line); border-radius:12px; padding:14px 16px; }
+  .ctrl label.t{ display:block; font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--slate); font-weight:700; margin:14px 0 6px; }
+  .ctrl label.t:first-child{ margin-top:0; }
+  .chips{ display:flex; flex-wrap:wrap; gap:6px; }
+  .chip{ border:1.5px solid var(--line); background:#fff; border-radius:20px; padding:6px 12px; font-family:'IBM Plex Mono'; font-size:12px; cursor:pointer; color:var(--ink); }
+  .chip:hover{ border-color:var(--teal); }
+  .chip.on{ background:var(--teal); border-color:var(--teal); color:#fff; font-weight:600; }
+  .ctrl .chk{ display:flex; gap:8px; align-items:flex-start; font-size:13px; margin-top:14px; cursor:pointer; }
+  .result-box{ background:linear-gradient(135deg,var(--teal),#0b5f67); color:#fff; border-radius:12px; padding:14px 18px; margin-bottom:12px; display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; }
+  .result-box .big{ font-family:'Space Grotesk'; font-size:30px; font-weight:700; }
+  .result-box .lab{ font-size:12.5px; opacity:.9; }
+
+  /* exercise */
+  details.sol{ border:1px solid var(--line); border-radius:12px; margin:12px 0; background:var(--panel); overflow:hidden; }
+  details.sol summary{ cursor:pointer; padding:12px 16px; font-weight:600; font-size:14px; display:flex; align-items:center; gap:10px; list-style:none; }
+  details.sol summary::-webkit-details-marker{ display:none; }
+  details.sol summary .q{ width:26px;height:26px;border-radius:50%; background:var(--violet); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex:0 0 auto; }
+  details.sol summary .rev{ margin-left:auto; font-size:11.5px; color:var(--violet); font-weight:600; white-space:nowrap; }
+  details.sol[open] summary{ background:var(--violet-soft); }
+  details.sol .inner{ padding:4px 16px 14px; }
+
+  /* quiz */
+  .quiz-q{ margin-bottom:18px; }
+  .quiz-q p{ font-weight:600; margin:0 0 8px; }
+  .opt{ display:block; width:100%; text-align:left; background:var(--panel); border:1.5px solid var(--line); border-radius:10px; padding:9px 14px; margin-bottom:6px; cursor:pointer; font-family:'IBM Plex Mono'; font-size:12.5px; }
+  .opt:hover{ border-color:var(--teal); }
+  .opt.right{ background:var(--green-soft); border-color:var(--green); color:var(--green); font-weight:600; }
+  .opt.wrong{ background:var(--coral-soft); border-color:var(--coral); color:var(--coral); }
+  .fb{ font-size:13px; color:var(--slate); margin-top:4px; min-height:20px; }
+  .score{ font-family:'Space Grotesk'; font-weight:700; color:var(--teal); }
+
+  .legend{ display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:8px; margin:6px 0 4px; }
+  .legend div{ display:flex; align-items:center; gap:8px; font-size:12.5px; background:#FAFCFB; border:1px solid var(--line); border-radius:8px; padding:6px 10px; font-family:'IBM Plex Mono'; }
+  .legend i{ width:12px; height:12px; border-radius:3px; flex:0 0 auto; }
+
+  footer{ text-align:center; padding:36px 20px; color:var(--slate); font-size:12.5px; border-top:1px solid var(--line); }
+  .scrolltop{ position:fixed; bottom:22px; right:22px; z-index:60; width:44px;height:44px;border-radius:50%; background:linear-gradient(135deg,var(--teal),var(--violet)); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:900; cursor:pointer; box-shadow:var(--shadow); opacity:0; pointer-events:none; transition:.2s; }
+  .scrolltop.show{ opacity:1; pointer-events:auto; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand"><div class="logo">N</div> Data Manipulation Training</div>
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+</div>
+
+<div class="shell">
+  <nav class="toc" id="toc">
+    <h5>On this page</h5>
+    <a href="#s71">7.1 What is Aggregation?</a>
+    <a href="#s72">7.2 Create Sales Dataset</a>
+    <a href="#s73">7.3 Common Functions</a>
+    <a href="#s74">7.4 Multiple Columns: agg()</a>
+    <a href="#s75">7.5 Percentage Contribution</a>
+    <a href="#compare">Compare &amp; Choose</a>
+    <a href="#explorer">Aggregation Explorer</a>
+    <a href="#mistakes">Common Mistakes</a>
+    <a href="#exercise">Student Exercise</a>
+    <a href="#quiz">Quick Check</a>
+  </nav>
+
+  <main>
+    <div class="hero">
+      <span class="eyebrow">🐼 IT Training &middot; Data Manipulation Track &middot; Hour 19</span>
+      <h1>Data Aggregation</h1>
+      <p class="sub">Managers rarely want thousands of rows. They want numbers they can act on: total revenue, average order value, the biggest sale. Aggregation turns many records into a few meaningful values. This session covers the core summary functions, <code>agg()</code>, and percentage contribution.</p>
+      <div class="hero-meta">
+        <div class="meta-chip"><b>60 minutes</b>Session length</div>
+        <div class="meta-chip"><b>Beginner</b>Level</div>
+        <div class="meta-chip"><b>Business Metrics</b>Focus</div>
+        <div class="meta-chip"><b>5</b>Code walkthroughs</div>
+      </div>
+
+      <div class="objectives">
+        <h4>By the end of this session you will be able to</h4>
+        <div class="obj-grid">
+          <div class="obj"><div class="n">1</div><div>Explain what aggregation is and why it matters</div></div>
+          <div class="obj"><div class="n">2</div><div>Compute <code>sum</code>, <code>mean</code>, <code>min</code>, <code>max</code>, <code>median</code>, <code>count</code></div></div>
+          <div class="obj"><div class="n">3</div><div>Tell <code>count</code> from <code>size</code>, and mean from median</div></div>
+          <div class="obj"><div class="n">4</div><div>Summarize several columns with <code>agg()</code></div></div>
+          <div class="obj"><div class="n">5</div><div>Calculate each row's percentage of the total</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7.1 -->
+    <section class="sec" id="s71">
+      <div class="sec-head">
+        <div class="sec-num">7.1</div>
+        <div><h2>What is Aggregation?</h2><p>Summarizing multiple records into a smaller set of meaningful values</p></div>
+      </div>
+
+      <div class="card">
+        <h3>📊 Many Rows In, Few Numbers Out</h3>
+        <p>Aggregation means <b>summarizing multiple records into a smaller set of meaningful values</b>. A sales manager may need to know:</p>
+
+        <table class="cmp">
+          <tr><th>Manager's question</th><th>Pandas function</th><th>Example</th></tr>
+          <tr><td>Total revenue</td><td><code>sum()</code></td><td><code>sales["revenue"].sum()</code></td></tr>
+          <tr><td>Average order value</td><td><code>mean()</code></td><td><code>sales["revenue"].mean()</code></td></tr>
+          <tr><td>Highest-value transaction</td><td><code>max()</code></td><td><code>sales["revenue"].max()</code></td></tr>
+          <tr><td>Number of orders</td><td><code>count()</code></td><td><code>sales["order_id"].count()</code></td></tr>
+          <tr><td>Total quantity sold</td><td><code>sum()</code></td><td><code>sales["quantity"].sum()</code></td></tr>
+        </table>
+
+        <div class="divider-label">Aggregation: from records to metrics</div>
+        <svg class="diagram" viewBox="0 0 780 300" role="img" aria-label="Six order revenue values flow through a funnel into five summary metrics">
+          <defs><marker id="ag1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5B6570"/></marker></defs>
+          <text x="85" y="14" text-anchor="middle" font-size="11" font-weight="700" fill="#5B6570">6 ORDER ROWS</text>
+          <g font-size="12" class="mono" text-anchor="middle">
+            <rect x="20" y="24" width="130" height="30" rx="8" fill="#E6F1EA" stroke="#3E8E5A"/><text x="85" y="44" fill="#3E8E5A">Order 1001 · 100,000</text>
+            <rect x="20" y="64" width="130" height="30" rx="8" fill="#E6F1EA" stroke="#3E8E5A"/><text x="85" y="84" fill="#3E8E5A">Order 1002 · 2,500</text>
+            <rect x="20" y="104" width="130" height="30" rx="8" fill="#E6F1EA" stroke="#3E8E5A"/><text x="85" y="124" fill="#3E8E5A">Order 1003 · 50,000</text>
+            <rect x="20" y="144" width="130" height="30" rx="8" fill="#E6F1EA" stroke="#3E8E5A"/><text x="85" y="164" fill="#3E8E5A">Order 1004 · 4,500</text>
+            <rect x="20" y="184" width="130" height="30" rx="8" fill="#E6F1EA" stroke="#3E8E5A"/><text x="85" y="204" fill="#3E8E5A">Order 1005 · 5,000</text>
+            <rect x="20" y="224" width="130" height="30" rx="8" fill="#E6F1EA" stroke="#3E8E5A"/><text x="85" y="244" fill="#3E8E5A">Order 1006 · 24,000</text>
+          </g>
+          <path d="M160 24 L300 105 L300 175 L160 254 Z" fill="#E4F1F1" stroke="#0E7C86" stroke-width="1.6"/>
+          <text x="232" y="146" text-anchor="middle" font-size="13" font-weight="700" fill="#0E7C86">aggregate</text>
+          <text x="232" y="164" text-anchor="middle" font-size="11" fill="#0E7C86">sum · mean · max · count</text>
+          <path d="M304 140 L346 140" stroke="#5B6570" stroke-width="1.8" fill="none" marker-end="url(#ag1)"/>
+          <text x="555" y="14" text-anchor="middle" font-size="11" font-weight="700" fill="#5B6570">5 BUSINESS METRICS</text>
+          <g font-size="13">
+            <rect x="352" y="24" width="400" height="40" rx="10" fill="#fff" stroke="#0E7C86" stroke-width="1.5"/><text x="368" y="49" fill="#14181F" font-weight="600">Total revenue</text><text x="590" y="49" fill="#5B6570" class="mono" font-size="11.5">sum()</text><text x="736" y="49" text-anchor="end" fill="#0E7C86" font-weight="700" class="mono">186,000</text>
+            <rect x="352" y="74" width="400" height="40" rx="10" fill="#fff" stroke="#D98E31" stroke-width="1.5"/><text x="368" y="99" fill="#14181F" font-weight="600">Average order value</text><text x="590" y="99" fill="#5B6570" class="mono" font-size="11.5">mean()</text><text x="736" y="99" text-anchor="end" fill="#D98E31" font-weight="700" class="mono">31,000</text>
+            <rect x="352" y="124" width="400" height="40" rx="10" fill="#fff" stroke="#6E5A9E" stroke-width="1.5"/><text x="368" y="149" fill="#14181F" font-weight="600">Highest-value transaction</text><text x="590" y="149" fill="#5B6570" class="mono" font-size="11.5">max()</text><text x="736" y="149" text-anchor="end" fill="#6E5A9E" font-weight="700" class="mono">100,000</text>
+            <rect x="352" y="174" width="400" height="40" rx="10" fill="#fff" stroke="#3E8E5A" stroke-width="1.5"/><text x="368" y="199" fill="#14181F" font-weight="600">Number of orders</text><text x="590" y="199" fill="#5B6570" class="mono" font-size="11.5">count()</text><text x="736" y="199" text-anchor="end" fill="#3E8E5A" font-weight="700" class="mono">6</text>
+            <rect x="352" y="224" width="400" height="40" rx="10" fill="#fff" stroke="#C0524A" stroke-width="1.5"/><text x="368" y="249" fill="#14181F" font-weight="600">Total units sold</text><text x="590" y="249" fill="#5B6570" class="mono" font-size="11.5">sum() on quantity</text><text x="736" y="249" text-anchor="end" fill="#C0524A" font-weight="700" class="mono">23</text>
+          </g>
+          <text x="390" y="290" text-anchor="middle" font-size="12" fill="#5B6570" font-style="italic">Six rows become five numbers a manager can act on. The details are on the next slides.</text>
+        </svg>
+
+        <div class="callout note">
+          <div class="ico">📝</div>
+          <div><b>The core idea:</b> an aggregation takes a whole column (a Series) and returns <b>one value</b>. The row-by-row detail is deliberately thrown away to reveal the big picture.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7.2 -->
+    <section class="sec" id="s72">
+      <div class="sec-head">
+        <div class="sec-num">7.2</div>
+        <div><h2>Create a Sales Dataset</h2><p>Six orders, and a calculated <code>revenue</code> column</p></div>
+      </div>
+
+      <div class="card">
+        <h3>🧪 Build the Data</h3>
+        <div class="code-panel">
+          <div class="code-head"><span>create_sales.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python">import pandas as pd
+
+sales = pd.DataFrame({
+    "order_id": [1001, 1002, 1003, 1004, 1005, 1006],
+    "product": ["Laptop", "Mouse", "Laptop", "Keyboard", "Mouse", "Monitor"],
+    "quantity": [2, 5, 1, 3, 10, 2],
+    "unit_price": [50000, 500, 50000, 1500, 500, 12000]
+})
+
+sales["revenue"] = sales["quantity"] * sales["unit_price"]
+
+print(sales)</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>   order_id   product  quantity  unit_price  revenue
+0      1001    Laptop         2       50000   100000
+1      1002     Mouse         5         500     2500
+2      1003    Laptop         1       50000    50000
+3      1004  Keyboard         3        1500     4500
+4      1005     Mouse        10         500     5000
+5      1006   Monitor         2       12000    24000</div>
+        </div>
+
+        <div class="divider-label">How the new column is calculated: revenue = quantity × unit_price</div>
+        <div class="df-wrap">
+          <table class="df-table">
+            <tr><th>order_id</th><th>product</th><th class="q">quantity</th><th></th><th class="q">unit_price</th><th></th><th class="new">revenue</th></tr>
+            <tr><td class="idxcol">1001</td><td>Laptop</td><td class="qcol">2</td><td class="op">×</td><td class="qcol">50,000</td><td class="op">=</td><td class="newcol">100,000</td></tr>
+            <tr><td class="idxcol">1002</td><td>Mouse</td><td class="qcol">5</td><td class="op">×</td><td class="qcol">500</td><td class="op">=</td><td class="newcol">2,500</td></tr>
+            <tr><td class="idxcol">1003</td><td>Laptop</td><td class="qcol">1</td><td class="op">×</td><td class="qcol">50,000</td><td class="op">=</td><td class="newcol">50,000</td></tr>
+            <tr><td class="idxcol">1004</td><td>Keyboard</td><td class="qcol">3</td><td class="op">×</td><td class="qcol">1,500</td><td class="op">=</td><td class="newcol">4,500</td></tr>
+            <tr><td class="idxcol">1005</td><td>Mouse</td><td class="qcol">10</td><td class="op">×</td><td class="qcol">500</td><td class="op">=</td><td class="newcol">5,000</td></tr>
+            <tr><td class="idxcol">1006</td><td>Monitor</td><td class="qcol">2</td><td class="op">×</td><td class="qcol">12,000</td><td class="op">=</td><td class="newcol">24,000</td></tr>
+          </table>
+        </div>
+        <p class="flow-caption">One line multiplies the two whole columns, row by row. No loop needed. We aggregate <code>revenue</code> (not <code>unit_price</code>) because adding revenues gives a real business total.</p>
+
+        <div class="steps-title">⚙️ Implementation Steps</div>
+        <ol class="steps">
+          <li><b class="st">Import Pandas</b><span class="d">Standard alias <code>pd</code>.</span><code class="line">import pandas as pd</code></li>
+          <li><b class="st">Build the DataFrame from a dictionary</b><span class="d">Four columns with six values each: <code>order_id</code>, <code>product</code>, <code>quantity</code>, <code>unit_price</code>.</span><code class="line">sales = pd.DataFrame({...})</code></li>
+          <li><b class="st">Derive the revenue column</b><span class="d">Multiply two existing columns. Assigning to a new name creates the column.</span><code class="line">sales["revenue"] = sales["quantity"] * sales["unit_price"]</code></li>
+          <li><b class="st">Print and verify</b><span class="d">Spot-check one row by hand: Order 1001 is 2 × 50,000 = 100,000.</span><code class="line">print(sales)</code></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- 7.3 -->
+    <section class="sec" id="s73">
+      <div class="sec-head">
+        <div class="sec-num">7.3</div>
+        <div><h2>Common Aggregation Functions</h2><p>Six metrics from the same data, each with a different story</p></div>
+      </div>
+
+      <div class="card">
+        <h3>🧮 Calculate the Core Metrics</h3>
+        <div class="code-panel">
+          <div class="code-head"><span>aggregation_functions.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python">print("Total revenue:", sales["revenue"].sum())
+print("Average revenue:", sales["revenue"].mean())
+print("Highest revenue:", sales["revenue"].max())
+print("Lowest revenue:", sales["revenue"].min())
+print("Number of orders:", sales["order_id"].count())
+print("Total units sold:", sales["quantity"].sum())</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>Total revenue: 186000
+Average revenue: 31000.0
+Highest revenue: 100000
+Lowest revenue: 2500
+Number of orders: 6
+Total units sold: 23</div>
+        </div>
+
+        <div class="divider-label">Seeing the numbers: revenue per order</div>
+        <svg class="diagram" viewBox="0 0 780 300" role="img" aria-label="Bar chart of revenue per order with the mean at 31,000 and median at 14,500 marked">
+          <text x="195.4" y="14" text-anchor="end" font-size="11.5" font-weight="700" fill="#D98E31">median 14,500 ▸</text>
+          <text x="283" y="14" text-anchor="start" font-size="11.5" font-weight="700" fill="#6E5A9E">◂ mean 31,000</text>
+          <line x1="195.4" y1="22" x2="195.4" y2="270" stroke="#D98E31" stroke-width="2" stroke-dasharray="5 4"/>
+          <line x1="281.2" y1="22" x2="281.2" y2="270" stroke="#6E5A9E" stroke-width="2" stroke-dasharray="5 4"/>
+          <line x1="120" y1="22" x2="120" y2="270" stroke="#DCE3E1" stroke-width="1.5"/>
+          <g font-size="12" fill="#14181F" text-anchor="end">
+            <text x="110" y="54">Order 1001</text><text x="110" y="94">Order 1002</text><text x="110" y="134">Order 1003</text>
+            <text x="110" y="174">Order 1004</text><text x="110" y="214">Order 1005</text><text x="110" y="254">Order 1006</text>
+          </g>
+          <rect x="120" y="36" width="520" height="26" rx="5" fill="#0E7C86"/>
+          <rect x="120" y="76" width="13" height="26" rx="3" fill="#0E7C86"/>
+          <rect x="120" y="116" width="260" height="26" rx="5" fill="#0E7C86"/>
+          <rect x="120" y="156" width="23.4" height="26" rx="3" fill="#0E7C86"/>
+          <rect x="120" y="196" width="26" height="26" rx="3" fill="#0E7C86"/>
+          <rect x="120" y="236" width="124.8" height="26" rx="5" fill="#0E7C86"/>
+          <g font-size="12" class="mono" font-weight="700">
+            <text x="648" y="54" fill="#3E8E5A">100,000 · max</text>
+            <text x="145" y="94" fill="#C0524A">2,500 · min</text>
+            <text x="388" y="134" fill="#14181F">50,000</text>
+            <text x="152" y="174" fill="#14181F">4,500</text>
+            <text x="155" y="214" fill="#14181F">5,000</text>
+            <text x="253" y="254" fill="#14181F">24,000</text>
+          </g>
+          <text x="390" y="292" text-anchor="middle" font-size="11.5" fill="#5B6570">The mean (31,000) is pulled right by the two laptop orders; the median (14,500) sits in the middle of the pack.</text>
+        </svg>
+
+        <div class="divider-label">What each function does</div>
+        <table class="cmp">
+          <tr><th>Function</th><th>What it does</th><th>Result on <code style="background:rgba(255,255,255,.25);color:#fff">revenue</code></th></tr>
+          <tr><td><code>sum()</code></td><td>Adds all values</td><td><code>186000</code></td></tr>
+          <tr><td><code>mean()</code></td><td>Calculates the average: sum ÷ number of values</td><td><code>31000.0</code></td></tr>
+          <tr><td><code>min()</code> and <code>max()</code></td><td>Find the minimum and maximum</td><td><code>2500</code> and <code>100000</code></td></tr>
+          <tr><td><code>median()</code></td><td>Calculates the middle value of the sorted data</td><td><code>14500.0</code></td></tr>
+          <tr><td><code>count()</code></td><td>Counts <b>non-missing</b> values</td><td><code>6</code></td></tr>
+          <tr><td><code>size</code></td><td>Counts <b>rows in a group</b>, including rows with missing column values</td><td><code>6</code> (no missing values here)</td></tr>
+        </table>
+
+        <div class="steps-title">⚙️ Implementation Steps</div>
+        <ol class="steps">
+          <li><b class="st">Choose the column that answers the question</b><span class="d">Revenue questions use <code>revenue</code>; unit questions use <code>quantity</code>.</span><code class="line">sales["revenue"]</code></li>
+          <li><b class="st">Call the aggregation method, with parentheses</b><span class="d">The method reads every value in the column and returns one number.</span><code class="line">sales["revenue"].sum()</code></li>
+          <li><b class="st">Print it with a clear label</b><span class="d">A label tells the reader what the number means.</span><code class="line">print("Total revenue:", sales["revenue"].sum())</code></li>
+          <li><b class="st">Repeat for each metric</b><span class="d">Swap <code>sum</code> for <code>mean</code>, <code>max</code>, <code>min</code>, <code>count</code>.</span></li>
+          <li><b class="st">Sanity-check against the table</b><span class="d">For example, the largest value in the revenue column is 100,000, so <code>max()</code> must print that.</span></li>
+        </ol>
+      </div>
+
+      <!-- median -->
+      <div class="card">
+        <h3>⚖️ Mean vs Median: why two "averages"?</h3>
+        <p>The <b>mean</b> adds everything and divides by the count. The <b>median</b> sorts the values and takes the middle. With six values there is no single middle, so the median is the average of the middle two.</p>
+
+        <div class="divider-label">Revenue sorted from smallest to largest</div>
+        <div class="strip">
+          <div class="c"><small>1st</small>2,500</div>
+          <div class="c"><small>2nd</small>4,500</div>
+          <div class="c mid"><small>3rd · middle</small>5,000</div>
+          <div class="c mid"><small>4th · middle</small>24,000</div>
+          <div class="c"><small>5th</small>50,000</div>
+          <div class="c"><small>6th</small>100,000</div>
+        </div>
+        <div class="strip-label">median = (5,000 + 24,000) ÷ 2 = <b>14,500</b> &nbsp;·&nbsp; mean = 186,000 ÷ 6 = <b>31,000</b></div>
+
+        <div class="callout tip">
+          <div class="ico">💡</div>
+          <div><b>Which should you report?</b> When a few very large values exist (like the two laptop orders), the mean is pulled upwards and overstates what a "typical" order looks like. The median is steadier. Good analysts look at both.</div>
+        </div>
+      </div>
+
+      <!-- count vs size -->
+      <div class="card">
+        <h3>🔢 <code>count()</code> vs <code>size</code>: the missing-value trap</h3>
+        <p>With complete data they give the same answer, so students often assume they are identical. They are not: <code>count()</code> <b>skips missing values</b>, while <code>size</code> counts every row.</p>
+
+        <div class="strip">
+          <div class="c ok"><small>row 0</small>100,000</div>
+          <div class="c ok"><small>row 1</small>500</div>
+          <div class="c na"><small>row 2</small>NaN</div>
+          <div class="c ok"><small>row 3</small>4,500</div>
+          <div class="c ok"><small>row 4</small>5,000</div>
+          <div class="c ok"><small>row 5</small>24,000</div>
+        </div>
+        <div class="strip-label"><span style="color:var(--green)">count() → 5 (non-missing)</span> &nbsp;·&nbsp; <span style="color:var(--coral)">size → 6 (all rows)</span></div>
+
+        <div class="code-panel">
+          <div class="code-head"><span>count_vs_size.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python">import numpy as np
+
+orders = pd.Series([100000, 500, np.nan, 4500, 5000, 24000])
+
+print("count:", orders.count())
+print("size :", orders.size)
+print("len  :", len(orders))
+print("sum  :", orders.sum())
+print("mean :", orders.mean())</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>count: 5
+size : 6
+len  : 6
+sum  : 134000.0
+mean : 26800.0</div>
+        </div>
+
+        <div class="callout note">
+          <div class="ico">📝</div>
+          <div><b>Two things to notice:</b> (1) <code>sum()</code> and <code>mean()</code> quietly skip the <code>NaN</code>. The mean is 134,000 ÷ <b>5</b> = 26,800, not ÷ 6. (2) On a Series, <code>size</code> is written <b>without parentheses</b>.</div>
+        </div>
+
+        <p><b>In a group</b>, <code>size</code> counts the group's rows even when a column is missing. Preview of grouped aggregation, with Order 1003's revenue blanked out:</p>
+        <div class="code-panel">
+          <div class="code-head"><span>groupby_preview.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python">demo = sales.copy()
+demo.loc[2, "revenue"] = np.nan   # Order 1003 (a Laptop) loses its revenue
+
+print(demo.groupby("product")["revenue"].count())
+print(demo.groupby("product").size())</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>product
+Keyboard    1
+Laptop      1
+Monitor     1
+Mouse       2
+Name: revenue, dtype: int64
+
+product
+Keyboard    1
+Laptop      2
+Monitor     1
+Mouse       2
+dtype: int64</div>
+        </div>
+        <p class="flow-caption">The Laptop group has 2 rows (<code>size</code> = 2) but only 1 revenue value (<code>count()</code> = 1).</p>
+      </div>
+    </section>
+
+    <!-- 7.4 -->
+    <section class="sec" id="s74">
+      <div class="sec-head">
+        <div class="sec-num">7.4</div>
+        <div><h2>Aggregate Multiple Columns</h2><p>One <code>agg()</code> call, a dictionary of column → list of functions</p></div>
+      </div>
+
+      <div class="card">
+        <h3>🧾 Build a Summary Table with <code>agg()</code></h3>
+        <div class="code-panel">
+          <div class="code-head"><span>agg_summary.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python">summary = sales.agg({
+    "quantity": ["sum", "mean", "max"],
+    "revenue": ["sum", "mean", "max"]
+})
+
+print(summary)</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>       quantity   revenue
+sum   23.000000  186000.0
+mean   3.833333   31000.0
+max   10.000000  100000.0</div>
+        </div>
+
+        <div class="divider-label">How the dictionary becomes the table</div>
+        <div class="grid-2" style="align-items:center">
+          <div>
+            <div class="code-panel" style="margin:0">
+              <div class="code-head"><span>the dictionary</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+              <pre class="code-body" style="font-size:12.5px"><code class="language-python">{
+  "quantity": ["sum", "mean", "max"],
+  "revenue":  ["sum", "mean", "max"]
+}</code></pre>
+            </div>
+            <p class="flow-caption" style="text-align:left;margin-top:10px"><b style="color:var(--violet)">Keys</b> = columns to summarize.<br><b style="color:var(--teal)">Values</b> = the list of functions for that column, written as strings.</p>
+          </div>
+          <div class="df-wrap" style="margin:0">
+            <table class="df-table">
+              <tr><th></th><th class="q">quantity</th><th class="r">revenue</th></tr>
+              <tr><td class="idxcol">sum</td><td class="qcol">23.000000</td><td class="rcol">186000.0</td></tr>
+              <tr><td class="idxcol">mean</td><td class="qcol">3.833333</td><td class="rcol">31000.0</td></tr>
+              <tr><td class="idxcol">max</td><td class="qcol">10.000000</td><td class="rcol">100000.0</td></tr>
+            </table>
+          </div>
+        </div>
+
+        <div class="callout tip">
+          <div class="ico">💡</div>
+          <div><b>Reading the result:</b> each <b>column</b> of the output is one of your keys and each <b>row</b> is one function. <code>sum</code> of <code>quantity</code> (23) matches the "Total units sold" from 7.3, and <code>sum</code> of <code>revenue</code> (186,000) matches "Total revenue". <code>agg()</code> is just those six separate calls done in one step.</div>
+        </div>
+        <div class="callout note">
+          <div class="ico">📝</div>
+          <div><b>Why do the numbers show decimals?</b> Because <code>mean</code> produces decimals, Pandas stores each result column as floating-point, so even the sum shows as <code>23.000000</code>.</div>
+        </div>
+
+        <div class="steps-title">⚙️ Implementation Steps</div>
+        <ol class="steps">
+          <li><b class="st">List the columns you want to summarize</b><span class="d">Here: <code>quantity</code> and <code>revenue</code>.</span></li>
+          <li><b class="st">Choose functions for each column</b><span class="d">Use a list of function names as strings, such as <code>["sum", "mean", "max"]</code>.</span></li>
+          <li><b class="st">Put them in a dictionary</b><span class="d">Column name as key, list of functions as value.</span></li>
+          <li><b class="st">Pass the dictionary to <code>agg()</code></b><span class="d">Store the result in <code>summary</code>.</span><code class="line">summary = sales.agg({...})</code></li>
+          <li><b class="st">Print and cross-check</b><span class="d">Compare against the single-metric results from 7.3.</span><code class="line">print(summary)</code></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- 7.5 -->
+    <section class="sec" id="s75">
+      <div class="sec-head">
+        <div class="sec-num">7.5</div>
+        <div><h2>Calculate Percentage Contribution</h2><p>How much of the total does each order account for?</p></div>
+      </div>
+
+      <div class="card">
+        <h3>🥧 Each Order's Share of Total Revenue</h3>
+        <div class="code-panel">
+          <div class="code-head"><span>percentage_contribution.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python">total_revenue = sales["revenue"].sum()
+
+sales["revenue_percentage"] = (
+    sales["revenue"] / total_revenue
+) * 100
+
+print(sales[["order_id", "revenue", "revenue_percentage"]])</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>   order_id  revenue  revenue_percentage
+0      1001   100000           53.763441
+1      1002     2500            1.344086
+2      1003    50000           26.881720
+3      1004     4500            2.419355
+4      1005     5000            2.688172
+5      1006    24000           12.903226</div>
+        </div>
+
+        <div class="divider-label">The formula</div>
+        <div class="flow-h">
+          <div class="flow-node accent-teal">Order's revenue<small>sales["revenue"]</small></div>
+          <div class="flow-arrow">÷</div>
+          <div class="flow-node accent-violet">Total revenue<small>186,000 (one number)</small></div>
+          <div class="flow-arrow">× 100</div>
+          <div class="flow-node accent-green">Percentage<small>share of the total</small></div>
+        </div>
+        <p class="flow-caption">Example: Order 1001 → 100,000 ÷ 186,000 × 100 = <b>53.76%</b>. A whole column is divided by a single number, so Pandas applies it to every row at once.</p>
+
+        <div class="divider-label">Visual: share of total revenue (100%)</div>
+        <svg class="diagram" viewBox="0 0 760 120" role="img" aria-label="Stacked bar showing each order's share of total revenue: 1001 53.76 percent, 1003 26.88 percent, 1006 12.90 percent, others small">
+          <rect x="30" y="30" width="376.34" height="46" fill="#0E7C86"/>
+          <rect x="406.34" y="30" width="9.41" height="46" fill="#D98E31"/>
+          <rect x="415.75" y="30" width="188.17" height="46" fill="#6E5A9E"/>
+          <rect x="603.92" y="30" width="16.94" height="46" fill="#C0524A"/>
+          <rect x="620.86" y="30" width="18.82" height="46" fill="#3E8E5A"/>
+          <rect x="639.68" y="30" width="90.32" height="46" fill="#5B6570"/>
+          <g font-size="13" font-weight="700" fill="#fff" text-anchor="middle">
+            <text x="218" y="58">1001 · 53.76%</text>
+            <text x="510" y="58">1003 · 26.88%</text>
+            <text x="685" y="58">1006 · 12.90%</text>
+          </g>
+          <text x="30" y="20" font-size="11" fill="#5B6570">0%</text>
+          <text x="730" y="20" font-size="11" fill="#5B6570" text-anchor="end">100%</text>
+          <text x="380" y="104" text-anchor="middle" font-size="12" fill="#5B6570">Two laptop orders (1001 + 1003) generate 80.65% of all revenue. The remaining orders are 1.34%, 2.42%, 2.69% and 12.90%.</text>
+        </svg>
+        <div class="legend">
+          <div><i style="background:#0E7C86"></i>1001 · 53.76%</div>
+          <div><i style="background:#D98E31"></i>1002 · 1.34%</div>
+          <div><i style="background:#6E5A9E"></i>1003 · 26.88%</div>
+          <div><i style="background:#C0524A"></i>1004 · 2.42%</div>
+          <div><i style="background:#3E8E5A"></i>1005 · 2.69%</div>
+          <div><i style="background:#5B6570"></i>1006 · 12.90%</div>
+        </div>
+
+        <div class="callout tip">
+          <div class="ico">✅</div>
+          <div><b>Self-check:</b> the percentages must add up to 100. Run <code>sales["revenue_percentage"].sum()</code> and you get <code>100.0</code>. If not, something in the formula is wrong.</div>
+        </div>
+
+        <div class="steps-title">⚙️ Implementation Steps</div>
+        <ol class="steps">
+          <li><b class="st">Calculate the total once and store it</b><span class="d">A single number, reused for every row.</span><code class="line">total_revenue = sales["revenue"].sum()</code></li>
+          <li><b class="st">Divide the revenue column by the total</b><span class="d">Gives each order's share as a fraction between 0 and 1.</span><code class="line">sales["revenue"] / total_revenue</code></li>
+          <li><b class="st">Multiply by 100 to convert to a percentage</b><span class="d">Keep the division in parentheses so the order is clear.</span><code class="line">(sales["revenue"] / total_revenue) * 100</code></li>
+          <li><b class="st">Store it in a new column</b><span class="d">Assigning to a new name creates <code>revenue_percentage</code>.</span></li>
+          <li><b class="st">Select the columns to show and verify</b><span class="d">Use the double-bracket selector from Part 1, then check the column sums to 100.</span><code class="line">print(sales[["order_id", "revenue", "revenue_percentage"]])</code></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- COMPARE -->
+    <section class="sec" id="compare">
+      <div class="sec-head">
+        <div class="sec-num">⚖</div>
+        <div><h2>Compare and Choose the Right Metric</h2><p>Start from the business question, then pick the function</p></div>
+      </div>
+
+      <div class="card">
+        <h3>🧭 Decision Flowchart</h3>
+        <svg class="diagram" viewBox="0 0 820 250" role="img" aria-label="Decision flowchart mapping six business questions to the right aggregation">
+          <defs><marker id="ag2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5B6570"/></marker></defs>
+          <rect x="300" y="8" width="220" height="46" rx="23" fill="#E4F1F1" stroke="#0E7C86" stroke-width="1.6"/>
+          <text x="410" y="36" text-anchor="middle" font-size="13" font-weight="700" fill="#0E7C86">What does the manager ask?</text>
+          <path d="M410 54 V84" stroke="#5B6570" stroke-width="1.6" fill="none"/>
+          <path d="M68 84 H743" stroke="#5B6570" stroke-width="1.6" fill="none"/>
+          <path d="M68 84 V106" stroke="#5B6570" stroke-width="1.6" fill="none" marker-end="url(#ag2)"/>
+          <path d="M203 84 V106" stroke="#5B6570" stroke-width="1.6" fill="none" marker-end="url(#ag2)"/>
+          <path d="M338 84 V106" stroke="#5B6570" stroke-width="1.6" fill="none" marker-end="url(#ag2)"/>
+          <path d="M473 84 V106" stroke="#5B6570" stroke-width="1.6" fill="none" marker-end="url(#ag2)"/>
+          <path d="M608 84 V106" stroke="#5B6570" stroke-width="1.6" fill="none" marker-end="url(#ag2)"/>
+          <path d="M743 84 V106" stroke="#5B6570" stroke-width="1.6" fill="none" marker-end="url(#ag2)"/>
+
+          <rect x="8" y="108" width="120" height="132" rx="12" fill="#E4F1F1" stroke="#0E7C86" stroke-width="1.6"/>
+          <text x="68" y="132" text-anchor="middle" font-size="11.5" font-weight="700" fill="#0E7C86">How much</text>
+          <text x="68" y="147" text-anchor="middle" font-size="11.5" font-weight="700" fill="#0E7C86">in total?</text>
+          <text x="68" y="176" text-anchor="middle" font-size="13" class="mono" font-weight="700" fill="#14181F">sum()</text>
+          <text x="68" y="204" text-anchor="middle" font-size="10.5" fill="#5B6570">186,000</text>
+          <text x="68" y="226" text-anchor="middle" font-size="10.5" fill="#5B6570">Sec 7.3</text>
+
+          <rect x="143" y="108" width="120" height="132" rx="12" fill="#FBEEDD" stroke="#D98E31" stroke-width="1.6"/>
+          <text x="203" y="132" text-anchor="middle" font-size="11.5" font-weight="700" fill="#D98E31">What is</text>
+          <text x="203" y="147" text-anchor="middle" font-size="11.5" font-weight="700" fill="#D98E31">typical?</text>
+          <text x="203" y="172" text-anchor="middle" font-size="12" class="mono" font-weight="700" fill="#14181F">mean()</text>
+          <text x="203" y="190" text-anchor="middle" font-size="12" class="mono" font-weight="700" fill="#14181F">median()</text>
+          <text x="203" y="208" text-anchor="middle" font-size="10.5" fill="#5B6570">outliers → median</text>
+          <text x="203" y="226" text-anchor="middle" font-size="10.5" fill="#5B6570">Sec 7.3</text>
+
+          <rect x="278" y="108" width="120" height="132" rx="12" fill="#EDE9F5" stroke="#6E5A9E" stroke-width="1.6"/>
+          <text x="338" y="132" text-anchor="middle" font-size="11.5" font-weight="700" fill="#6E5A9E">Biggest or</text>
+          <text x="338" y="147" text-anchor="middle" font-size="11.5" font-weight="700" fill="#6E5A9E">smallest?</text>
+          <text x="338" y="172" text-anchor="middle" font-size="12" class="mono" font-weight="700" fill="#14181F">max()</text>
+          <text x="338" y="190" text-anchor="middle" font-size="12" class="mono" font-weight="700" fill="#14181F">min()</text>
+          <text x="338" y="208" text-anchor="middle" font-size="10.5" fill="#5B6570">100,000 / 2,500</text>
+          <text x="338" y="226" text-anchor="middle" font-size="10.5" fill="#5B6570">Sec 7.3</text>
+
+          <rect x="413" y="108" width="120" height="132" rx="12" fill="#E6F1EA" stroke="#3E8E5A" stroke-width="1.6"/>
+          <text x="473" y="132" text-anchor="middle" font-size="11.5" font-weight="700" fill="#3E8E5A">How many?</text>
+          <text x="473" y="172" text-anchor="middle" font-size="12" class="mono" font-weight="700" fill="#14181F">count()</text>
+          <text x="473" y="190" text-anchor="middle" font-size="12" class="mono" font-weight="700" fill="#14181F">size</text>
+          <text x="473" y="208" text-anchor="middle" font-size="10.5" fill="#5B6570">missing? → size</text>
+          <text x="473" y="226" text-anchor="middle" font-size="10.5" fill="#5B6570">Sec 7.3</text>
+
+          <rect x="548" y="108" width="120" height="132" rx="12" fill="#F7E7E5" stroke="#C0524A" stroke-width="1.6"/>
+          <text x="608" y="132" text-anchor="middle" font-size="11.5" font-weight="700" fill="#C0524A">Several metrics</text>
+          <text x="608" y="147" text-anchor="middle" font-size="11.5" font-weight="700" fill="#C0524A">at once?</text>
+          <text x="608" y="176" text-anchor="middle" font-size="12" class="mono" font-weight="700" fill="#14181F">agg({…})</text>
+          <text x="608" y="204" text-anchor="middle" font-size="10.5" fill="#5B6570">column → [funcs]</text>
+          <text x="608" y="226" text-anchor="middle" font-size="10.5" fill="#5B6570">Sec 7.4</text>
+
+          <rect x="683" y="108" width="120" height="132" rx="12" fill="#E4F1F1" stroke="#0E7C86" stroke-width="1.6"/>
+          <text x="743" y="132" text-anchor="middle" font-size="11.5" font-weight="700" fill="#0E7C86">Share of the</text>
+          <text x="743" y="147" text-anchor="middle" font-size="11.5" font-weight="700" fill="#0E7C86">total?</text>
+          <text x="743" y="176" text-anchor="middle" font-size="11" class="mono" font-weight="700" fill="#14181F">÷ total × 100</text>
+          <text x="743" y="204" text-anchor="middle" font-size="10.5" fill="#5B6570">53.76% …</text>
+          <text x="743" y="226" text-anchor="middle" font-size="10.5" fill="#5B6570">Sec 7.5</text>
+        </svg>
+      </div>
+    </section>
+
+    <!-- EXPLORER -->
+    <section class="sec" id="explorer">
+      <div class="sec-head">
+        <div class="sec-num">🎮</div>
+        <div><h2>Interactive Aggregation Explorer</h2><p>Pick a column and a function, then see which cells feed the answer</p></div>
+      </div>
+
+      <div class="card">
+        <div class="builder">
+          <div class="ctrl">
+            <label class="t">Column</label>
+            <div class="chips" id="colChips"></div>
+            <label class="t">Function</label>
+            <div class="chips" id="fnChips"></div>
+            <label class="chk"><input type="checkbox" id="missChk"> <span>Make <b>Order 1003's</b> value in this column <b>missing (NaN)</b></span></label>
+          </div>
+          <div>
+            <div class="result-box"><span class="big" id="resVal"></span><span class="lab" id="resLab"></span></div>
+            <div class="df-wrap" style="margin:6px 0 12px;justify-content:flex-start"><div id="exTable"></div></div>
+            <div class="code-panel" style="margin:0">
+              <div class="code-head"><span>generated_code.py</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+              <pre class="code-body" style="padding:12px 18px"><code class="language-python" id="exCode"></code></pre>
+              <div class="code-output" id="exOut"></div>
+            </div>
+          </div>
+        </div>
+        <p class="flow-caption" style="margin-top:14px">Try <code>revenue</code> + <code>median</code> to see the two middle cells light up. Then tick the NaN box and compare <code>count</code> with <code>size</code>, and watch the mean change.</p>
+      </div>
+    </section>
+
+    <!-- MISTAKES -->
+    <section class="sec" id="mistakes">
+      <div class="sec-head">
+        <div class="sec-num">⚠</div>
+        <div><h2>Common Mistakes</h2><p>Errors students make most often in this topic</p></div>
+      </div>
+
+      <div class="card">
+        <div class="grid-2">
+          <div class="callout warn" style="margin:0"><div class="ico">1️⃣</div><div><b>Aggregating the wrong column</b><br><code>sales["unit_price"].sum()</code> gives 114,500, which means nothing. Calculate <code>revenue</code> first, then sum that.</div></div>
+          <div class="callout warn" style="margin:0"><div class="ico">2️⃣</div><div><b>Using <code>count()</code> to count rows</b><br>It skips missing values. To count all rows, use <code>len(sales)</code> or <code>size</code>.</div></div>
+          <div class="callout warn" style="margin:0"><div class="ico">3️⃣</div><div><b>Forgetting <code>* 100</code></b><br>Without it you get fractions such as <code>0.5376</code> instead of <code>53.76</code>.</div></div>
+          <div class="callout warn" style="margin:0"><div class="ico">4️⃣</div><div><b>Reading only the mean</b><br>Mean revenue is 31,000, but the median is 14,500. Large orders can make the mean misleading.</div></div>
+          <div class="callout warn" style="margin:0"><div class="ico">5️⃣</div><div><b>Missing parentheses</b><br><code>sales["revenue"].sum</code> (no brackets) prints the method itself instead of the total.</div></div>
+          <div class="callout warn" style="margin:0"><div class="ico">6️⃣</div><div><b><code>size</code> on a whole DataFrame</b><br><code>sales.size</code> is rows × columns = <code>36</code> here, not the 6 rows. Use <code>len(sales)</code> for rows.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- EXERCISE -->
+    <section class="sec" id="exercise">
+      <div class="sec-head">
+        <div class="sec-num">✎</div>
+        <div><h2>Student Exercise</h2><p>Using the same sales data, calculate the following</p></div>
+      </div>
+
+      <div class="card">
+        <h3>🎓 The Task</h3>
+        <p>Use the <code>sales</code> DataFrame from Section 7.2 (including the <code>revenue</code> column). Try each one yourself first, then open the solution.</p>
+
+        <details class="sol"><summary><span class="q">1</span>Total revenue.<span class="rev">Show solution</span></summary>
+          <div class="inner">
+            <div class="code-panel"><div class="code-head"><span>solution_1.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre class="code-body"><code class="language-python">print("Total revenue:", sales["revenue"].sum())</code></pre>
+<div class="code-output"><span class="lbl">Output</span>Total revenue: 186000</div></div>
+          </div>
+        </details>
+
+        <details class="sol"><summary><span class="q">2</span>Average quantity per order.<span class="rev">Show solution</span></summary>
+          <div class="inner">
+            <div class="code-panel"><div class="code-head"><span>solution_2.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre class="code-body"><code class="language-python">print("Average quantity:", sales["quantity"].mean())</code></pre>
+<div class="code-output"><span class="lbl">Output</span>Average quantity: 3.8333333333333335</div></div>
+            <p style="font-size:13.5px;margin:6px 0 0"><b>Check:</b> 23 units ÷ 6 orders = 3.83. To display it neatly: <code>round(sales["quantity"].mean(), 2)</code> gives <code>3.83</code>.</p>
+          </div>
+        </details>
+
+        <details class="sol"><summary><span class="q">3</span>Highest revenue generated by one order.<span class="rev">Show solution</span></summary>
+          <div class="inner">
+            <div class="code-panel"><div class="code-head"><span>solution_3.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre class="code-body"><code class="language-python">print("Highest revenue:", sales["revenue"].max())</code></pre>
+<div class="code-output"><span class="lbl">Output</span>Highest revenue: 100000</div></div>
+            <p style="font-size:13.5px;margin:6px 0 0"><b>Bonus:</b> to find <i>which</i> order it was, combine with Part 1: <code>sales.loc[sales["revenue"].idxmax(), ["order_id", "product"]]</code> returns order <code>1001</code>, a <code>Laptop</code>.</p>
+          </div>
+        </details>
+
+        <details class="sol"><summary><span class="q">4</span>Total units sold.<span class="rev">Show solution</span></summary>
+          <div class="inner">
+            <div class="code-panel"><div class="code-head"><span>solution_4.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre class="code-body"><code class="language-python">print("Total units sold:", sales["quantity"].sum())</code></pre>
+<div class="code-output"><span class="lbl">Output</span>Total units sold: 23</div></div>
+          </div>
+        </details>
+
+        <details class="sol"><summary><span class="q">5</span>Each order's percentage contribution to total revenue.<span class="rev">Show solution</span></summary>
+          <div class="inner">
+            <div class="code-panel"><div class="code-head"><span>solution_5.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre class="code-body"><code class="language-python">total_revenue = sales["revenue"].sum()
+sales["revenue_percentage"] = (sales["revenue"] / total_revenue) * 100
+
+print(sales["revenue_percentage"].round(2))</code></pre>
+<div class="code-output"><span class="lbl">Output</span>0    53.76
+1     1.34
+2    26.88
+3     2.42
+4     2.69
+5    12.90
+Name: revenue_percentage, dtype: float64</div></div>
+            <p style="font-size:13.5px;margin:6px 0 0"><b>Check:</b> without <code>.round(2)</code> you get the full decimals shown in Section 7.5. Either way, the column sums to 100.</p>
+          </div>
+        </details>
+
+        <div class="callout exercise">
+          <div class="ico">🎯</div>
+          <div><b>Method for every question:</b> (1) turn the business question into a metric (total, average, highest, share), (2) pick the column that holds the numbers, (3) call the function with parentheses, (4) print with a label, (5) sanity-check against the table.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- QUIZ -->
+    <section class="sec" id="quiz">
+      <div class="sec-head">
+        <div class="sec-num">?</div>
+        <div><h2>Quick Check</h2><p>Four questions to test understanding</p></div>
+      </div>
+
+      <div class="card" id="quizBox">
+        <div class="quiz-q" data-ans="0"><p>1. Which function counts only the non-missing values in a column?</p>
+          <button class="opt">count()</button>
+          <button class="opt">size</button>
+          <button class="opt">sum()</button>
+          <div class="fb"></div></div>
+        <div class="quiz-q" data-ans="1"><p>2. What does <code>sales["quantity"].sum()</code> return for our data?</p>
+          <button class="opt">10</button>
+          <button class="opt">23</button>
+          <button class="opt">186000</button>
+          <div class="fb"></div></div>
+        <div class="quiz-q" data-ans="1"><p>3. Why is the mean revenue (31,000) much higher than the median (14,500)?</p>
+          <button class="opt">Because some values are missing</button>
+          <button class="opt">A few very large orders (the laptops) pull the mean up</button>
+          <button class="opt">Because median ignores the largest value</button>
+          <div class="fb"></div></div>
+        <div class="quiz-q" data-ans="1"><p>4. Which line gives each order's percentage of total revenue?</p>
+          <button class="opt">sales["revenue"] / total_revenue</button>
+          <button class="opt">(sales["revenue"] / total_revenue) * 100</button>
+          <button class="opt">sales["revenue"].sum() * 100</button>
+          <div class="fb"></div></div>
+        <p>Score: <span class="score" id="score">0 / 4</span></p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer>Data Manipulation Training — Hour 19: Data Aggregation &middot; Prepared for IT Training Cohort &middot; Confidential Training Material</footer>
+
+<div class="scrolltop" id="scrollTop">↑</div>
+
+<script>
+  hljs.highlightAll();
+
+  /* progress + scroll-spy */
+  const progressFill = document.getElementById('progressFill');
+  const scrollTopBtn = document.getElementById('scrollTop');
+  const sections = document.querySelectorAll('section.sec');
+  const navLinks = document.querySelectorAll('#toc a');
+  window.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const scrolled = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+    progressFill.style.width = scrolled + '%';
+    scrollTopBtn.classList.toggle('show', h.scrollTop > 500);
+    let current = '';
+    sections.forEach(sec => {
+      const rect = sec.getBoundingClientRect();
+      if (rect.top <= 140 && rect.bottom >= 140) current = sec.id;
+    });
+    navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + current));
+  });
+  scrollTopBtn.addEventListener('click', () => window.scrollTo({top:0, behavior:'smooth'}));
+
+  function copyCode(btn){
+    const pre = btn.closest('.code-panel').querySelector('pre.code-body');
+    navigator.clipboard.writeText(pre.innerText).then(() => {
+      const orig = btn.textContent; btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = orig, 1400);
+    });
+  }
+
+  /* ---------- Aggregation Explorer ---------- */
+  const $ = id => document.getElementById(id);
+  const ROWS = [
+    {id:1001, product:"Laptop",   quantity:2,  unit_price:50000, revenue:100000},
+    {id:1002, product:"Mouse",    quantity:5,  unit_price:500,   revenue:2500},
+    {id:1003, product:"Laptop",   quantity:1,  unit_price:50000, revenue:50000},
+    {id:1004, product:"Keyboard", quantity:3,  unit_price:1500,  revenue:4500},
+    {id:1005, product:"Mouse",    quantity:10, unit_price:500,   revenue:5000},
+    {id:1006, product:"Monitor",  quantity:2,  unit_price:12000, revenue:24000}
+  ];
+  const NUMCOLS = ["quantity","unit_price","revenue"];
+  const FNS = ["sum","mean","median","min","max","count","size"];
+  let col = "revenue", fn = "sum";
+
+  function mkChips(boxId, items, getter, setter){
+    const box = $(boxId);
+    items.forEach(it => {
+      const b = document.createElement('button');
+      b.className = 'chip'; b.textContent = it; b.dataset.v = it;
+      b.onclick = () => { setter(it); render(); };
+      box.appendChild(b);
+    });
+  }
+  mkChips('colChips', NUMCOLS, () => col, v => col = v);
+  mkChips('fnChips', FNS, () => fn, v => fn = v);
+  $('missChk').addEventListener('change', render);
+
+  function fmt(v, isFloat){
+    if (isFloat) return Number.isInteger(v) ? v.toFixed(1) : String(v);
+    return String(v);
+  }
+  function thousands(s){ return s.replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+
+  function render(){
+    [...$('colChips').children].forEach(b => b.classList.toggle('on', b.dataset.v === col));
+    [...$('fnChips').children].forEach(b => b.classList.toggle('on', b.dataset.v === fn));
+    const miss = $('missChk').checked;
+    const vals = ROWS.map((r,i) => (miss && i === 2) ? null : r[col]);
+    const valid = vals.map((v,i) => ({v,i})).filter(o => o.v !== null);
+    const n = valid.length;
+    const nums = valid.map(o => o.v);
+    const sum = nums.reduce((a,b) => a+b, 0);
+    const sorted = [...valid].sort((a,b) => a.v - b.v);
+    const med = n % 2 ? sorted[(n-1)/2].v : (sorted[n/2-1].v + sorted[n/2].v) / 2;
+    const mn = Math.min(...nums), mx = Math.max(...nums);
+
+    let result, isFloat = miss, hit = new Set();
+    if (fn === 'sum'){ result = sum; valid.forEach(o => hit.add(o.i)); }
+    else if (fn === 'mean'){ result = sum / n; isFloat = true; valid.forEach(o => hit.add(o.i)); }
+    else if (fn === 'median'){ result = med; isFloat = true;
+      if (n % 2) hit.add(sorted[(n-1)/2].i); else { hit.add(sorted[n/2-1].i); hit.add(sorted[n/2].i); } }
+    else if (fn === 'min'){ result = mn; valid.filter(o => o.v === mn).forEach(o => hit.add(o.i)); }
+    else if (fn === 'max'){ result = mx; valid.filter(o => o.v === mx).forEach(o => hit.add(o.i)); }
+    else if (fn === 'count'){ result = n; isFloat = false; valid.forEach(o => hit.add(o.i)); }
+    else { result = ROWS.length; isFloat = false; ROWS.forEach((r,i) => hit.add(i)); }
+
+    const shown = fmt(result, isFloat);
+    $('resVal').textContent = (fn==='mean'||fn==='median'||isFloat) ? shown : thousands(shown);
+    const labels = {sum:'total of the column', mean:'sum ÷ count of non-missing values', median:'middle of the sorted values',
+      min:'smallest value', max:'largest value', count:'number of non-missing values', size:'number of rows, missing or not'};
+    $('resLab').textContent = labels[fn];
+
+    let h = '<table class="df-table"><tr><th>order_id</th><th>product</th>' +
+      NUMCOLS.map(c => `<th class="${c===col?'hlcol':''}">${c}</th>`).join('') + '</tr>';
+    ROWS.forEach((r,i) => {
+      h += `<tr><td class="idxcol">${r.id}</td><td class="dimc">${r.product}</td>`;
+      NUMCOLS.forEach(c => {
+        if (c !== col){ h += `<td class="dimc">${r[c]}</td>`; return; }
+        const v = vals[i];
+        if (v === null) h += '<td class="nan">NaN</td>';
+        else h += `<td class="${hit.has(i) ? 'hit' : 'colhl'}">${v}</td>`;
+      });
+      h += '</tr>';
+    });
+    h += '</table>';
+    $('exTable').innerHTML = h;
+
+    let code = '';
+    if (miss) code += `sales.loc[2, "${col}"] = np.nan   # Order 1003 is now missing\n\n`;
+    code += fn === 'size' ? `print(sales["${col}"].size)` : `print(sales["${col}"].${fn}())`;
+    const codeEl = $('exCode');
+    codeEl.textContent = code;
+    codeEl.removeAttribute('data-highlighted');
+    hljs.highlightElement(codeEl);
+
+    let out = '<span class="lbl">Output</span>' + esc(shown);
+    if (miss && (fn === 'count' || fn === 'size')){
+      out += '\n\ncount() → ' + n + '   |   size → ' + ROWS.length;
+    }
+    if (miss && fn === 'mean'){
+      out += '\n\n(' + sum + ' ÷ ' + n + ' values, not ÷ ' + ROWS.length + ')';
+    }
+    $('exOut').innerHTML = out;
+  }
+  render();
+
+  /* ---------- Quiz ---------- */
+  let score = 0;
+  document.querySelectorAll('#quizBox .quiz-q').forEach(q => {
+    const ans = +q.dataset.ans;
+    const opts = q.querySelectorAll('.opt');
+    opts.forEach((o,i) => o.addEventListener('click', () => {
+      if (q.dataset.done) return;
+      q.dataset.done = 1;
+      const fb = q.querySelector('.fb');
+      if (i === ans){ o.classList.add('right'); score++; fb.textContent = '✅ Correct!'; }
+      else { o.classList.add('wrong'); opts[ans].classList.add('right'); fb.textContent = '❌ Not quite. The correct answer is highlighted.'; }
+      $('score').textContent = score + ' / 4';
+    }));
+  });
+</script>
+
+</body>
+</html>

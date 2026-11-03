@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grouping Data with groupby() | Data Manipulation Training — Hour 20</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+<style>
+  :root{
+    --ink:#14181F; --paper:#F4F6F5; --panel:#FFFFFF; --line:#DCE3E1;
+    --teal:#0E7C86; --teal-soft:#E4F1F1;
+    --amber:#D98E31; --amber-soft:#FBEEDD;
+    --violet:#6E5A9E; --violet-soft:#EDE9F5;
+    --coral:#C0524A; --coral-soft:#F7E7E5;
+    --green:#3E8E5A; --green-soft:#E6F1EA;
+    --slate:#5B6570;
+    --radius:14px;
+    --shadow:0 10px 30px rgba(20,24,31,0.06);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif; line-height:1.65;
+  }
+  h1,h2,h3,h4{ font-family:'Space Grotesk', sans-serif; letter-spacing:-.01em; }
+  code, pre, .mono{ font-family:'IBM Plex Mono', monospace; }
+  a{color:var(--teal);}
+
+  .topbar{
+    position:sticky; top:0; z-index:60; background:rgba(244,246,245,0.92); backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line); padding:10px 24px;
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+  }
+  .brand{ display:flex; align-items:center; gap:10px; font-weight:700; font-family:'Space Grotesk'; }
+  .brand .logo{
+    width:30px;height:30px;border-radius:8px; background:linear-gradient(135deg,var(--teal),var(--violet));
+    display:flex;align-items:center;justify-content:center; color:#fff; font-weight:800; font-size:15px;
+  }
+  .progress-track{ flex:1; max-width:380px; height:7px; border-radius:20px; background:var(--line); overflow:hidden; }
+  .progress-fill{ height:100%; width:0%; background:linear-gradient(90deg,var(--teal),var(--violet)); transition:width .15s ease; }
+
+  .shell{ display:flex; max-width:1280px; margin:0 auto; align-items:flex-start; }
+  .toc{
+    width:252px; flex:0 0 auto; position:sticky; top:57px; height:calc(100vh - 57px);
+    overflow-y:auto; padding:28px 18px 60px; border-right:1px solid var(--line);
+  }
+  .toc h5{ font-size:11px; text-transform:uppercase; letter-spacing:1.2px; color:var(--slate); margin:0 0 10px; }
+  .toc a{
+    display:block; padding:7px 10px; border-radius:8px; color:var(--slate); text-decoration:none;
+    font-size:13.5px; margin-bottom:2px;
+  }
+  .toc a:hover, .toc a.active{ background:var(--teal-soft); color:var(--teal); font-weight:600; }
+  main{ flex:1; min-width:0; padding:0 36px 100px; max-width:960px; }
+  @media (max-width:900px){ .toc{ display:none; } main{ padding:0 20px 80px; } }
+
+  .hero{ padding:56px 0 36px; border-bottom:1px solid var(--line); }
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px; font-size:12px; letter-spacing:1.2px; text-transform:uppercase;
+    color:var(--teal); font-weight:700; background:var(--teal-soft); padding:6px 14px; border-radius:30px; margin-bottom:18px;
+  }
+  .hero h1{ font-size:clamp(28px,4.4vw,42px); margin:0 0 14px; font-weight:700; }
+  .hero p.sub{ max-width:680px; color:var(--slate); font-size:16px; margin:0 0 26px; }
+  .hero-meta{ display:flex; gap:12px; flex-wrap:wrap; }
+  .meta-chip{ background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:9px 14px; font-size:12.5px; color:var(--slate); }
+  .meta-chip b{ display:block; color:var(--ink); font-size:14px; }
+
+  section.sec{ padding:48px 0; border-bottom:1px dashed var(--line); scroll-margin-top:72px; }
+  section.sec:last-child{ border-bottom:none; }
+  .sec-head{ display:flex; align-items:center; gap:14px; margin-bottom:22px; }
+  .sec-num{
+    flex:0 0 auto; width:46px;height:46px;border-radius:12px; background:var(--panel); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:16px; color:var(--teal);
+  }
+  .sec-head h2{ margin:0; font-size:23px; font-weight:700; }
+  .sec-head p{ margin:2px 0 0; color:var(--slate); font-size:13.5px; }
+
+  .card{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:22px 24px; margin-bottom:20px; box-shadow:var(--shadow); }
+  .card h3{ margin:0 0 10px; font-size:16.5px; color:var(--ink); display:flex; align-items:center; gap:8px; }
+  .card p{ margin:8px 0; }
+  .card ul, .card ol{ margin:10px 0; padding-left:22px; }
+  .card li{ margin-bottom:6px; }
+
+  .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  @media (max-width:760px){ .grid-2{ grid-template-columns:1fr; } }
+
+  .callout{ border-radius:var(--radius); padding:16px 20px; margin:16px 0; border:1px solid; display:flex; gap:14px; font-size:14px; }
+  .callout .ico{ font-size:20px; line-height:1.2; }
+  .callout.tip{ background:var(--teal-soft); border-color:#b9dcdd; }
+  .callout.note{ background:var(--amber-soft); border-color:#eccb98; }
+  .callout.exercise{ background:var(--violet-soft); border-color:#cfc3e8; }
+  .callout b{ color:var(--ink); }
+
+  .code-panel{ background:#1a1d24; border-radius:12px; overflow:hidden; margin:16px 0; border:1px solid #2a2e38; }
+  .code-head{ display:flex; align-items:center; justify-content:space-between; background:#20232c; padding:9px 16px; font-size:12px; color:#9aa1b0; }
+  .code-dots{ display:flex; gap:6px; }
+  .code-dots span{ width:10px;height:10px;border-radius:50%; }
+  .code-dots span:nth-child(1){ background:#ff5f56;} .code-dots span:nth-child(2){ background:#ffbd2e;} .code-dots span:nth-child(3){ background:#27c93f;}
+  .copy-btn{ background:#2a2e38; color:#c7ccd8; border:none; border-radius:6px; padding:4px 10px; font-size:11.5px; cursor:pointer; font-family:inherit; }
+  .copy-btn:hover{ background:#363b48; }
+  pre.code-body{ margin:0; padding:18px 20px; overflow-x:auto; font-size:13.3px; line-height:1.75; }
+  pre.code-body code{ font-family:'IBM Plex Mono', monospace; background:none; }
+  .code-output{ background:#14161b; border-top:1px dashed #2a2e38; padding:12px 20px; font-size:12.5px; color:#7ee8a0; font-family:'IBM Plex Mono', monospace; white-space:pre-wrap; }
+  .code-output .lbl{ color:#7c8494; font-size:10.5px; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:6px; }
+
+  .flow{ display:flex; flex-direction:column; align-items:center; margin:28px 0; }
+  .flow-node{
+    background:var(--panel); border:1.5px solid var(--line); border-radius:12px; padding:12px 24px; font-weight:600; font-size:14px;
+    text-align:center; min-width:200px; box-shadow:var(--shadow);
+  }
+  .flow-node.accent-teal{ border-color:var(--teal); color:var(--teal); }
+  .flow-node.accent-amber{ border-color:var(--amber); color:var(--amber); }
+  .flow-node.accent-violet{ border-color:var(--violet); color:var(--violet); }
+  .flow-node.accent-green{ border-color:var(--green); color:var(--green); }
+  .flow-node.accent-coral{ border-color:var(--coral); color:var(--coral); }
+  .flow-arrow{ color:var(--slate); font-size:20px; margin:4px 0; }
+  .flow-caption{ text-align:center; font-size:12.5px; color:var(--slate); margin-top:6px; font-style:italic; max-width:600px; }
+
+  /* series visual - labeled vertical list */
+  .series-wrap{ display:flex; justify-content:center; margin:20px 0 28px; }
+  table.series-table{ border-collapse:collapse; font-family:'IBM Plex Mono'; font-size:13.5px; }
+  table.series-table th{ background:var(--violet-soft); color:var(--violet); padding:8px 20px; font-size:11px; text-transform:uppercase; }
+  table.series-table td{ border:1px solid var(--line); padding:9px 22px; text-align:center; }
+  table.series-table td.idx-cell{ background:var(--amber-soft); color:var(--amber); font-weight:700; }
+  table.series-table td.val-cell{ background:var(--panel); color:var(--teal); font-weight:700; }
+  table.series-table tr.hl td{ background:var(--teal-soft); }
+
+  /* dataframe table visual */
+  .df-wrap{ display:flex; justify-content:center; margin:20px 0; overflow-x:auto; }
+  table.df-table{ border-collapse:collapse; font-family:'IBM Plex Mono'; font-size:12.8px; }
+  table.df-table th, table.df-table td{ border:1px solid var(--line); padding:8px 16px; text-align:center; white-space:nowrap; }
+  table.df-table th{ background:var(--green-soft); color:var(--green); font-weight:700; font-size:11px; text-transform:uppercase; }
+  table.df-table td.idxcol{ background:var(--amber-soft); color:var(--amber); font-weight:700; }
+  table.df-table th.newcol, table.df-table td.newcol{ background:var(--teal-soft); color:var(--teal); font-weight:700; }
+  table.df-table th.rmcol, table.df-table td.rmcol{ background:var(--coral-soft); color:var(--coral); text-decoration:line-through; }
+  table.df-table td.updcell{ background:var(--violet-soft); color:var(--violet); font-weight:700; }
+  table.df-table th.renamecol{ background:var(--violet-soft); color:var(--violet); }
+
+  .divider-label{ font-size:11px; text-transform:uppercase; letter-spacing:1.2px; color:var(--slate); margin:28px 0 10px; font-weight:700; }
+
+  footer{ text-align:center; padding:36px 20px; color:var(--slate); font-size:12.5px; border-top:1px solid var(--line); }
+
+  .scrolltop{
+    position:fixed; bottom:22px; right:22px; z-index:60; width:44px;height:44px;border-radius:50%;
+    background:linear-gradient(135deg,var(--teal),var(--violet)); display:flex; align-items:center; justify-content:center;
+    color:#fff; font-weight:900; cursor:pointer; box-shadow:var(--shadow); opacity:0; pointer-events:none; transition:.2s;
+  }
+  .scrolltop.show{ opacity:1; pointer-events:auto; }
+  .goal-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px; margin:16px 0; }
+  .goal{ background:var(--panel); border:1px solid var(--line); border-top:4px solid var(--teal); border-radius:12px; padding:14px 14px 12px; font-size:13.5px; }
+  .goal:nth-child(2){ border-top-color:var(--amber);} .goal:nth-child(3){ border-top-color:var(--violet);}
+  .goal:nth-child(4){ border-top-color:var(--green);} .goal:nth-child(5){ border-top-color:var(--coral);}
+  .goal .q{ font-weight:600; display:block; margin-bottom:6px; }
+  .goal .fn{ font-family:'IBM Plex Mono'; font-size:12px; color:var(--teal); background:var(--teal-soft); padding:2px 7px; border-radius:6px; }
+  .funnel{ display:flex; align-items:center; justify-content:center; gap:14px; flex-wrap:wrap; margin:26px 0 6px; }
+  .funnel .box{ background:var(--panel); border:1.5px solid var(--line); border-radius:12px; padding:12px 18px; text-align:center; font-size:13px; box-shadow:var(--shadow); }
+  .funnel .box b{ display:block; font-size:15px; }
+  .funnel .box.many{ border-color:var(--amber); color:var(--amber); }
+  .funnel .box.few{ border-color:var(--teal); color:var(--teal); }
+  .funnel .arr{ font-size:22px; color:var(--slate); }
+  .funnel .fn-mid{ background:var(--violet-soft); color:var(--violet); border:1.5px dashed var(--violet); border-radius:12px; padding:10px 16px; font-family:'IBM Plex Mono'; font-size:12.5px; font-weight:600; }
+  .method-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:14px; margin:16px 0; }
+  .method{ background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px 16px; font-size:13.5px; }
+  .method code.m{ display:inline-block; background:var(--violet-soft); color:var(--violet); padding:2px 9px; border-radius:6px; font-size:13px; font-weight:600; margin-bottom:6px; }
+  .method .res{ font-family:'IBM Plex Mono'; font-size:12.5px; color:var(--teal); font-weight:600; }
+  .method p{ margin:4px 0; }
+  .pctbars{ max-width:640px; margin:22px auto; }
+  .pbar{ display:grid; grid-template-columns:96px 1fr 70px; gap:10px; align-items:center; margin:8px 0; font-size:12.5px; font-family:'IBM Plex Mono'; }
+  .pbar .track{ background:var(--line); border-radius:6px; height:20px; overflow:hidden; }
+  .pbar .fill{ height:100%; background:linear-gradient(90deg,var(--teal),var(--violet)); border-radius:6px; }
+  .pbar .val{ text-align:right; font-weight:700; color:var(--teal); }
+  table.df-table td.hlcell{ background:var(--teal-soft); color:var(--teal); font-weight:700; }
+  table.df-table tr.total td{ background:var(--violet-soft); color:var(--violet); font-weight:700; }
+
+  .sac{ display:grid; grid-template-columns:1fr auto 1fr auto 1fr; gap:10px; align-items:stretch; margin:22px 0 6px; }
+  @media (max-width:760px){ .sac{ grid-template-columns:1fr; } .sac .arr{ transform:rotate(90deg); text-align:center; } }
+  .sac .stage{ background:var(--panel); border:1.5px solid var(--line); border-radius:12px; padding:12px; box-shadow:var(--shadow); }
+  .sac .stage h4{ margin:0 0 8px; font-size:13px; text-transform:uppercase; letter-spacing:1px; color:var(--slate); }
+  .sac .arr{ align-self:center; font-size:24px; color:var(--slate); }
+  .chip{ display:inline-block; font-family:'IBM Plex Mono'; font-size:11.5px; padding:3px 9px; border-radius:6px; margin:2px 3px 2px 0; font-weight:600; }
+  .chip.d{ background:var(--teal-soft); color:var(--teal); } .chip.m{ background:var(--amber-soft); color:var(--amber); } .chip.p{ background:var(--violet-soft); color:var(--violet); }
+  .grp{ border-left:4px solid; border-radius:6px; padding:6px 10px; margin:6px 0; font-size:12.5px; background:#fafbfb; }
+  .grp.d{ border-color:var(--teal);} .grp.m{ border-color:var(--amber);} .grp.p{ border-color:var(--violet);}
+  .grp b{ display:block; font-size:12px; }
+  .hbars{ max-width:640px; margin:20px auto; }
+  .hbar{ display:grid; grid-template-columns:80px 1fr 90px; gap:10px; align-items:center; margin:8px 0; font-family:'IBM Plex Mono'; font-size:12.5px; }
+  .hbar .track{ background:var(--line); border-radius:6px; height:22px; overflow:hidden; }
+  .hbar .fill{ height:100%; border-radius:6px; }
+  .hbar .val{ text-align:right; font-weight:700; }
+  table.df-table tr.cd td.rowtag, table.df-table td.cd{ background:var(--teal-soft); } table.df-table td.cm{ background:var(--amber-soft); } table.df-table td.cp{ background:var(--violet-soft); }
+  .vs{ display:grid; grid-template-columns:1fr 1fr; gap:18px; margin:16px 0; } @media (max-width:760px){ .vs{ grid-template-columns:1fr; } }
+  .vs .side{ background:var(--panel); border:1.5px solid var(--line); border-radius:12px; padding:14px 16px; font-size:13.5px; }
+  .vs .side.a{ border-color:var(--violet);} .vs .side.b{ border-color:var(--teal);}
+  .vs .side h4{ margin:0 0 6px; } .vs .side code{ font-size:12.5px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand"><div class="logo">N</div> Data Manipulation Training</div>
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+</div>
+
+<div class="shell">
+  <nav class="toc" id="toc">
+    <h5>On this page</h5>
+    <a href="#s81">8.1 What is Grouping?</a>
+    <a href="#s82">8.2 Sales Dataset</a>
+    <a href="#s83">8.3 Group by City</a>
+    <a href="#s84">8.4 Group by Product</a>
+    <a href="#s85">8.5 Multiple Columns</a>
+    <a href="#s86">8.6 Group Percentages</a>
+    <a href="#exercise">Student Exercise</a>
+  </nav>
+
+  <main>
+    <div class="hero">
+      <span class="eyebrow">🐼 IT Training &middot; Data Manipulation Track &middot; Hour 20</span>
+      <h1>Grouping Data with groupby()</h1>
+      <p class="sub">Last hour you summarized the whole table into single numbers. Now you will summarize <i>per category</i> — revenue by city, quantity by product — using Pandas' split–apply–combine approach.</p>
+      <div class="hero-meta">
+        <div class="meta-chip"><b>60 minutes</b>Session length</div>
+        <div class="meta-chip"><b>Beginner</b>Level</div>
+        <div class="meta-chip"><b>Department-wise &amp; Product-wise Summaries</b>Focus</div>
+        <div class="meta-chip"><b>5</b>Code walkthroughs</div>
+      </div>
+    </div>
+
+    <!-- 8.1 -->
+    <section class="sec" id="s81">
+      <div class="sec-head"><div class="sec-num">8.1</div><div><h2>What is Grouping?</h2><p>Divide records into categories, then summarize each category</p></div></div>
+      <div class="card">
+        <h3>📘 Definition</h3>
+        <p><b>Grouping</b> means dividing records into categories and calculating a summary for each category. A business might compare <b>sales by city</b> or <b>revenue by product</b>.</p>
+        <p>Pandas does this with the <b>split–apply–combine</b> approach:</p>
+        <div class="sac">
+          <div class="stage"><h4>1 · Split</h4>
+            <div class="grp d"><b>Delhi</b>2 rows</div><div class="grp m"><b>Mumbai</b>2 rows</div><div class="grp p"><b>Pune</b>2 rows</div></div>
+          <div class="arr">→</div>
+          <div class="stage"><h4>2 · Apply</h4>
+            <div class="grp d"><b>Delhi</b>sum(100000, 2500)</div><div class="grp m"><b>Mumbai</b>sum(5000, 150000)</div><div class="grp p"><b>Pune</b>sum(50000, 4000)</div></div>
+          <div class="arr">→</div>
+          <div class="stage"><h4>3 · Combine</h4>
+            <span class="chip d">Delhi 102500</span><br><span class="chip m">Mumbai 155000</span><br><span class="chip p">Pune 54000</span></div>
+        </div>
+        <p class="flow-caption">Split the rows by city → apply <code>sum()</code> inside each group → combine the answers into one result.</p>
+        <div class="callout tip"><div class="ico">💡</div><div><b>Last hour vs this hour:</b> <code>sales["revenue"].sum()</code> gives <i>one</i> number for the whole table. <code>sales.groupby("city")["revenue"].sum()</code> gives <i>one number per city</i>.</div></div>
+      </div>
+    </section>
+
+    <!-- 8.2 -->
+    <section class="sec" id="s82">
+      <div class="sec-head"><div class="sec-num">8.2</div><div><h2>Create a Sales Dataset</h2><p>Six orders across three cities and two products</p></div></div>
+      <div class="card">
+        <h3>🛒 Building the data</h3>
+        <div class="code-panel">
+          <div class="code-head"><span>groupby_dataset.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python">import pandas as pd
+
+sales = pd.DataFrame({
+    &quot;city&quot;: [&quot;Delhi&quot;, &quot;Mumbai&quot;, &quot;Delhi&quot;, &quot;Pune&quot;, &quot;Mumbai&quot;, &quot;Pune&quot;],
+    &quot;product&quot;: [&quot;Laptop&quot;, &quot;Mouse&quot;, &quot;Mouse&quot;, &quot;Laptop&quot;, &quot;Laptop&quot;, &quot;Mouse&quot;],
+    &quot;quantity&quot;: [2, 10, 5, 1, 3, 8],
+    &quot;revenue&quot;: [100000, 5000, 2500, 50000, 150000, 4000]
+})
+
+print(sales)</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>     city product  quantity  revenue
+0   Delhi  Laptop         2   100000
+1  Mumbai   Mouse        10     5000
+2   Delhi   Mouse         5     2500
+3    Pune  Laptop         1    50000
+4  Mumbai  Laptop         3   150000
+5    Pune   Mouse         8     4000</div>
+        </div>
+        <div class="df-wrap"><table class="df-table"><tr><th></th><th>city</th><th>product</th><th>quantity</th><th>revenue</th></tr><tr><td class="idxcol">0</td><td class="cd">Delhi</td><td class="">Laptop</td><td class="">2</td><td class="">100000</td></tr><tr><td class="idxcol">1</td><td class="cm">Mumbai</td><td class="">Mouse</td><td class="">10</td><td class="">5000</td></tr><tr><td class="idxcol">2</td><td class="cd">Delhi</td><td class="">Mouse</td><td class="">5</td><td class="">2500</td></tr><tr><td class="idxcol">3</td><td class="cp">Pune</td><td class="">Laptop</td><td class="">1</td><td class="">50000</td></tr><tr><td class="idxcol">4</td><td class="cm">Mumbai</td><td class="">Laptop</td><td class="">3</td><td class="">150000</td></tr><tr><td class="idxcol">5</td><td class="cp">Pune</td><td class="">Mouse</td><td class="">8</td><td class="">4000</td></tr></table></div>
+        <p class="flow-caption">City cells are colour-coded (teal = Delhi, amber = Mumbai, violet = Pune) so you can follow each group through the hour.</p>
+        <div class="divider-label">Implementation steps</div>
+        <ol><li>Import Pandas as <code>pd</code>.</li><li>Build the DataFrame from a dictionary — one list per column, all six items long.</li><li>Notice that each city and each product <b>repeats</b> — that repetition is exactly what makes grouping useful.</li><li>Print it to confirm the data before grouping.</li></ol>
+      </div>
+    </section>
+
+    <!-- 8.3 -->
+    <section class="sec" id="s83">
+      <div class="sec-head"><div class="sec-num">8.3</div><div><h2>Group by City</h2><p>Total revenue for each city</p></div></div>
+      <div class="card">
+        <h3>🏙️ <code>groupby("city")["revenue"].sum()</code></h3>
+        <div class="code-panel">
+          <div class="code-head"><span>group_by_city.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python">city_revenue = sales.groupby(&quot;city&quot;)[&quot;revenue&quot;].sum()
+
+print(city_revenue)</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>city
+Delhi     102500
+Mumbai    155000
+Pune       54000</div>
+        </div>
+        <div class="hbars"><div class="hbar"><span>Delhi</span><div class="track"><div class="fill" style="width:66.1%;background:var(--teal)"></div></div><span class="val">102,500</span></div><div class="hbar"><span>Mumbai</span><div class="track"><div class="fill" style="width:100.0%;background:var(--amber)"></div></div><span class="val">155,000</span></div><div class="hbar"><span>Pune</span><div class="track"><div class="fill" style="width:34.8%;background:var(--violet)"></div></div><span class="val">54,000</span></div></div>
+        <p class="flow-caption">Mumbai leads with 155000. Pandas sorts the group keys alphabetically by default, which is why the output reads Delhi, Mumbai, Pune.</p>
+        <div class="divider-label">Reading the expression left to right</div>
+        <div class="flow">
+          <div class="flow-node accent-teal">sales</div><div class="flow-arrow">↓</div>
+          <div class="flow-node accent-amber">.groupby("city") — split rows by city</div><div class="flow-arrow">↓</div>
+          <div class="flow-node accent-violet">["revenue"] — choose the column to summarize</div><div class="flow-arrow">↓</div>
+          <div class="flow-node accent-green">.sum() — apply and combine</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8.4 -->
+    <section class="sec" id="s84">
+      <div class="sec-head"><div class="sec-num">8.4</div><div><h2>Group by Product</h2><p>Several labeled statistics in one call</p></div></div>
+      <div class="card">
+        <h3>📦 Named aggregation</h3>
+        <p>Pass <code>name=("column", "function")</code> pairs to <code>agg()</code>. The <b>name</b> becomes the output column heading.</p>
+        <div class="code-panel">
+          <div class="code-head"><span>group_by_product.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python">product_summary = sales.groupby(&quot;product&quot;).agg(
+    total_quantity=(&quot;quantity&quot;, &quot;sum&quot;),
+    total_revenue=(&quot;revenue&quot;, &quot;sum&quot;),
+    average_revenue=(&quot;revenue&quot;, &quot;mean&quot;),
+    number_of_records=(&quot;revenue&quot;, &quot;size&quot;)
+)
+
+print(product_summary)</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>         total_quantity  total_revenue  average_revenue  number_of_records
+product                                                                   
+Laptop                6         300000    100000.000000                  3
+Mouse                23          11500      3833.333333                  3</div>
+        </div>
+        <div class="df-wrap"><table class="df-table">
+<tr><th>product</th><th>total_quantity</th><th>total_revenue</th><th>average_revenue</th><th>number_of_records</th></tr>
+<tr><td class="idxcol">Laptop</td><td>6</td><td>300000</td><td>100000.00</td><td>3</td></tr>
+<tr><td class="idxcol">Mouse</td><td>23</td><td>11500</td><td>3833.33</td><td>3</td></tr></table></div>
+        <div class="grid-2">
+          <div class="method" style="background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:13.5px"><b>Anatomy of one pair</b><br><code>total_revenue=("revenue", "sum")</code><br>new column name → source column → function</div>
+          <div class="method" style="background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:13.5px"><b>Why <code>size</code>?</b><br><code>number_of_records=("revenue", "size")</code> counts every row in the group, including missing values.</div>
+        </div>
+        <div class="callout note"><div class="ico">⭐</div><div><b>Professional pattern:</b> use named aggregations to produce clearly labeled output columns. A reader sees <code>total_revenue</code>, not an ambiguous <code>sum</code>.</div></div>
+      </div>
+    </section>
+
+    <!-- 8.5 -->
+    <section class="sec" id="s85">
+      <div class="sec-head"><div class="sec-num">8.5</div><div><h2>Group by Multiple Columns</h2><p>One group per city–product combination</p></div></div>
+      <div class="card">
+        <h3>🧱 Passing a list of columns</h3>
+        <div class="code-panel">
+          <div class="code-head"><span>group_by_multiple.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python">city_product_summary = sales.groupby(
+    [&quot;city&quot;, &quot;product&quot;],
+    as_index=False
+).agg(
+    total_quantity=(&quot;quantity&quot;, &quot;sum&quot;),
+    total_revenue=(&quot;revenue&quot;, &quot;sum&quot;)
+)
+
+print(city_product_summary)</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>     city product  total_quantity  total_revenue
+0   Delhi  Laptop               2         100000
+1   Delhi   Mouse               5           2500
+2  Mumbai  Laptop               3         150000
+3  Mumbai   Mouse              10           5000
+4    Pune  Laptop               1          50000
+5    Pune   Mouse               8           4000</div>
+        </div>
+        <div class="df-wrap"><table class="df-table"><tr><th></th><th>city</th><th>product</th><th>total_quantity</th><th>total_revenue</th></tr><tr><td class="idxcol">0</td><td class="cd">Delhi</td><td class="">Laptop</td><td class="">2</td><td class="">100000</td></tr><tr><td class="idxcol">1</td><td class="cd">Delhi</td><td class="">Mouse</td><td class="">5</td><td class="">2500</td></tr><tr><td class="idxcol">2</td><td class="cm">Mumbai</td><td class="">Laptop</td><td class="">3</td><td class="">150000</td></tr><tr><td class="idxcol">3</td><td class="cm">Mumbai</td><td class="">Mouse</td><td class="">10</td><td class="">5000</td></tr><tr><td class="idxcol">4</td><td class="cp">Pune</td><td class="">Laptop</td><td class="">1</td><td class="">50000</td></tr><tr><td class="idxcol">5</td><td class="cp">Pune</td><td class="">Mouse</td><td class="">8</td><td class="">4000</td></tr></table></div>
+        <p class="flow-caption">3 cities × 2 products = 6 groups, each with exactly one row in this small dataset.</p>
+        <div class="callout tip"><div class="ico">💡</div><div><b>What does <code>as_index=False</code> do?</b> Without it, <code>city</code> and <code>product</code> become the row index. With it, they stay as ordinary columns, so the result is a flat table that is easy to print, export or merge.</div></div>
+      </div>
+    </section>
+
+    <!-- 8.6 -->
+    <section class="sec" id="s86">
+      <div class="sec-head"><div class="sec-num">8.6</div><div><h2>Calculate Group Percentages</h2><p>Each order's share of its own city's revenue</p></div></div>
+      <div class="card">
+        <h3>📊 <code>transform("sum")</code></h3>
+        <div class="code-panel">
+          <div class="code-head"><span>group_percentages.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python">sales[&quot;city_total_revenue&quot;] = (
+    sales.groupby(&quot;city&quot;)[&quot;revenue&quot;].transform(&quot;sum&quot;)
+)
+
+sales[&quot;percentage_of_city_revenue&quot;] = (
+    sales[&quot;revenue&quot;] / sales[&quot;city_total_revenue&quot;] * 100
+)
+
+print(sales)</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>     city product  quantity  revenue  city_total_revenue  percentage_of_city_revenue
+0   Delhi  Laptop         2   100000              102500                   97.560976
+1  Mumbai   Mouse        10     5000              155000                    3.225806
+2   Delhi   Mouse         5     2500              102500                    2.439024
+3    Pune  Laptop         1    50000               54000                   92.592593
+4  Mumbai  Laptop         3   150000              155000                   96.774194
+5    Pune   Mouse         8     4000               54000                    7.407407</div>
+        </div>
+        <div class="df-wrap"><table class="df-table"><tr><th></th><th>city</th><th>product</th><th>quantity</th><th>revenue</th><th class=newcol>city_total_revenue</th><th class=newcol>percentage_of_city_revenue</th></tr><tr><td class="idxcol">0</td><td class="cd">Delhi</td><td class="">Laptop</td><td class="">2</td><td class="">100000</td><td class="newcol">102500</td><td class="newcol">97.56%</td></tr><tr><td class="idxcol">1</td><td class="cm">Mumbai</td><td class="">Mouse</td><td class="">10</td><td class="">5000</td><td class="newcol">155000</td><td class="newcol">3.23%</td></tr><tr><td class="idxcol">2</td><td class="cd">Delhi</td><td class="">Mouse</td><td class="">5</td><td class="">2500</td><td class="newcol">102500</td><td class="newcol">2.44%</td></tr><tr><td class="idxcol">3</td><td class="cp">Pune</td><td class="">Laptop</td><td class="">1</td><td class="">50000</td><td class="newcol">54000</td><td class="newcol">92.59%</td></tr><tr><td class="idxcol">4</td><td class="cm">Mumbai</td><td class="">Laptop</td><td class="">3</td><td class="">150000</td><td class="newcol">155000</td><td class="newcol">96.77%</td></tr><tr><td class="idxcol">5</td><td class="cp">Pune</td><td class="">Mouse</td><td class="">8</td><td class="">4000</td><td class="newcol">54000</td><td class="newcol">7.41%</td></tr></table></div>
+        <p class="flow-caption">The teal columns are new. <code>city_total_revenue</code> repeats on every row of a city; the percentages within each city add up to 100.</p>
+
+        <div class="divider-label">transform vs. a plain groupby</div>
+        <div class="vs">
+          <div class="side a"><h4>groupby().sum()</h4><p><b>Summarizes.</b> 6 rows in → 3 rows out, one per city.</p><code>Delhi 102500<br>Mumbai 155000<br>Pune 54000</code></div>
+          <div class="side b"><h4>groupby().transform("sum")</h4><p><b>Aligned with the original rows.</b> 6 rows in → 6 values out, so it can be stored as a new column.</p><code>102500, 155000, 102500,<br>54000, 155000, 54000</code></div>
+        </div>
+
+        <div class="divider-label">Implementation steps</div>
+        <ol><li>Compute each city's total with <code>groupby("city")["revenue"].transform("sum")</code> and store it as <code>city_total_revenue</code>.</li><li>Divide each row's <code>revenue</code> by its own <code>city_total_revenue</code>.</li><li>Multiply by 100 to get a percentage.</li><li>Check: percentages within each city should sum to 100 (e.g. Delhi 97.56 + 2.44).</li></ol>
+        <div class="callout note"><div class="ico">🧠</div><div><b>Key idea to explain:</b> <code>transform("sum")</code> returns a result aligned with the original rows, whereas <code>groupby().sum()</code> typically produces a summarized result.</div></div>
+      </div>
+    </section>
+
+    <!-- Exercise -->
+    <section class="sec" id="exercise">
+      <div class="sec-head"><div class="sec-num">✍️</div><div><h2>Student Exercise</h2><p>Generate a sales report from the dataset in 8.2</p></div></div>
+      <div class="card">
+        <h3>🎯 Your report must show</h3>
+        <ol>
+          <li><b>Total revenue per city.</b></li>
+          <li><b>Total quantity sold per product.</b></li>
+          <li><b>Revenue by city and product.</b></li>
+          <li><b>Average revenue per city.</b></li>
+        </ol>
+        <div class="code-panel">
+          <div class="code-head"><span>hint</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+          <pre class="code-body"><code class="language-python">sales.groupby("...")["..."].sum()
+sales.groupby("...")["..."].mean()</code></pre>
+        </div>
+      </div>
+      <div class="callout exercise"><div class="ico">✅</div><div><b>Check your answers:</b> revenue per city — Delhi <code>102500</code>, Mumbai <code>155000</code>, Pune <code>54000</code> · quantity per product — Laptop <code>6</code>, Mouse <code>23</code> · average revenue per city — Delhi <code>51250.0</code>, Mumbai <code>77500.0</code>, Pune <code>27000.0</code> · for city × product, reuse the pattern from 8.5.</div></div>
+    </section>
+
+  </main>
+</div>
+
+<footer>Data Manipulation Training — Hour 20: Grouping Data with groupby() &middot; Prepared for IT Training Cohort &middot; Confidential Training Material</footer>
+
+<div class="scrolltop" id="scrollTop">↑</div>
+
+<script>
+  hljs.highlightAll();
+
+  const progressFill = document.getElementById('progressFill');
+  const scrollTopBtn = document.getElementById('scrollTop');
+  const sections = document.querySelectorAll('section.sec');
+  const navLinks = document.querySelectorAll('#toc a');
+
+  window.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const scrolled = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+    progressFill.style.width = scrolled + '%';
+    scrollTopBtn.classList.toggle('show', h.scrollTop > 500);
+
+    let current = '';
+    sections.forEach(sec => {
+      const rect = sec.getBoundingClientRect();
+      if (rect.top <= 140 && rect.bottom >= 140) current = sec.id;
+    });
+    navLinks.forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+    });
+  });
+
+  scrollTopBtn.addEventListener('click', () => window.scrollTo({top:0, behavior:'smooth'}));
+
+  function copyCode(btn){
+    const pre = btn.closest('.code-panel').querySelector('pre.code-body');
+    navigator.clipboard.writeText(pre.innerText).then(() => {
+      const orig = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = orig, 1400);
+    });
+  }
+</script>
+
+</body>
+</html>

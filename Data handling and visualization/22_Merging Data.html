@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Merging Data | Data Manipulation Training — Hour 22</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+<style>
+  :root{
+    --ink:#14181F; --paper:#F4F6F5; --panel:#FFFFFF; --line:#DCE3E1;
+    --teal:#0E7C86; --teal-soft:#E4F1F1;
+    --amber:#D98E31; --amber-soft:#FBEEDD;
+    --violet:#6E5A9E; --violet-soft:#EDE9F5;
+    --coral:#C0524A; --coral-soft:#F7E7E5;
+    --green:#3E8E5A; --green-soft:#E6F1EA;
+    --slate:#5B6570;
+    --radius:14px;
+    --shadow:0 10px 30px rgba(20,24,31,0.06);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif; line-height:1.65;
+  }
+  h1,h2,h3,h4{ font-family:'Space Grotesk', sans-serif; letter-spacing:-.01em; }
+  code, pre, .mono{ font-family:'IBM Plex Mono', monospace; }
+  a{color:var(--teal);}
+
+  .topbar{
+    position:sticky; top:0; z-index:60; background:rgba(244,246,245,0.92); backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line); padding:10px 24px;
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+  }
+  .brand{ display:flex; align-items:center; gap:10px; font-weight:700; font-family:'Space Grotesk'; }
+  .brand .logo{
+    width:30px;height:30px;border-radius:8px; background:linear-gradient(135deg,var(--teal),var(--violet));
+    display:flex;align-items:center;justify-content:center; color:#fff; font-weight:800; font-size:15px;
+  }
+  .progress-track{ flex:1; max-width:380px; height:7px; border-radius:20px; background:var(--line); overflow:hidden; }
+  .progress-fill{ height:100%; width:0%; background:linear-gradient(90deg,var(--teal),var(--violet)); transition:width .15s ease; }
+
+  .shell{ display:flex; max-width:1280px; margin:0 auto; align-items:flex-start; }
+  .toc{
+    width:252px; flex:0 0 auto; position:sticky; top:57px; height:calc(100vh - 57px);
+    overflow-y:auto; padding:28px 18px 60px; border-right:1px solid var(--line);
+  }
+  .toc h5{ font-size:11px; text-transform:uppercase; letter-spacing:1.2px; color:var(--slate); margin:0 0 10px; }
+  .toc a{
+    display:block; padding:7px 10px; border-radius:8px; color:var(--slate); text-decoration:none;
+    font-size:13.5px; margin-bottom:2px;
+  }
+  .toc a:hover, .toc a.active{ background:var(--teal-soft); color:var(--teal); font-weight:600; }
+  main{ flex:1; min-width:0; padding:0 36px 100px; max-width:960px; }
+  @media (max-width:900px){ .toc{ display:none; } main{ padding:0 20px 80px; } }
+
+  .hero{ padding:56px 0 36px; border-bottom:1px solid var(--line); }
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px; font-size:12px; letter-spacing:1.2px; text-transform:uppercase;
+    color:var(--teal); font-weight:700; background:var(--teal-soft); padding:6px 14px; border-radius:30px; margin-bottom:18px;
+  }
+  .hero h1{ font-size:clamp(28px,4.4vw,42px); margin:0 0 14px; font-weight:700; }
+  .hero p.sub{ max-width:680px; color:var(--slate); font-size:16px; margin:0 0 26px; }
+  .hero-meta{ display:flex; gap:12px; flex-wrap:wrap; }
+  .meta-chip{ background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:9px 14px; font-size:12.5px; color:var(--slate); }
+  .meta-chip b{ display:block; color:var(--ink); font-size:14px; }
+
+  section.sec{ padding:48px 0; border-bottom:1px dashed var(--line); scroll-margin-top:72px; }
+  section.sec:last-child{ border-bottom:none; }
+  .sec-head{ display:flex; align-items:center; gap:14px; margin-bottom:22px; }
+  .sec-num{
+    flex:0 0 auto; width:46px;height:46px;border-radius:12px; background:var(--panel); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:16px; color:var(--teal);
+  }
+  .sec-head h2{ margin:0; font-size:23px; font-weight:700; }
+  .sec-head p{ margin:2px 0 0; color:var(--slate); font-size:13.5px; }
+
+  .card{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:22px 24px; margin-bottom:20px; box-shadow:var(--shadow); }
+  .card h3{ margin:0 0 10px; font-size:16.5px; color:var(--ink); display:flex; align-items:center; gap:8px; }
+  .card p{ margin:8px 0; }
+  .card ul, .card ol{ margin:10px 0; padding-left:22px; }
+  .card li{ margin-bottom:6px; }
+
+  .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  @media (max-width:760px){ .grid-2{ grid-template-columns:1fr; } }
+
+  .callout{ border-radius:var(--radius); padding:16px 20px; margin:16px 0; border:1px solid; display:flex; gap:14px; font-size:14px; }
+  .callout .ico{ font-size:20px; line-height:1.2; }
+  .callout.tip{ background:var(--teal-soft); border-color:#b9dcdd; }
+  .callout.note{ background:var(--amber-soft); border-color:#eccb98; }
+  .callout.exercise{ background:var(--violet-soft); border-color:#cfc3e8; }
+  .callout b{ color:var(--ink); }
+
+  .code-panel{ background:#1a1d24; border-radius:12px; overflow:hidden; margin:16px 0; border:1px solid #2a2e38; }
+  .code-head{ display:flex; align-items:center; justify-content:space-between; background:#20232c; padding:9px 16px; font-size:12px; color:#9aa1b0; }
+  .code-dots{ display:flex; gap:6px; }
+  .code-dots span{ width:10px;height:10px;border-radius:50%; }
+  .code-dots span:nth-child(1){ background:#ff5f56;} .code-dots span:nth-child(2){ background:#ffbd2e;} .code-dots span:nth-child(3){ background:#27c93f;}
+  .copy-btn{ background:#2a2e38; color:#c7ccd8; border:none; border-radius:6px; padding:4px 10px; font-size:11.5px; cursor:pointer; font-family:inherit; }
+  .copy-btn:hover{ background:#363b48; }
+  pre.code-body{ margin:0; padding:18px 20px; overflow-x:auto; font-size:13.3px; line-height:1.75; }
+  pre.code-body code{ font-family:'IBM Plex Mono', monospace; background:none; }
+  .code-output{ background:#14161b; border-top:1px dashed #2a2e38; padding:12px 20px; font-size:12.5px; color:#7ee8a0; font-family:'IBM Plex Mono', monospace; white-space:pre-wrap; }
+  .code-output .lbl{ color:#7c8494; font-size:10.5px; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:6px; }
+
+  .flow{ display:flex; flex-direction:column; align-items:center; margin:28px 0; }
+  .flow-node{
+    background:var(--panel); border:1.5px solid var(--line); border-radius:12px; padding:12px 24px; font-weight:600; font-size:14px;
+    text-align:center; min-width:200px; box-shadow:var(--shadow);
+  }
+  .flow-node.accent-teal{ border-color:var(--teal); color:var(--teal); }
+  .flow-node.accent-amber{ border-color:var(--amber); color:var(--amber); }
+  .flow-node.accent-violet{ border-color:var(--violet); color:var(--violet); }
+  .flow-node.accent-green{ border-color:var(--green); color:var(--green); }
+  .flow-node.accent-coral{ border-color:var(--coral); color:var(--coral); }
+  .flow-arrow{ color:var(--slate); font-size:20px; margin:4px 0; }
+  .flow-caption{ text-align:center; font-size:12.5px; color:var(--slate); margin-top:6px; font-style:italic; max-width:600px; }
+
+  /* series visual - labeled vertical list */
+  .series-wrap{ display:flex; justify-content:center; margin:20px 0 28px; }
+  table.series-table{ border-collapse:collapse; font-family:'IBM Plex Mono'; font-size:13.5px; }
+  table.series-table th{ background:var(--violet-soft); color:var(--violet); padding:8px 20px; font-size:11px; text-transform:uppercase; }
+  table.series-table td{ border:1px solid var(--line); padding:9px 22px; text-align:center; }
+  table.series-table td.idx-cell{ background:var(--amber-soft); color:var(--amber); font-weight:700; }
+  table.series-table td.val-cell{ background:var(--panel); color:var(--teal); font-weight:700; }
+  table.series-table tr.hl td{ background:var(--teal-soft); }
+
+  /* dataframe table visual */
+  .df-wrap{ display:flex; justify-content:center; margin:20px 0; overflow-x:auto; }
+  table.df-table{ border-collapse:collapse; font-family:'IBM Plex Mono'; font-size:12.8px; }
+  table.df-table th, table.df-table td{ border:1px solid var(--line); padding:8px 16px; text-align:center; white-space:nowrap; }
+  table.df-table th{ background:var(--green-soft); color:var(--green); font-weight:700; font-size:11px; text-transform:uppercase; }
+  table.df-table td.idxcol{ background:var(--amber-soft); color:var(--amber); font-weight:700; }
+  table.df-table th.newcol, table.df-table td.newcol{ background:var(--teal-soft); color:var(--teal); font-weight:700; }
+  table.df-table th.rmcol, table.df-table td.rmcol{ background:var(--coral-soft); color:var(--coral); text-decoration:line-through; }
+  table.df-table td.updcell{ background:var(--violet-soft); color:var(--violet); font-weight:700; }
+  table.df-table th.renamecol{ background:var(--violet-soft); color:var(--violet); }
+
+  .divider-label{ font-size:11px; text-transform:uppercase; letter-spacing:1.2px; color:var(--slate); margin:28px 0 10px; font-weight:700; }
+
+  footer{ text-align:center; padding:36px 20px; color:var(--slate); font-size:12.5px; border-top:1px solid var(--line); }
+
+  .scrolltop{
+    position:fixed; bottom:22px; right:22px; z-index:60; width:44px;height:44px;border-radius:50%;
+    background:linear-gradient(135deg,var(--teal),var(--violet)); display:flex; align-items:center; justify-content:center;
+    color:#fff; font-weight:900; cursor:pointer; box-shadow:var(--shadow); opacity:0; pointer-events:none; transition:.2s;
+  }
+  .scrolltop.show{ opacity:1; pointer-events:auto; }
+  .goal-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px; margin:16px 0; }
+  .goal{ background:var(--panel); border:1px solid var(--line); border-top:4px solid var(--teal); border-radius:12px; padding:14px 14px 12px; font-size:13.5px; }
+  .goal:nth-child(2){ border-top-color:var(--amber);} .goal:nth-child(3){ border-top-color:var(--violet);}
+  .goal:nth-child(4){ border-top-color:var(--green);} .goal:nth-child(5){ border-top-color:var(--coral);}
+  .goal .q{ font-weight:600; display:block; margin-bottom:6px; }
+  .goal .fn{ font-family:'IBM Plex Mono'; font-size:12px; color:var(--teal); background:var(--teal-soft); padding:2px 7px; border-radius:6px; }
+  .funnel{ display:flex; align-items:center; justify-content:center; gap:14px; flex-wrap:wrap; margin:26px 0 6px; }
+  .funnel .box{ background:var(--panel); border:1.5px solid var(--line); border-radius:12px; padding:12px 18px; text-align:center; font-size:13px; box-shadow:var(--shadow); }
+  .funnel .box b{ display:block; font-size:15px; }
+  .funnel .box.many{ border-color:var(--amber); color:var(--amber); }
+  .funnel .box.few{ border-color:var(--teal); color:var(--teal); }
+  .funnel .arr{ font-size:22px; color:var(--slate); }
+  .funnel .fn-mid{ background:var(--violet-soft); color:var(--violet); border:1.5px dashed var(--violet); border-radius:12px; padding:10px 16px; font-family:'IBM Plex Mono'; font-size:12.5px; font-weight:600; }
+  .method-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:14px; margin:16px 0; }
+  .method{ background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px 16px; font-size:13.5px; }
+  .method code.m{ display:inline-block; background:var(--violet-soft); color:var(--violet); padding:2px 9px; border-radius:6px; font-size:13px; font-weight:600; margin-bottom:6px; }
+  .method .res{ font-family:'IBM Plex Mono'; font-size:12.5px; color:var(--teal); font-weight:600; }
+  .method p{ margin:4px 0; }
+  .pctbars{ max-width:640px; margin:22px auto; }
+  .pbar{ display:grid; grid-template-columns:96px 1fr 70px; gap:10px; align-items:center; margin:8px 0; font-size:12.5px; font-family:'IBM Plex Mono'; }
+  .pbar .track{ background:var(--line); border-radius:6px; height:20px; overflow:hidden; }
+  .pbar .fill{ height:100%; background:linear-gradient(90deg,var(--teal),var(--violet)); border-radius:6px; }
+  .pbar .val{ text-align:right; font-weight:700; color:var(--teal); }
+  table.df-table td.hlcell{ background:var(--teal-soft); color:var(--teal); font-weight:700; }
+  table.df-table tr.total td{ background:var(--violet-soft); color:var(--violet); font-weight:700; }
+
+  .sac{ display:grid; grid-template-columns:1fr auto 1fr auto 1fr; gap:10px; align-items:stretch; margin:22px 0 6px; }
+  @media (max-width:760px){ .sac{ grid-template-columns:1fr; } .sac .arr{ transform:rotate(90deg); text-align:center; } }
+  .sac .stage{ background:var(--panel); border:1.5px solid var(--line); border-radius:12px; padding:12px; box-shadow:var(--shadow); }
+  .sac .stage h4{ margin:0 0 8px; font-size:13px; text-transform:uppercase; letter-spacing:1px; color:var(--slate); }
+  .sac .arr{ align-self:center; font-size:24px; color:var(--slate); }
+  .chip{ display:inline-block; font-family:'IBM Plex Mono'; font-size:11.5px; padding:3px 9px; border-radius:6px; margin:2px 3px 2px 0; font-weight:600; }
+  .chip.d{ background:var(--teal-soft); color:var(--teal); } .chip.m{ background:var(--amber-soft); color:var(--amber); } .chip.p{ background:var(--violet-soft); color:var(--violet); }
+  .grp{ border-left:4px solid; border-radius:6px; padding:6px 10px; margin:6px 0; font-size:12.5px; background:#fafbfb; }
+  .grp.d{ border-color:var(--teal);} .grp.m{ border-color:var(--amber);} .grp.p{ border-color:var(--violet);}
+  .grp b{ display:block; font-size:12px; }
+  .hbars{ max-width:640px; margin:20px auto; }
+  .hbar{ display:grid; grid-template-columns:80px 1fr 90px; gap:10px; align-items:center; margin:8px 0; font-family:'IBM Plex Mono'; font-size:12.5px; }
+  .hbar .track{ background:var(--line); border-radius:6px; height:22px; overflow:hidden; }
+  .hbar .fill{ height:100%; border-radius:6px; }
+  .hbar .val{ text-align:right; font-weight:700; }
+  table.df-table tr.cd td.rowtag, table.df-table td.cd{ background:var(--teal-soft); } table.df-table td.cm{ background:var(--amber-soft); } table.df-table td.cp{ background:var(--violet-soft); }
+  .vs{ display:grid; grid-template-columns:1fr 1fr; gap:18px; margin:16px 0; } @media (max-width:760px){ .vs{ grid-template-columns:1fr; } }
+  .vs .side{ background:var(--panel); border:1.5px solid var(--line); border-radius:12px; padding:14px 16px; font-size:13.5px; }
+  .vs .side.a{ border-color:var(--violet);} .vs .side.b{ border-color:var(--teal);}
+  .vs .side h4{ margin:0 0 6px; } .vs .side code{ font-size:12.5px; }
+
+  .rankrow{ display:grid; grid-template-columns:34px 80px 1fr 74px; gap:10px; align-items:center; margin:7px 0; font-family:'IBM Plex Mono'; font-size:12.5px; }
+  .rankrow .medal{ width:30px;height:30px;border-radius:50%; display:flex;align-items:center;justify-content:center; font-weight:700; color:#fff; background:var(--slate); }
+  .rankrow .medal.r1{ background:var(--amber);} .rankrow .medal.r2{ background:var(--teal);} .rankrow .medal.r3{ background:var(--violet);}
+  .rankrow .track{ background:var(--line); border-radius:6px; height:20px; overflow:hidden; } .rankrow .fill{ height:100%; background:linear-gradient(90deg,var(--teal),var(--violet)); border-radius:6px; }
+  .rankrow .val{ text-align:right; font-weight:700; }
+  .rankbox{ max-width:640px; margin:20px auto; }
+  table.df-table td.keycol, table.df-table th.keycol{ background:var(--violet-soft); color:var(--violet); font-weight:700; }
+  table.df-table td.dim{ color:#aab2ad; }
+  .dir{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:16px 0; } @media (max-width:760px){ .dir{ grid-template-columns:1fr; } }
+
+  .keymatrix{ display:flex; justify-content:center; margin:20px 0; overflow-x:auto; }
+  table.km{ border-collapse:collapse; font-family:'IBM Plex Mono'; font-size:12.5px; }
+  table.km th, table.km td{ border:1px solid var(--line); padding:8px 14px; text-align:center; }
+  table.km th{ background:var(--green-soft); color:var(--green); font-size:11px; text-transform:uppercase; }
+  table.km td.k{ background:var(--amber-soft); color:var(--amber); font-weight:700; }
+  table.km td.y{ color:var(--teal); font-weight:700; background:var(--teal-soft); } table.km td.n{ color:#b6bdb8; }
+  .joins{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:14px; margin:18px 0; }
+  .joinbox{ background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:12px; text-align:center; font-size:12.5px; }
+  .joinbox svg{ width:100%; max-width:150px; height:auto; } .joinbox b{ display:block; font-family:'IBM Plex Mono'; margin-top:4px; }
+  .two{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:16px 0; } @media (max-width:760px){ .two{ grid-template-columns:1fr; } }
+  table.df-table td.nan{ background:var(--coral-soft); color:var(--coral); font-weight:700; }
+  table.df-table td.mg-both{ background:var(--teal-soft); color:var(--teal); font-weight:700; }
+  table.df-table td.mg-left{ background:var(--amber-soft); color:var(--amber); font-weight:700; }
+  table.df-table td.mg-right{ background:var(--violet-soft); color:var(--violet); font-weight:700; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand"><div class="logo">N</div> Data Manipulation Training</div>
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+</div>
+
+<div class="shell">
+  <nav class="toc" id="toc">
+    <h5>On this page</h5>
+    <a href="#s101">10.1 What is Merging?</a>
+    <a href="#s102">10.2 Create Both Datasets</a>
+    <a href="#s103">10.3 Inner Merge</a>
+    <a href="#s104">10.4 Left Merge</a>
+    <a href="#s105">10.5 Right Merge</a>
+    <a href="#s106">10.6 Outer Merge</a>
+    <a href="#s107">10.7 Validate Merges</a>
+    <a href="#exercise">Student Exercise</a>
+  </nav>
+
+  <main>
+    <div class="hero">
+      <span class="eyebrow">🐼 IT Training &middot; Data Manipulation Track &middot; Hour 22</span>
+      <h1>Merging Data</h1>
+      <p class="sub">Real data lives in several tables. This hour you will connect them — customers to orders — with <code>pd.merge()</code>, choose which unmatched rows to keep, and check that the join did what you expected.</p>
+      <div class="hero-meta">
+        <div class="meta-chip"><b>60 minutes</b>Session length</div>
+        <div class="meta-chip"><b>Beginner</b>Level</div>
+        <div class="meta-chip"><b>Combining Related Datasets</b>Focus</div>
+        <div class="meta-chip"><b>6</b>Code walkthroughs</div>
+      </div>
+    </div>
+
+    <section class="sec" id="s101">
+      <div class="sec-head"><div class="sec-num">10.1</div><div><h2>What is Merging?</h2><p>Combining two datasets through matching columns called keys</p></div></div>
+      <div class="card">
+        <h3>📘 Definition</h3>
+        <p><b>Merging</b> combines information from two datasets using one or more matching columns, known as <b>keys</b>. Pandas supports SQL-style joins: inner, left, right and outer.</p>
+        <p>Imagine an e-commerce application that stores customers in one table and orders in another:</p>
+        <div class="two">
+          <div><div class="divider-label">Customer table</div><div class="df-wrap"><table class="df-table"><tr><th></th><th>customer_id</th><th>name</th><th>city</th></tr><tr><td class="idxcol">0</td><td class="newcol">101</td><td class="">Rahul</td><td class="">Delhi</td></tr><tr><td class="idxcol">1</td><td class="newcol">102</td><td class="">Priya</td><td class="">Mumbai</td></tr><tr><td class="idxcol">2</td><td class="newcol">103</td><td class="">Amit</td><td class="">Pune</td></tr></table></div></div>
+          <div><div class="divider-label">Order table</div><div class="df-wrap"><table class="df-table"><tr><th></th><th>order_id</th><th>customer_id</th><th>amount</th></tr><tr><td class="idxcol">0</td><td class="">5001</td><td class="newcol">101</td><td class="">5,000</td></tr><tr><td class="idxcol">1</td><td class="">5002</td><td class="newcol">102</td><td class="">3,000</td></tr><tr><td class="idxcol">2</td><td class="">5003</td><td class="newcol">101</td><td class="">2,000</td></tr></table></div></div>
+        </div>
+        <p>To find out <b>who placed each order</b>, we link the tables through the shared <code>customer_id</code> column (amber/teal highlight).</p>
+        <div class="flow">
+          <div class="flow-node accent-teal">customers (customer_id, name, city)</div><div class="flow-arrow">⇅ match on <b>customer_id</b></div>
+          <div class="flow-node accent-violet">orders (order_id, customer_id, amount)</div><div class="flow-arrow">↓ pd.merge()</div>
+          <div class="flow-node accent-green">order_id · customer_id · name · city · amount</div>
+        </div>
+        <p class="flow-caption">The key column appears in both tables; the merge result carries columns from both sides.</p>
+      </div>
+    </section>
+
+    <section class="sec" id="s102">
+      <div class="sec-head"><div class="sec-num">10.2</div><div><h2>Create Both Datasets</h2><p>Deliberately imperfect: some keys have no partner</p></div></div>
+      <div class="card">
+        <h3>🧱 Building the data</h3>
+        <div class="code-panel">
+          <div class="code-head"><span>scripts/hour10_merging.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python">import pandas as pd
+
+customers = pd.DataFrame({
+    &quot;customer_id&quot;: [101, 102, 103, 104],
+    &quot;name&quot;: [&quot;Rahul&quot;, &quot;Priya&quot;, &quot;Amit&quot;, &quot;Sneha&quot;],
+    &quot;city&quot;: [&quot;Delhi&quot;, &quot;Mumbai&quot;, &quot;Pune&quot;, &quot;Delhi&quot;]
+})
+
+orders = pd.DataFrame({
+    &quot;order_id&quot;: [5001, 5002, 5003, 5004],
+    &quot;customer_id&quot;: [101, 102, 101, 105],
+    &quot;amount&quot;: [5000, 3000, 2000, 4500]
+})
+
+print(&quot;Customers:&quot;)
+print(customers)
+print(&quot;\nOrders:&quot;)
+print(orders)</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>Customers:
+   customer_id   name    city
+0          101  Rahul   Delhi
+1          102  Priya  Mumbai
+2          103   Amit    Pune
+3          104  Sneha   Delhi
+
+Orders:
+   order_id  customer_id  amount
+0      5001          101    5000
+1      5002          102    3000
+2      5003          101    2000
+3      5004          105    4500</div>
+        </div>
+        <div class="two">
+          <div><div class="df-wrap"><table class="df-table"><tr><th></th><th>customer_id</th><th>name</th><th>city</th></tr><tr><td class="idxcol">0</td><td class="newcol">101</td><td class="">Rahul</td><td class="">Delhi</td></tr><tr><td class="idxcol">1</td><td class="newcol">102</td><td class="">Priya</td><td class="">Mumbai</td></tr><tr><td class="idxcol">2</td><td class="newcol">103</td><td class="">Amit</td><td class="">Pune</td></tr><tr><td class="idxcol">3</td><td class="newcol">104</td><td class="">Sneha</td><td class="">Delhi</td></tr></table></div></div>
+          <div><div class="df-wrap"><table class="df-table"><tr><th></th><th>order_id</th><th>customer_id</th><th>amount</th></tr><tr><td class="idxcol">0</td><td class="">5001</td><td class="newcol">101</td><td class="">5000</td></tr><tr><td class="idxcol">1</td><td class="">5002</td><td class="newcol">102</td><td class="">3000</td></tr><tr><td class="idxcol">2</td><td class="">5003</td><td class="newcol">101</td><td class="">2000</td></tr><tr><td class="idxcol">3</td><td class="">5004</td><td class="newcol">105</td><td class="">4500</td></tr></table></div></div>
+        </div>
+        <div class="callout note"><div class="ico">👀</div><div><b>Notice:</b> customer <code>105</code> does <b>not</b> exist in the customer table (order 5004 is an orphan), and customer <code>104</code> has no orders. Look closely and you'll also see that <code>103</code> (Amit) has no orders either.</div></div>
+        <div class="divider-label">Which keys exist where?</div>
+        <div class="keymatrix"><table class="km"><tr><th>customer_id</th><th>in customers</th><th>in orders</th><th>inner</th><th>left</th><th>right</th><th>outer</th></tr><tr><td class="k">101</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td></tr><tr><td class="k">102</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td></tr><tr><td class="k">103</td><td class="y">✓</td><td class="n">—</td><td class="n">—</td><td class="y">✓</td><td class="n">—</td><td class="y">✓</td></tr><tr><td class="k">104</td><td class="y">✓</td><td class="n">—</td><td class="n">—</td><td class="y">✓</td><td class="n">—</td><td class="y">✓</td></tr><tr><td class="k">105</td><td class="n">—</td><td class="y">✓</td><td class="n">—</td><td class="n">—</td><td class="y">✓</td><td class="y">✓</td></tr></table></div>
+        <p class="flow-caption">This grid predicts every result in the next four sections — read the column for each join type to see which keys survive.</p>
+        <div class="divider-label">Implementation steps</div>
+        <ol><li>Create <code>scripts/hour10_merging.py</code> and import Pandas.</li><li>Build <code>customers</code> with four customers.</li><li>Build <code>orders</code> with four orders — one for a non-existent customer (105).</li><li>Print both tables so you can compare against the merge results.</li></ol>
+      </div>
+    </section>
+
+    <section class="sec" id="s103">
+      <div class="sec-head"><div class="sec-num">10.3</div><div><h2>Inner Merge</h2><p>Only records with matching keys in both datasets</p></div></div>
+      <div class="card">
+        <h3>🤝 <code>how="inner"</code></h3>
+        <div class="code-panel">
+          <div class="code-head"><span>inner_merge.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python">inner_result = pd.merge(
+    customers,
+    orders,
+    on=&quot;customer_id&quot;,
+    how=&quot;inner&quot;
+)
+
+print(inner_result)</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>   customer_id   name    city  order_id  amount
+0          101  Rahul   Delhi      5001    5000
+1          101  Rahul   Delhi      5003    2000
+2          102  Priya  Mumbai      5002    3000</div>
+        </div>
+        <div class="df-wrap"><table class="df-table"><tr><th></th><th>customer_id</th><th>name</th><th>city</th><th>order_id</th><th>amount</th></tr><tr><td class="idxcol">0</td><td class="newcol">101</td><td class="">Rahul</td><td class="">Delhi</td><td class="">5001</td><td class="">5000</td></tr><tr><td class="idxcol">1</td><td class="newcol">101</td><td class="">Rahul</td><td class="">Delhi</td><td class="">5003</td><td class="">2000</td></tr><tr><td class="idxcol">2</td><td class="newcol">102</td><td class="">Priya</td><td class="">Mumbai</td><td class="">5002</td><td class="">3000</td></tr></table></div>
+        <p class="flow-caption">Only 101 and 102 exist on both sides. Rahul appears twice because he has two orders. Amit, Sneha and order 5004 are dropped.</p>
+        <div class="callout tip"><div class="ico">💡</div><div>Use an inner merge when the output should include <b>only matched records</b>.</div></div>
+      </div>
+    </section>
+
+    <section class="sec" id="s104">
+      <div class="sec-head"><div class="sec-num">10.4</div><div><h2>Left Merge</h2><p>Keep every record from the left dataset</p></div></div>
+      <div class="card">
+        <h3>⬅️ <code>how="left"</code></h3>
+        <p>Keeps all records from the <b>left</b> dataset (<code>customers</code>) and adds matching information from the right dataset.</p>
+        <div class="code-panel">
+          <div class="code-head"><span>left_merge.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python">left_result = pd.merge(
+    customers,
+    orders,
+    on=&quot;customer_id&quot;,
+    how=&quot;left&quot;
+)
+
+print(left_result)</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>   customer_id   name    city  order_id  amount
+0          101  Rahul   Delhi    5001.0  5000.0
+1          101  Rahul   Delhi    5003.0  2000.0
+2          102  Priya  Mumbai    5002.0  3000.0
+3          103   Amit    Pune       NaN     NaN
+4          104  Sneha   Delhi       NaN     NaN</div>
+        </div>
+        <div class="df-wrap"><table class="df-table"><tr><th></th><th>customer_id</th><th>name</th><th>city</th><th>order_id</th><th>amount</th></tr><tr><td class="idxcol">0</td><td class="newcol">101</td><td class="">Rahul</td><td class="">Delhi</td><td class="">5001.0</td><td class="">5000.0</td></tr><tr><td class="idxcol">1</td><td class="newcol">101</td><td class="">Rahul</td><td class="">Delhi</td><td class="">5003.0</td><td class="">2000.0</td></tr><tr><td class="idxcol">2</td><td class="newcol">102</td><td class="">Priya</td><td class="">Mumbai</td><td class="">5002.0</td><td class="">3000.0</td></tr><tr><td class="idxcol">3</td><td class="newcol">103</td><td class="">Amit</td><td class="">Pune</td><td class="nan">NaN</td><td class="nan">NaN</td></tr><tr><td class="idxcol">4</td><td class="newcol">104</td><td class="">Sneha</td><td class="">Delhi</td><td class="nan">NaN</td><td class="nan">NaN</td></tr></table></div>
+        <p class="flow-caption">Customer 104 (Sneha) remains, with missing values (<b>NaN</b>, coral) in the order fields. So does 103 (Amit). <code>order_id</code> and <code>amount</code> turn into decimals because whole-number columns cannot hold NaN.</p>
+      </div>
+    </section>
+
+    <section class="sec" id="s105">
+      <div class="sec-head"><div class="sec-num">10.5</div><div><h2>Right Merge</h2><p>Keep every record from the right dataset</p></div></div>
+      <div class="card">
+        <h3>➡️ <code>how="right"</code></h3>
+        <div class="code-panel">
+          <div class="code-head"><span>right_merge.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python">right_result = pd.merge(
+    customers,
+    orders,
+    on=&quot;customer_id&quot;,
+    how=&quot;right&quot;
+)
+
+print(right_result)</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>   customer_id   name    city  order_id  amount
+0          101  Rahul   Delhi      5001    5000
+1          102  Priya  Mumbai      5002    3000
+2          101  Rahul   Delhi      5003    2000
+3          105    NaN     NaN      5004    4500</div>
+        </div>
+        <div class="df-wrap"><table class="df-table"><tr><th></th><th>customer_id</th><th>name</th><th>city</th><th>order_id</th><th>amount</th></tr><tr><td class="idxcol">0</td><td class="newcol">101</td><td class="">Rahul</td><td class="">Delhi</td><td class="">5001</td><td class="">5000</td></tr><tr><td class="idxcol">1</td><td class="newcol">102</td><td class="">Priya</td><td class="">Mumbai</td><td class="">5002</td><td class="">3000</td></tr><tr><td class="idxcol">2</td><td class="newcol">101</td><td class="">Rahul</td><td class="">Delhi</td><td class="">5003</td><td class="">2000</td></tr><tr><td class="idxcol">3</td><td class="newcol">105</td><td class="nan">NaN</td><td class="nan">NaN</td><td class="">5004</td><td class="">4500</td></tr></table></div>
+        <p class="flow-caption">Order 5004 is included even though customer 105 is absent from the customer table — its <code>name</code> and <code>city</code> are NaN.</p>
+      </div>
+    </section>
+
+    <section class="sec" id="s106">
+      <div class="sec-head"><div class="sec-num">10.6</div><div><h2>Outer Merge</h2><p>Keep all keys appearing in either dataset</p></div></div>
+      <div class="card">
+        <h3>🔗 <code>how="outer", indicator=True</code></h3>
+        <div class="code-panel">
+          <div class="code-head"><span>outer_merge.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python">outer_result = pd.merge(
+    customers,
+    orders,
+    on=&quot;customer_id&quot;,
+    how=&quot;outer&quot;,
+    indicator=True
+)
+
+print(outer_result)</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>   customer_id   name    city  order_id  amount      _merge
+0          101  Rahul   Delhi    5001.0  5000.0        both
+1          101  Rahul   Delhi    5003.0  2000.0        both
+2          102  Priya  Mumbai    5002.0  3000.0        both
+3          103   Amit    Pune       NaN     NaN   left_only
+4          104  Sneha   Delhi       NaN     NaN   left_only
+5          105    NaN     NaN    5004.0  4500.0  right_only</div>
+        </div>
+        <div class="df-wrap"><table class="df-table"><tr><th></th><th>customer_id</th><th>name</th><th>city</th><th>order_id</th><th>amount</th><th>_merge</th></tr><tr><td class="idxcol">0</td><td class="newcol">101</td><td class="">Rahul</td><td class="">Delhi</td><td class="">5001.0</td><td class="">5000.0</td><td class="mg-both">both</td></tr><tr><td class="idxcol">1</td><td class="newcol">101</td><td class="">Rahul</td><td class="">Delhi</td><td class="">5003.0</td><td class="">2000.0</td><td class="mg-both">both</td></tr><tr><td class="idxcol">2</td><td class="newcol">102</td><td class="">Priya</td><td class="">Mumbai</td><td class="">5002.0</td><td class="">3000.0</td><td class="mg-both">both</td></tr><tr><td class="idxcol">3</td><td class="newcol">103</td><td class="">Amit</td><td class="">Pune</td><td class="nan">NaN</td><td class="nan">NaN</td><td class="mg-left">left_only</td></tr><tr><td class="idxcol">4</td><td class="newcol">104</td><td class="">Sneha</td><td class="">Delhi</td><td class="nan">NaN</td><td class="nan">NaN</td><td class="mg-left">left_only</td></tr><tr><td class="idxcol">5</td><td class="newcol">105</td><td class="nan">NaN</td><td class="nan">NaN</td><td class="">5004.0</td><td class="">4500.0</td><td class="mg-right">right_only</td></tr></table></div>
+        <p class="flow-caption">The <code>_merge</code> column says where each key was found: <span class="chip d">both</span> <span class="chip m">left_only</span> <span class="chip p">right_only</span></p>
+
+        <div class="divider-label">The four joins side by side</div>
+        <div class="joins"><div class="joinbox"><svg viewBox="0 0 160 90"><defs><clipPath id="cbinner"><circle cx="102" cy="45" r="38"/></clipPath></defs><circle cx="58" cy="45" r="38" fill="#fff" stroke="#9aa5a1"/><circle cx="102" cy="45" r="38" fill="#fff" stroke="#9aa5a1"/><circle cx="58" cy="45" r="38" fill="#D98E31" fill-opacity=".85" clip-path="url(#cbinner)"/><circle cx="58" cy="45" r="38" fill="none" stroke="#5B6570"/><circle cx="102" cy="45" r="38" fill="none" stroke="#5B6570"/><text x="36" y="49" font-size="11" text-anchor="middle" fill="#14181F">L</text><text x="124" y="49" font-size="11" text-anchor="middle" fill="#14181F">R</text></svg><b>inner</b>matches only</div><div class="joinbox"><svg viewBox="0 0 160 90"><defs><clipPath id="cbleft"><circle cx="102" cy="45" r="38"/></clipPath></defs><circle cx="58" cy="45" r="38" fill="#fff" stroke="#9aa5a1"/><circle cx="102" cy="45" r="38" fill="#fff" stroke="#9aa5a1"/><circle cx="58" cy="45" r="38" fill="#0E7C86" fill-opacity=".55"/><circle cx="58" cy="45" r="38" fill="#D98E31" fill-opacity=".85" clip-path="url(#cbleft)"/><circle cx="58" cy="45" r="38" fill="none" stroke="#5B6570"/><circle cx="102" cy="45" r="38" fill="none" stroke="#5B6570"/><text x="36" y="49" font-size="11" text-anchor="middle" fill="#14181F">L</text><text x="124" y="49" font-size="11" text-anchor="middle" fill="#14181F">R</text></svg><b>left</b>all of left + matches</div><div class="joinbox"><svg viewBox="0 0 160 90"><defs><clipPath id="cbright"><circle cx="102" cy="45" r="38"/></clipPath></defs><circle cx="58" cy="45" r="38" fill="#fff" stroke="#9aa5a1"/><circle cx="102" cy="45" r="38" fill="#fff" stroke="#9aa5a1"/><circle cx="102" cy="45" r="38" fill="#6E5A9E" fill-opacity=".55"/><circle cx="58" cy="45" r="38" fill="#D98E31" fill-opacity=".85" clip-path="url(#cbright)"/><circle cx="58" cy="45" r="38" fill="none" stroke="#5B6570"/><circle cx="102" cy="45" r="38" fill="none" stroke="#5B6570"/><text x="36" y="49" font-size="11" text-anchor="middle" fill="#14181F">L</text><text x="124" y="49" font-size="11" text-anchor="middle" fill="#14181F">R</text></svg><b>right</b>all of right + matches</div><div class="joinbox"><svg viewBox="0 0 160 90"><defs><clipPath id="cbouter"><circle cx="102" cy="45" r="38"/></clipPath></defs><circle cx="58" cy="45" r="38" fill="#fff" stroke="#9aa5a1"/><circle cx="102" cy="45" r="38" fill="#fff" stroke="#9aa5a1"/><circle cx="58" cy="45" r="38" fill="#0E7C86" fill-opacity=".55"/><circle cx="102" cy="45" r="38" fill="#6E5A9E" fill-opacity=".55"/><circle cx="58" cy="45" r="38" fill="#D98E31" fill-opacity=".85" clip-path="url(#cbouter)"/><circle cx="58" cy="45" r="38" fill="none" stroke="#5B6570"/><circle cx="102" cy="45" r="38" fill="none" stroke="#5B6570"/><text x="36" y="49" font-size="11" text-anchor="middle" fill="#14181F">L</text><text x="124" y="49" font-size="11" text-anchor="middle" fill="#14181F">R</text></svg><b>outer</b>everything from both</div></div>
+        <p class="flow-caption">Orange = rows that match in both tables. Teal = left-only rows, violet = right-only rows.</p>
+        <div class="callout tip"><div class="ico">💡</div><div><b>Why use <code>indicator=True</code>?</b> It turns "what didn't match?" into a simple filter — you'll use it in the exercise.</div></div>
+      </div>
+    </section>
+
+    <section class="sec" id="s107">
+      <div class="sec-head"><div class="sec-num">10.7</div><div><h2>Validate Merge Relationships</h2><p>Check that the join is shaped the way you expect</p></div></div>
+      <div class="card">
+        <h3>🛡️ <code>validate="one_to_many"</code></h3>
+        <p>A particularly important professional practice is checking whether the relationship between datasets is what you expect. If every customer ID should appear only once in the customer table, validate that assumption.</p>
+        <div class="code-panel">
+          <div class="code-head"><span>validate_merge.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python">result = pd.merge(
+    customers,
+    orders,
+    on=&quot;customer_id&quot;,
+    how=&quot;left&quot;,
+    validate=&quot;one_to_many&quot;
+)
+
+print(result)</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>   customer_id   name    city  order_id  amount
+0          101  Rahul   Delhi    5001.0  5000.0
+1          101  Rahul   Delhi    5003.0  2000.0
+2          102  Priya  Mumbai    5002.0  3000.0
+3          103   Amit    Pune       NaN     NaN
+4          104  Sneha   Delhi       NaN     NaN</div>
+        </div>
+        <div class="two">
+          <div class="method" style="background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:13.5px"><b>Left table</b><br>Key must be <b>unique</b> — each customer appears once.</div>
+          <div class="method" style="background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:13.5px"><b>Right table</b><br>Key <b>may repeat</b> — a customer can place many orders.</div>
+        </div>
+        <p class="flow-caption">The result is identical to the left merge in 10.4 — validation doesn't change the output; it <b>stops the code</b> if the assumption is false.</p>
+
+        <div class="divider-label">What a failed check looks like — added illustration</div>
+        <div class="code-panel">
+          <div class="code-head"><span>validate_fails.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python"># Added illustration: claim the relationship is one_to_one
+# (it is not: customer 101 has two orders)
+pd.merge(
+    orders, orders,
+    on=&quot;customer_id&quot;,
+    validate=&quot;one_to_one&quot;
+)</code></pre>
+          <div class="code-output"><span class="lbl">Raises an error</span>MergeError: Merge keys are not unique in either left or right dataset; not a one-to-one merge.</div>
+        </div>
+        <div class="callout note"><div class="ico">⚠️</div><div>This example is an <b>added illustration</b>. The error message names the problem (key not unique), so a bad assumption is caught immediately instead of silently producing wrong numbers.</div></div>
+      </div>
+    </section>
+
+    <section class="sec" id="exercise">
+      <div class="sec-head"><div class="sec-num">✍️</div><div><h2>Student Exercise</h2><p>Practice with the customers and orders from 10.2</p></div></div>
+      <div class="card">
+        <h3>🎯 Your tasks</h3>
+        <ol>
+          <li>Perform an <b>inner</b> merge.</li>
+          <li>Perform a <b>left</b> merge.</li>
+          <li>Perform an <b>outer</b> merge.</li>
+          <li>Identify <b>customers without orders</b>.</li>
+          <li>Identify <b>orders without matching customer records</b>.</li>
+          <li>Explain why <b>joining on the wrong key</b> can produce incorrect results.</li>
+        </ol>
+        <div class="code-panel">
+          <div class="code-head"><span>hint</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+          <pre class="code-body"><code class="language-python">merged = pd.merge(..., ..., on="...", how="...", indicator=True)
+merged[merged["_merge"] == "..."]</code></pre>
+        </div>
+      </div>
+      <div class="callout exercise"><div class="ico">🎯</div><div><b>For tasks 4 and 5:</b> the <code>_merge</code> column from the outer merge already labels every row — filter on <code>left_only</code> or <code>right_only</code>.</div></div>
+      <div class="callout tip"><div class="ico">✅</div><div><b>Check your answers:</b> inner → 3 rows (Rahul ×2, Priya) · left → 5 rows · outer → 6 rows · customers without orders → <code>103 Amit</code> and <code>104 Sneha</code> · orders without customers → order <code>5004</code> (customer 105).</div></div>
+
+      <div class="card">
+        <h3>🧠 Task 6 — why the wrong key breaks results</h3>
+        <p>A merge only pairs rows whose key values are equal. If the key doesn't truly identify the same entity on both sides, the pairs are wrong — and Pandas will <b>not</b> warn you unless you use <code>validate</code>.</p>
+        <ul>
+          <li><b>Wrong pairing:</b> joining on a column that merely shares values (for example an order number against a customer number) matches unrelated records.</li>
+          <li><b>Duplicated rows:</b> if the key is not unique on one side, every match is multiplied, inflating counts and totals.</li>
+          <li><b>Silent loss or NaN:</b> keys that don't line up drop rows (inner) or fill NaN (left/right/outer) — and totals quietly become wrong.</li>
+        </ul>
+        <p>Added illustration — customer 101 appears twice in a (messy) customer table, so each of his orders is matched twice:</p>
+        <div class="code-panel">
+          <div class="code-head"><span>wrong_key_duplicates.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python"># Added illustration: a customer ID that appears twice
+dupc = pd.DataFrame({
+    &quot;customer_id&quot;: [101, 101, 102],
+    &quot;name&quot;: [&quot;Rahul&quot;, &quot;Rahul (old record)&quot;, &quot;Priya&quot;]
+})
+
+print(pd.merge(dupc, orders, on=&quot;customer_id&quot;, how=&quot;inner&quot;))</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>   customer_id                name  order_id  amount
+0          101               Rahul      5001    5000
+1          101               Rahul      5003    2000
+2          101  Rahul (old record)      5001    5000
+3          101  Rahul (old record)      5003    2000
+4          102               Priya      5002    3000</div>
+        </div>
+        <div class="df-wrap"><table class="df-table"><tr><th></th><th>customer_id</th><th>name</th><th>order_id</th><th>amount</th></tr><tr><td class="idxcol">0</td><td class="newcol">101</td><td class="">Rahul</td><td class="">5001</td><td class="">5000</td></tr><tr><td class="idxcol">1</td><td class="newcol">101</td><td class="">Rahul</td><td class="">5003</td><td class="">2000</td></tr><tr><td class="idxcol">2</td><td class="newcol">101</td><td class="">Rahul (old record)</td><td class="">5001</td><td class="">5000</td></tr><tr><td class="idxcol">3</td><td class="newcol">101</td><td class="">Rahul (old record)</td><td class="">5003</td><td class="">2000</td></tr><tr><td class="idxcol">4</td><td class="newcol">102</td><td class="">Priya</td><td class="">5002</td><td class="">3000</td></tr></table></div>
+        <p class="flow-caption">Rahul's two orders became four rows — his total would be double-counted. This is exactly what <code>validate="one_to_many"</code> would have caught.</p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer>Data Manipulation Training — Hour 22: Merging Data &middot; Prepared for IT Training Cohort &middot; Confidential Training Material</footer>
+
+<div class="scrolltop" id="scrollTop">↑</div>
+
+<script>
+  hljs.highlightAll();
+
+  const progressFill = document.getElementById('progressFill');
+  const scrollTopBtn = document.getElementById('scrollTop');
+  const sections = document.querySelectorAll('section.sec');
+  const navLinks = document.querySelectorAll('#toc a');
+
+  window.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const scrolled = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+    progressFill.style.width = scrolled + '%';
+    scrollTopBtn.classList.toggle('show', h.scrollTop > 500);
+
+    let current = '';
+    sections.forEach(sec => {
+      const rect = sec.getBoundingClientRect();
+      if (rect.top <= 140 && rect.bottom >= 140) current = sec.id;
+    });
+    navLinks.forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+    });
+  });
+
+  scrollTopBtn.addEventListener('click', () => window.scrollTo({top:0, behavior:'smooth'}));
+
+  function copyCode(btn){
+    const pre = btn.closest('.code-panel').querySelector('pre.code-body');
+    navigator.clipboard.writeText(pre.innerText).then(() => {
+      const orig = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = orig, 1400);
+    });
+  }
+</script>
+
+</body>
+</html>

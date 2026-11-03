@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Introduction to NumPy | Data Manipulation Training — Hour 13</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+<style>
+  :root{
+    --ink:#14181F; --paper:#F4F6F5; --panel:#FFFFFF; --line:#DCE3E1;
+    --teal:#0E7C86; --teal-soft:#E4F1F1;
+    --amber:#D98E31; --amber-soft:#FBEEDD;
+    --violet:#6E5A9E; --violet-soft:#EDE9F5;
+    --coral:#C0524A; --coral-soft:#F7E7E5;
+    --green:#3E8E5A; --green-soft:#E6F1EA;
+    --slate:#5B6570;
+    --radius:14px;
+    --shadow:0 10px 30px rgba(20,24,31,0.06);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif; line-height:1.65;
+  }
+  h1,h2,h3,h4{ font-family:'Space Grotesk', sans-serif; letter-spacing:-.01em; }
+  code, pre, .mono{ font-family:'IBM Plex Mono', monospace; }
+  a{color:var(--teal);}
+
+  /* topbar */
+  .topbar{
+    position:sticky; top:0; z-index:60; background:rgba(244,246,245,0.92); backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line); padding:10px 24px;
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+  }
+  .brand{ display:flex; align-items:center; gap:10px; font-weight:700; font-family:'Space Grotesk'; }
+  .brand .logo{
+    width:30px;height:30px;border-radius:8px; background:linear-gradient(135deg,var(--teal),var(--violet));
+    display:flex;align-items:center;justify-content:center; color:#fff; font-weight:800; font-size:15px;
+  }
+  .progress-track{ flex:1; max-width:380px; height:7px; border-radius:20px; background:var(--line); overflow:hidden; }
+  .progress-fill{ height:100%; width:0%; background:linear-gradient(90deg,var(--teal),var(--violet)); transition:width .15s ease; }
+  .nav-toggle{ display:none; }
+
+  /* layout */
+  .shell{ display:flex; max-width:1280px; margin:0 auto; align-items:flex-start; }
+  .toc{
+    width:252px; flex:0 0 auto; position:sticky; top:57px; height:calc(100vh - 57px);
+    overflow-y:auto; padding:28px 18px 60px; border-right:1px solid var(--line);
+  }
+  .toc h5{ font-size:11px; text-transform:uppercase; letter-spacing:1.2px; color:var(--slate); margin:0 0 10px; }
+  .toc a{
+    display:block; padding:7px 10px; border-radius:8px; color:var(--slate); text-decoration:none;
+    font-size:13.5px; margin-bottom:2px;
+  }
+  .toc a:hover, .toc a.active{ background:var(--teal-soft); color:var(--teal); font-weight:600; }
+  .toc .sub{ padding-left:22px; font-size:12.5px; }
+  main{ flex:1; min-width:0; padding:0 36px 100px; max-width:960px; }
+  @media (max-width:900px){ .toc{ display:none; } main{ padding:0 20px 80px; } }
+
+  /* hero */
+  .hero{ padding:56px 0 36px; border-bottom:1px solid var(--line); }
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px; font-size:12px; letter-spacing:1.2px; text-transform:uppercase;
+    color:var(--teal); font-weight:700; background:var(--teal-soft); padding:6px 14px; border-radius:30px; margin-bottom:18px;
+  }
+  .hero h1{ font-size:clamp(28px,4.4vw,42px); margin:0 0 14px; font-weight:700; }
+  .hero p.sub{ max-width:680px; color:var(--slate); font-size:16px; margin:0 0 26px; }
+  .hero-meta{ display:flex; gap:12px; flex-wrap:wrap; }
+  .meta-chip{ background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:9px 14px; font-size:12.5px; color:var(--slate); }
+  .meta-chip b{ display:block; color:var(--ink); font-size:14px; }
+
+  section.sec{ padding:48px 0; border-bottom:1px dashed var(--line); scroll-margin-top:72px; }
+  section.sec:last-child{ border-bottom:none; }
+  .sec-head{ display:flex; align-items:center; gap:14px; margin-bottom:22px; }
+  .sec-num{
+    flex:0 0 auto; width:46px;height:46px;border-radius:12px; background:var(--panel); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:17px; color:var(--teal);
+  }
+  .sec-head h2{ margin:0; font-size:23px; font-weight:700; }
+  .sec-head p{ margin:2px 0 0; color:var(--slate); font-size:13.5px; }
+
+  .card{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:22px 24px; margin-bottom:20px; box-shadow:var(--shadow); }
+  .card h3{ margin:0 0 10px; font-size:16.5px; color:var(--ink); display:flex; align-items:center; gap:8px; }
+  .card p{ margin:8px 0; }
+  .card ul, .card ol{ margin:10px 0; padding-left:22px; }
+  .card li{ margin-bottom:6px; }
+
+  .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  .grid-3{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  .grid-4{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+  @media (max-width:760px){ .grid-2,.grid-3,.grid-4{ grid-template-columns:1fr; } }
+
+  .callout{ border-radius:var(--radius); padding:16px 20px; margin:16px 0; border:1px solid; display:flex; gap:14px; font-size:14px; }
+  .callout .ico{ font-size:20px; line-height:1.2; }
+  .callout.tip{ background:var(--teal-soft); border-color:#b9dcdd; }
+  .callout.note{ background:var(--amber-soft); border-color:#eccb98; }
+  .callout.exercise{ background:var(--violet-soft); border-color:#cfc3e8; }
+  .callout b{ color:var(--ink); }
+
+  /* folder tree */
+  .tree{
+    background:#1a1d24; color:#d8dce3; border-radius:12px; padding:20px 24px; font-family:'IBM Plex Mono', monospace;
+    font-size:13.3px; line-height:1.9; overflow-x:auto; margin:16px 0;
+  }
+  .tree .dir{ color:#8be0ea; } .tree .file{ color:#f3d388; } .tree .comment{ color:#7c8494; }
+
+  /* code block (terminal style) */
+  .code-panel{ background:#1a1d24; border-radius:12px; overflow:hidden; margin:16px 0; border:1px solid #2a2e38; }
+  .code-head{ display:flex; align-items:center; justify-content:space-between; background:#20232c; padding:9px 16px; font-size:12px; color:#9aa1b0; }
+  .code-dots{ display:flex; gap:6px; }
+  .code-dots span{ width:10px;height:10px;border-radius:50%; }
+  .code-dots span:nth-child(1){ background:#ff5f56;} .code-dots span:nth-child(2){ background:#ffbd2e;} .code-dots span:nth-child(3){ background:#27c93f;}
+  .copy-btn{ background:#2a2e38; color:#c7ccd8; border:none; border-radius:6px; padding:4px 10px; font-size:11.5px; cursor:pointer; font-family:inherit; }
+  .copy-btn:hover{ background:#363b48; }
+  pre.code-body{ margin:0; padding:18px 20px; overflow-x:auto; font-size:13.3px; line-height:1.75; }
+  pre.code-body code{ font-family:'IBM Plex Mono', monospace; background:none; }
+  .code-output{ background:#14161b; border-top:1px dashed #2a2e38; padding:12px 20px; font-size:12.8px; color:#7ee8a0; font-family:'IBM Plex Mono', monospace; white-space:pre-wrap; }
+  .code-output .lbl{ color:#7c8494; font-size:10.5px; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:6px; }
+
+  /* steps */
+  .steps{ counter-reset:stepnum; margin:18px 0; }
+  .step{ position:relative; padding:14px 18px 14px 54px; margin-bottom:12px; background:var(--panel); border:1px solid var(--line); border-radius:12px; }
+  .step::before{
+    counter-increment:stepnum; content:counter(stepnum); position:absolute; left:14px; top:50%; transform:translateY(-50%);
+    width:26px;height:26px;border-radius:50%; background:linear-gradient(135deg,var(--teal),var(--violet));
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12.5px; color:#fff;
+  }
+  .step h4{ margin:0 0 3px; font-size:14.5px; }
+  .step p{ margin:0; font-size:13.3px; color:var(--slate); }
+  .step code{ background:var(--teal-soft); color:var(--teal); padding:1px 6px; border-radius:5px; }
+
+  /* flow diagram */
+  .flow{ display:flex; flex-direction:column; align-items:center; margin:28px 0; }
+  .flow-node{
+    background:var(--panel); border:1.5px solid var(--line); border-radius:12px; padding:12px 24px; font-weight:600; font-size:14px;
+    text-align:center; min-width:200px; box-shadow:var(--shadow);
+  }
+  .flow-node.accent-teal{ border-color:var(--teal); color:var(--teal); }
+  .flow-node.accent-amber{ border-color:var(--amber); color:var(--amber); }
+  .flow-node.accent-violet{ border-color:var(--violet); color:var(--violet); }
+  .flow-node.accent-green{ border-color:var(--green); color:var(--green); }
+  .flow-arrow{ color:var(--slate); font-size:20px; margin:4px 0; }
+  .flow-caption{ text-align:center; font-size:12.5px; color:var(--slate); margin-top:6px; font-style:italic; max-width:560px; }
+
+  /* order table */
+  table.data-table{ width:100%; border-collapse:collapse; margin:14px 0; font-size:14px; }
+  table.data-table th, table.data-table td{ padding:10px 14px; border-bottom:1px solid var(--line); text-align:left; }
+  table.data-table th{ color:var(--amber); font-size:11.5px; text-transform:uppercase; letter-spacing:.5px; background:var(--amber-soft); }
+  table.data-table tr:hover td{ background:var(--teal-soft); }
+  table.data-table td.num{ font-family:'IBM Plex Mono'; color:var(--teal); font-weight:600; }
+
+  /* bar visual for orders */
+  .bar-chart{ display:flex; align-items:flex-end; gap:16px; height:170px; margin:24px 0 8px; padding:0 10px; }
+  .bar-col{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; }
+  .bar{ width:100%; max-width:52px; border-radius:6px 6px 0 0; background:linear-gradient(180deg,var(--teal),var(--violet)); position:relative; }
+  .bar .val{ position:absolute; top:-20px; left:0; right:0; text-align:center; font-size:11.5px; font-weight:700; color:var(--ink); }
+  .bar-lbl{ margin-top:8px; font-size:11.5px; color:var(--slate); text-align:center; }
+
+  /* goal cards */
+  .goal-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin:16px 0; }
+  @media (max-width:760px){ .goal-grid{ grid-template-columns:repeat(2,1fr);} }
+  .goal-card{ background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px; text-align:center; }
+  .goal-card .gicon{ font-size:22px; margin-bottom:6px; }
+  .goal-card .glabel{ font-size:12.5px; color:var(--slate); }
+
+  /* array visual */
+  .array-wrap{ display:flex; justify-content:center; gap:0; margin:22px 0 32px; flex-wrap:wrap; }
+  .array-cell{
+    width:72px; height:56px; border:1.5px solid var(--line); background:var(--teal-soft);
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; color:var(--teal);
+    position:relative; font-family:'IBM Plex Mono';
+  }
+  .array-cell .idx{ position:absolute; bottom:-20px; font-size:10.5px; color:var(--slate); font-weight:400; }
+
+  .matrix-wrap{ display:inline-flex; flex-direction:column; gap:4px; margin:20px auto; }
+  .matrix-row{ display:flex; gap:4px; }
+  .matrix-cell{
+    width:70px; height:52px; border-radius:8px; background:var(--violet-soft); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-weight:700; color:var(--violet); font-family:'IBM Plex Mono'; font-size:13.5px;
+  }
+  .matrix-center{ text-align:center; }
+
+  /* property table */
+  table.prop-table{ width:100%; border-collapse:collapse; margin:14px 0; font-size:13.8px; }
+  table.prop-table th, table.prop-table td{ padding:9px 12px; border:1px solid var(--line); text-align:left; }
+  table.prop-table th{ background:var(--teal-soft); color:var(--teal); font-size:11.5px; text-transform:uppercase; }
+  table.prop-table code{ color:var(--teal); font-weight:600; }
+
+  /* function comparison cards */
+  .fn-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:16px; margin:18px 0; }
+  @media (max-width:760px){ .fn-grid{ grid-template-columns:1fr; } }
+  .fn-card{ background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:16px 18px; }
+  .fn-card h4{ margin:0 0 6px; font-family:'IBM Plex Mono'; color:var(--violet); font-size:14.5px; }
+  .fn-card p{ margin:0 0 10px; font-size:13px; color:var(--slate); }
+  .fn-visual{ display:flex; gap:4px; flex-wrap:wrap; }
+  .fn-chip{
+    min-width:34px; height:30px; border-radius:6px; background:var(--amber-soft); color:var(--amber);
+    display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:700; font-family:'IBM Plex Mono'; padding:0 6px;
+  }
+
+  .divider-label{ font-size:11px; text-transform:uppercase; letter-spacing:1.2px; color:var(--slate); margin:28px 0 10px; font-weight:700; }
+
+  footer{ text-align:center; padding:36px 20px; color:var(--slate); font-size:12.5px; border-top:1px solid var(--line); }
+
+  .scrolltop{
+    position:fixed; bottom:22px; right:22px; z-index:60; width:44px;height:44px;border-radius:50%;
+    background:linear-gradient(135deg,var(--teal),var(--violet)); display:flex; align-items:center; justify-content:center;
+    color:#fff; font-weight:900; cursor:pointer; box-shadow:var(--shadow); opacity:0; pointer-events:none; transition:.2s;
+  }
+  .scrolltop.show{ opacity:1; pointer-events:auto; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand"><div class="logo">N</div> Data Manipulation Training</div>
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+</div>
+
+<div class="shell">
+  <nav class="toc" id="toc">
+    <h5>On this page</h5>
+    <a href="#setup">Environment Setup</a>
+    <a href="#s11">1.1 What is NumPy?</a>
+    <a href="#s12">1.2 List vs NumPy Array</a>
+    <a href="#s13">1.3 Creating Arrays</a>
+    <a href="#s14">1.4 Array Creation Functions</a>
+    <a href="#s15">1.5 Practical: Order Analysis</a>
+    <a href="#exercise">Student Exercise</a>
+  </nav>
+
+  <main>
+    <div class="hero">
+      <span class="eyebrow">🐍 IT Training &middot; Data Manipulation Track &middot; Hour 13</span>
+      <h1>Introduction to NumPy</h1>
+      <p class="sub">The foundation hour before any real data work begins — setting up a clean Python environment, understanding why NumPy exists, and running your first array-based analysis on real business numbers.</p>
+      <div class="hero-meta">
+        <div class="meta-chip"><b>60 minutes</b>Session length</div>
+        <div class="meta-chip"><b>Beginner</b>Level</div>
+        <div class="meta-chip"><b>Python 3 · NumPy</b>Tools</div>
+        <div class="meta-chip"><b>1</b>Hands-on script</div>
+      </div>
+    </div>
+
+    <!-- ENVIRONMENT SETUP -->
+    <section class="sec" id="setup">
+      <div class="sec-head">
+        <div class="sec-num">00</div>
+        <div><h2>Environment Setup &amp; Project Structure</h2><p>Set this up once, before Hour 13 begins — every later hour builds on this same folder.</p></div>
+      </div>
+
+      <div class="card">
+        <h3>🧰 What Students Need Installed</h3>
+        <p>Before teaching Hour 13, make sure every student has a common Python environment ready: <b>Python 3</b>, <b>NumPy</b>, <b>Pandas</b>, and either <b>VS Code</b> or <b>Jupyter Notebook</b>.</p>
+        <p><b>NumPy</b> provides efficient, multidimensional numerical arrays. <b>Pandas</b> builds on top of that to provide labeled <code>Series</code> and <code>DataFrame</code> structures for tabular data — the kind you'd see in a spreadsheet.</p>
+      </div>
+
+      <div class="divider-label">Step 1 — Create the Project Folder</div>
+      <div class="card">
+        <p>Every script from every hour lives in one consistent project structure, so students can revise earlier work at any time.</p>
+        <div class="tree">data-manipulation-training/
+├── <span class="dir">data/</span>
+│   ├── <span class="dir">raw/</span>            <span class="comment"># original, untouched datasets</span>
+│   └── <span class="dir">output/</span>         <span class="comment"># results generated by scripts</span>
+├── <span class="dir">scripts/</span>
+│   ├── <span class="file">hour01_numpy.py</span>
+│   ├── <span class="file">hour02_array_operations.py</span>
+│   ├── <span class="file">hour03_pandas_intro.py</span>
+│   └── <span class="comment">...</span>
+├── <span class="file">requirements.txt</span>
+└── <span class="file">README.md</span></div>
+      </div>
+
+      <div class="divider-label">Step 2 — Create a Virtual Environment</div>
+      <div class="card">
+        <p>Open the terminal inside the project directory and create an isolated environment so these libraries don't clash with anything else on the machine.</p>
+        <div class="code-panel">
+          <div class="code-head"><span>terminal</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+          <pre class="code-body"><code class="language-bash">python -m venv .venv</code></pre>
+        </div>
+        <div class="grid-2">
+          <div class="feat">
+            <div class="code-panel">
+              <div class="code-head"><span>Windows</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+              <pre class="code-body"><code class="language-powershell">.venv\Scripts\activate</code></pre>
+            </div>
+          </div>
+          <div class="feat">
+            <div class="code-panel">
+              <div class="code-head"><span>macOS / Linux</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+              <pre class="code-body"><code class="language-bash">source .venv/bin/activate</code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider-label">Step 3 — Install the Libraries</div>
+      <div class="card">
+        <p>Create a <code>requirements.txt</code> file listing exactly what this course needs:</p>
+        <div class="code-panel">
+          <div class="code-head"><span>requirements.txt</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+          <pre class="code-body"><code class="language-text">numpy
+pandas
+openpyxl</code></pre>
+        </div>
+        <p>Then install everything in one command:</p>
+        <div class="code-panel">
+          <div class="code-head"><span>terminal</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+          <pre class="code-body"><code class="language-bash">python -m pip install -r requirements.txt</code></pre>
+        </div>
+        <p>Verify it worked:</p>
+        <div class="code-panel">
+          <div class="code-head"><span>terminal</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+          <pre class="code-body"><code class="language-bash">python -c "import numpy, pandas; print('NumPy:', numpy.__version__); print('Pandas:', pandas.__version__)"</code></pre>
+          <div class="code-output"><span class="lbl">Expected Output (versions will vary)</span>NumPy: 2.x.x
+Pandas: 2.x.x</div>
+        </div>
+      </div>
+
+      <div class="divider-label">Step 4 — Run a Python Script</div>
+      <div class="card">
+        <div class="code-panel">
+          <div class="code-head"><span>terminal</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+          <pre class="code-body"><code class="language-bash">python scripts/hour01_numpy.py</code></pre>
+        </div>
+        <p>Students may alternatively run each practical inside a Jupyter Notebook instead. Either way, <b>keep the code for each hour in its own file or notebook</b> so it stays easy to revise later.</p>
+      </div>
+
+      <div class="flow">
+        <div class="flow-node accent-teal">Create project folder</div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-node accent-amber">Create &amp; activate virtual environment</div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-node accent-violet">Install from requirements.txt</div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-node accent-green">Run scripts/hour01_numpy.py</div>
+      </div>
+      <p class="flow-caption">This exact four-step setup is reused at the start of every single hour in this training — once it's done, it's done for the whole course.</p>
+    </section>
+
+    <!-- 1.1 -->
+    <section class="sec" id="s11">
+      <div class="sec-head">
+        <div class="sec-num">1.1</div>
+        <div><h2>What is NumPy?</h2><p>Numerical Python — built for arrays, matrices, and fast math</p></div>
+      </div>
+
+      <div class="card">
+        <h3>📘 Definition</h3>
+        <p><b>NumPy</b> stands for <b>Num</b>erical <b>Py</b>thon. It's a Python library used for numerical computing — particularly when working with arrays, matrices, mathematical calculations, and large amounts of numeric data.</p>
+      </div>
+
+      <div class="card">
+        <h3>🛒 Real-Life Example: Online Shopping Orders</h3>
+        <p>Suppose an online shopping company records the number of orders received over five days:</p>
+        <table class="data-table">
+          <thead><tr><th>Day</th><th>Orders Received</th></tr></thead>
+          <tbody>
+            <tr><td>Monday</td><td class="num">120</td></tr>
+            <tr><td>Tuesday</td><td class="num">150</td></tr>
+            <tr><td>Wednesday</td><td class="num">180</td></tr>
+            <tr><td>Thursday</td><td class="num">140</td></tr>
+            <tr><td>Friday</td><td class="num">210</td></tr>
+          </tbody>
+        </table>
+
+        <div class="bar-chart">
+          <div class="bar-col"><div class="bar" style="height:57%;"><span class="val">120</span></div><div class="bar-lbl">Mon</div></div>
+          <div class="bar-col"><div class="bar" style="height:71%;"><span class="val">150</span></div><div class="bar-lbl">Tue</div></div>
+          <div class="bar-col"><div class="bar" style="height:86%;"><span class="val">180</span></div><div class="bar-lbl">Wed</div></div>
+          <div class="bar-col"><div class="bar" style="height:67%;"><span class="val">140</span></div><div class="bar-lbl">Thu</div></div>
+          <div class="bar-col"><div class="bar" style="height:100%;"><span class="val">210</span></div><div class="bar-lbl">Fri</div></div>
+        </div>
+
+        <p>The company wants to calculate four things from this data:</p>
+        <div class="goal-grid">
+          <div class="goal-card"><div class="gicon">➕</div><div class="glabel">Total orders</div></div>
+          <div class="goal-card"><div class="gicon">📊</div><div class="glabel">Average daily orders</div></div>
+          <div class="goal-card"><div class="gicon">🔼</div><div class="glabel">Highest number of orders</div></div>
+          <div class="goal-card"><div class="gicon">🔽</div><div class="glabel">Lowest number of orders</div></div>
+        </div>
+        <p><b>NumPy makes exactly these kinds of operations convenient and efficient</b> — that's the entire reason it exists, and it's what this hour builds toward.</p>
+      </div>
+    </section>
+
+    <!-- 1.2 -->
+    <section class="sec" id="s12">
+      <div class="sec-head">
+        <div class="sec-num">1.2</div>
+        <div><h2>Python List vs NumPy Array</h2><p>Two ways to store the same five numbers — and why they behave differently</p></div>
+      </div>
+
+      <div class="card">
+        <h3>🆚 The Core Difference</h3>
+        <p>A <b>Python list</b> is a general-purpose container — it can hold anything, of any type, mixed together. A <b>NumPy array</b> is purpose-built for efficient numerical operations, and it usually stores elements of a single, common data type.</p>
+
+        <div class="code-panel">
+          <div class="code-head"><span>list_vs_array.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python"># Python list
+orders_list = [120, 150, 180, 140, 210]
+
+# NumPy array
+import numpy as np
+orders_array = np.array(orders_list)
+
+print("Python list:", orders_list)
+print("NumPy array:", orders_array)</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>Python list: [120, 150, 180, 140, 210]
+NumPy array: [120 150 180 140 210]</div>
+        </div>
+      </div>
+
+      <div class="flow">
+        <div class="flow-node accent-amber">General-purpose container<br><span style="font-weight:400; font-size:12px; color:var(--slate);">any type, mixed together</span></div>
+        <div class="flow-arrow">vs</div>
+        <div class="flow-node accent-teal">Numerical, typed array<br><span style="font-weight:400; font-size:12px; color:var(--slate);">optimized for fast math on numbers</span></div>
+      </div>
+      <p class="flow-caption">A list is flexible by design. A NumPy array trades some of that flexibility for speed and built-in mathematical operations — which is exactly what large numeric datasets need.</p>
+    </section>
+
+    <!-- 1.3 -->
+    <section class="sec" id="s13">
+      <div class="sec-head">
+        <div class="sec-num">1.3</div>
+        <div><h2>Creating NumPy Arrays</h2><p>One-dimensional and two-dimensional arrays, and the properties that describe them</p></div>
+      </div>
+
+      <div class="card">
+        <h3>🧱 Building 1D and 2D Arrays</h3>
+        <div class="code-panel">
+          <div class="code-head"><span>creating_arrays.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python">import numpy as np
+
+# One-dimensional array
+sales = np.array([1000, 1500, 2000, 2500])
+
+# Two-dimensional array
+weekly_sales = np.array([
+    [1000, 1500, 2000],
+    [1200, 1800, 2200]
+])
+
+print("Sales:", sales)
+print("Weekly sales:\n", weekly_sales)
+print("Dimensions:", weekly_sales.ndim)
+print("Shape:", weekly_sales.shape)
+print("Total elements:", weekly_sales.size)
+print("Data type:", weekly_sales.dtype)</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>Sales: [1000 1500 2000 2500]
+Weekly sales:
+ [[1000 1500 2000]
+ [1200 1800 2200]]
+Dimensions: 2
+Shape: (2, 3)
+Total elements: 6
+Data type: int64</div>
+        </div>
+
+        <p><b>sales</b> — a 1-dimensional array:</p>
+        <div class="array-wrap">
+          <div class="array-cell">1000<span class="idx">[0]</span></div>
+          <div class="array-cell">1500<span class="idx">[1]</span></div>
+          <div class="array-cell">2000<span class="idx">[2]</span></div>
+          <div class="array-cell">2500<span class="idx">[3]</span></div>
+        </div>
+
+        <p><b>weekly_sales</b> — a 2-dimensional array (2 rows × 3 columns):</p>
+        <div class="matrix-center">
+          <div class="matrix-wrap">
+            <div class="matrix-row">
+              <div class="matrix-cell">1000</div><div class="matrix-cell">1500</div><div class="matrix-cell">2000</div>
+            </div>
+            <div class="matrix-row">
+              <div class="matrix-cell">1200</div><div class="matrix-cell">1800</div><div class="matrix-cell">2200</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>📋 Expected Concepts</h3>
+        <table class="prop-table">
+          <thead><tr><th>Property</th><th>Meaning</th><th>Value for <code>weekly_sales</code></th></tr></thead>
+          <tbody>
+            <tr><td><code>ndim</code></td><td>Number of dimensions</td><td><code>2</code></td></tr>
+            <tr><td><code>shape</code></td><td>Size along each dimension</td><td><code>(2, 3)</code></td></tr>
+            <tr><td><code>size</code></td><td>Total number of elements</td><td><code>6</code></td></tr>
+            <tr><td><code>dtype</code></td><td>Data type of the array's elements</td><td><code>int64</code></td></tr>
+          </tbody>
+        </table>
+        <div class="callout tip">
+          <div class="ico">💡</div>
+          <div><b>Read <code>shape</code> like coordinates on a grid:</b> <code>weekly_sales.shape</code> returning <code>(2, 3)</code> means two rows and three columns — the first number is always rows, the second is always columns.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 1.4 -->
+    <section class="sec" id="s14">
+      <div class="sec-head">
+        <div class="sec-num">1.4</div>
+        <div><h2>Useful Array Creation Functions</h2><p>Four shortcuts for generating arrays without typing every value by hand</p></div>
+      </div>
+
+      <div class="card">
+        <h3>⚙️ The Four Functions</h3>
+        <div class="code-panel">
+          <div class="code-head"><span>array_creation_functions.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python">import numpy as np
+
+print(np.zeros(5))
+print(np.ones(5))
+print(np.arange(1, 11))
+print(np.arange(0, 20, 5))
+print(np.linspace(0, 100, 5))</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>[0. 0. 0. 0. 0.]
+[1. 1. 1. 1. 1.]
+[ 1  2  3  4  5  6  7  8  9 10]
+[ 0  5 10 15]
+[  0.  25.  50.  75. 100.]</div>
+        </div>
+
+        <div class="fn-grid">
+          <div class="fn-card">
+            <h4>np.zeros(5)</h4>
+            <p>Creates five <b>zero-valued</b> elements.</p>
+            <div class="fn-visual">
+              <div class="fn-chip">0</div><div class="fn-chip">0</div><div class="fn-chip">0</div><div class="fn-chip">0</div><div class="fn-chip">0</div>
+            </div>
+          </div>
+          <div class="fn-card">
+            <h4>np.ones(5)</h4>
+            <p>Creates five <b>one-valued</b> elements.</p>
+            <div class="fn-visual">
+              <div class="fn-chip">1</div><div class="fn-chip">1</div><div class="fn-chip">1</div><div class="fn-chip">1</div><div class="fn-chip">1</div>
+            </div>
+          </div>
+          <div class="fn-card">
+            <h4>np.arange(0, 20, 5)</h4>
+            <p>Creates values using a <b>specified step</b> — here, every 5 units from 0 up to (not including) 20.</p>
+            <div class="fn-visual">
+              <div class="fn-chip">0</div><div class="fn-chip">5</div><div class="fn-chip">10</div><div class="fn-chip">15</div>
+            </div>
+          </div>
+          <div class="fn-card">
+            <h4>np.linspace(0, 100, 5)</h4>
+            <p>Creates a <b>specified number</b> of evenly spaced values between 0 and 100 — here, exactly 5 of them.</p>
+            <div class="fn-visual">
+              <div class="fn-chip">0</div><div class="fn-chip">25</div><div class="fn-chip">50</div><div class="fn-chip">75</div><div class="fn-chip">100</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout note">
+          <div class="ico">📝</div>
+          <div><b>arange vs linspace, in one line:</b> <code>arange()</code> is "step this far each time and see how many values I get." <code>linspace()</code> is "I want exactly this many values, spaced evenly — figure out the step yourself."</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 1.5 -->
+    <section class="sec" id="s15">
+      <div class="sec-head">
+        <div class="sec-num">1.5</div>
+        <div><h2>Practical: Daily Order Analysis</h2><p>Bringing 1.1–1.4 together into one runnable script</p></div>
+      </div>
+
+      <div class="card">
+        <h3>💻 scripts/hour01_numpy.py</h3>
+        <div class="code-panel">
+          <div class="code-head"><span>scripts/hour01_numpy.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python">import numpy as np
+
+# Step 1: Record daily orders
+orders = np.array([120, 150, 180, 140, 210])
+
+# Step 2: Calculate statistics
+total_orders = np.sum(orders)
+average_orders = np.mean(orders)
+highest_orders = np.max(orders)
+lowest_orders = np.min(orders)
+
+# Step 3: Display results
+print("Daily orders:", orders)
+print("Total orders:", total_orders)
+print("Average orders:", average_orders)
+print("Highest orders:", highest_orders)
+print("Lowest orders:", lowest_orders)</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>Daily orders: [120 150 180 140 210]
+Total orders: 800
+Average orders: 160.0
+Highest orders: 210
+Lowest orders: 120</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>🛠️ Implementation Steps</h3>
+        <div class="steps">
+          <div class="step"><h4>Create the Python file</h4><p>Save it as <code>scripts/hour01_numpy.py</code> inside your project folder.</p></div>
+          <div class="step"><h4>Import NumPy as np</h4><p><code>import numpy as np</code> — every script in this course starts this way.</p></div>
+          <div class="step"><h4>Store the five daily order counts in an array</h4><p><code>orders = np.array([120, 150, 180, 140, 210])</code></p></div>
+          <div class="step"><h4>Use NumPy functions to calculate the statistics</h4><p><code>np.sum()</code>, <code>np.mean()</code>, <code>np.max()</code>, <code>np.min()</code> — one function per number you need.</p></div>
+          <div class="step"><h4>Print each result</h4><p>Label every printed value clearly so the output is easy to read at a glance.</p></div>
+          <div class="step"><h4>Change the order values and rerun the program</h4><p>Swap in a different week's numbers and confirm every statistic updates correctly.</p></div>
+        </div>
+      </div>
+
+      <div class="flow">
+        <div class="flow-node accent-teal">orders = np.array([...])</div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-node accent-amber">np.sum() · np.mean() · np.max() · np.min()</div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-node accent-green">print() each labeled result</div>
+      </div>
+      <p class="flow-caption">This same three-stage shape — store the data, run a NumPy function over it, print the result — is the pattern you'll repeat for almost every array operation in this course.</p>
+    </section>
+
+    <!-- EXERCISE -->
+    <section class="sec" id="exercise">
+      <div class="sec-head">
+        <div class="sec-num">✎</div>
+        <div><h2>Student Exercise</h2><p>Practice before moving on to Hour 2</p></div>
+      </div>
+
+      <div class="callout exercise">
+        <div class="ico">🎯</div>
+        <div><b>Your task:</b> calculate the <b>total</b> and <b>average</b> number of orders for <b>seven days</b> of the week, instead of five. Extend the <code>orders</code> array to hold all seven values, then reuse <code>np.sum()</code> and <code>np.mean()</code> exactly as shown in the practical above — no new concepts required, just one more data point to prove the pattern holds.</div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer>Data Manipulation Training — Hour 13: Introduction to NumPy &middot; Prepared for IT Training Cohort &middot; Confidential Training Material</footer>
+
+<div class="scrolltop" id="scrollTop">↑</div>
+
+<script>
+  hljs.highlightAll();
+
+  const progressFill = document.getElementById('progressFill');
+  const scrollTopBtn = document.getElementById('scrollTop');
+  const sections = document.querySelectorAll('section.sec');
+  const navLinks = document.querySelectorAll('#toc a');
+
+  window.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const scrolled = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+    progressFill.style.width = scrolled + '%';
+    scrollTopBtn.classList.toggle('show', h.scrollTop > 500);
+
+    let current = '';
+    sections.forEach(sec => {
+      const rect = sec.getBoundingClientRect();
+      if (rect.top <= 140 && rect.bottom >= 140) current = sec.id;
+    });
+    navLinks.forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+    });
+  });
+
+  scrollTopBtn.addEventListener('click', () => window.scrollTo({top:0, behavior:'smooth'}));
+
+  function copyCode(btn){
+    const pre = btn.closest('.code-panel').querySelector('pre.code-body');
+    navigator.clipboard.writeText(pre.innerText).then(() => {
+      const orig = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = orig, 1400);
+    });
+  }
+</script>
+
+</body>
+</html>

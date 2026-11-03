@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Series and DataFrames | Data Manipulation Training — Hour 16</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+<style>
+  :root{
+    --ink:#14181F; --paper:#F4F6F5; --panel:#FFFFFF; --line:#DCE3E1;
+    --teal:#0E7C86; --teal-soft:#E4F1F1;
+    --amber:#D98E31; --amber-soft:#FBEEDD;
+    --violet:#6E5A9E; --violet-soft:#EDE9F5;
+    --coral:#C0524A; --coral-soft:#F7E7E5;
+    --green:#3E8E5A; --green-soft:#E6F1EA;
+    --slate:#5B6570;
+    --radius:14px;
+    --shadow:0 10px 30px rgba(20,24,31,0.06);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif; line-height:1.65;
+  }
+  h1,h2,h3,h4{ font-family:'Space Grotesk', sans-serif; letter-spacing:-.01em; }
+  code, pre, .mono{ font-family:'IBM Plex Mono', monospace; }
+  a{color:var(--teal);}
+
+  .topbar{
+    position:sticky; top:0; z-index:60; background:rgba(244,246,245,0.92); backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line); padding:10px 24px;
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+  }
+  .brand{ display:flex; align-items:center; gap:10px; font-weight:700; font-family:'Space Grotesk'; }
+  .brand .logo{
+    width:30px;height:30px;border-radius:8px; background:linear-gradient(135deg,var(--teal),var(--violet));
+    display:flex;align-items:center;justify-content:center; color:#fff; font-weight:800; font-size:15px;
+  }
+  .progress-track{ flex:1; max-width:380px; height:7px; border-radius:20px; background:var(--line); overflow:hidden; }
+  .progress-fill{ height:100%; width:0%; background:linear-gradient(90deg,var(--teal),var(--violet)); transition:width .15s ease; }
+
+  .shell{ display:flex; max-width:1280px; margin:0 auto; align-items:flex-start; }
+  .toc{
+    width:252px; flex:0 0 auto; position:sticky; top:57px; height:calc(100vh - 57px);
+    overflow-y:auto; padding:28px 18px 60px; border-right:1px solid var(--line);
+  }
+  .toc h5{ font-size:11px; text-transform:uppercase; letter-spacing:1.2px; color:var(--slate); margin:0 0 10px; }
+  .toc a{
+    display:block; padding:7px 10px; border-radius:8px; color:var(--slate); text-decoration:none;
+    font-size:13.5px; margin-bottom:2px;
+  }
+  .toc a:hover, .toc a.active{ background:var(--teal-soft); color:var(--teal); font-weight:600; }
+  main{ flex:1; min-width:0; padding:0 36px 100px; max-width:960px; }
+  @media (max-width:900px){ .toc{ display:none; } main{ padding:0 20px 80px; } }
+
+  .hero{ padding:56px 0 36px; border-bottom:1px solid var(--line); }
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px; font-size:12px; letter-spacing:1.2px; text-transform:uppercase;
+    color:var(--teal); font-weight:700; background:var(--teal-soft); padding:6px 14px; border-radius:30px; margin-bottom:18px;
+  }
+  .hero h1{ font-size:clamp(28px,4.4vw,42px); margin:0 0 14px; font-weight:700; }
+  .hero p.sub{ max-width:680px; color:var(--slate); font-size:16px; margin:0 0 26px; }
+  .hero-meta{ display:flex; gap:12px; flex-wrap:wrap; }
+  .meta-chip{ background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:9px 14px; font-size:12.5px; color:var(--slate); }
+  .meta-chip b{ display:block; color:var(--ink); font-size:14px; }
+
+  section.sec{ padding:48px 0; border-bottom:1px dashed var(--line); scroll-margin-top:72px; }
+  section.sec:last-child{ border-bottom:none; }
+  .sec-head{ display:flex; align-items:center; gap:14px; margin-bottom:22px; }
+  .sec-num{
+    flex:0 0 auto; width:46px;height:46px;border-radius:12px; background:var(--panel); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:16px; color:var(--teal);
+  }
+  .sec-head h2{ margin:0; font-size:23px; font-weight:700; }
+  .sec-head p{ margin:2px 0 0; color:var(--slate); font-size:13.5px; }
+
+  .card{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:22px 24px; margin-bottom:20px; box-shadow:var(--shadow); }
+  .card h3{ margin:0 0 10px; font-size:16.5px; color:var(--ink); display:flex; align-items:center; gap:8px; }
+  .card p{ margin:8px 0; }
+  .card ul, .card ol{ margin:10px 0; padding-left:22px; }
+  .card li{ margin-bottom:6px; }
+
+  .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  @media (max-width:760px){ .grid-2{ grid-template-columns:1fr; } }
+
+  .callout{ border-radius:var(--radius); padding:16px 20px; margin:16px 0; border:1px solid; display:flex; gap:14px; font-size:14px; }
+  .callout .ico{ font-size:20px; line-height:1.2; }
+  .callout.tip{ background:var(--teal-soft); border-color:#b9dcdd; }
+  .callout.note{ background:var(--amber-soft); border-color:#eccb98; }
+  .callout.exercise{ background:var(--violet-soft); border-color:#cfc3e8; }
+  .callout b{ color:var(--ink); }
+
+  .code-panel{ background:#1a1d24; border-radius:12px; overflow:hidden; margin:16px 0; border:1px solid #2a2e38; }
+  .code-head{ display:flex; align-items:center; justify-content:space-between; background:#20232c; padding:9px 16px; font-size:12px; color:#9aa1b0; }
+  .code-dots{ display:flex; gap:6px; }
+  .code-dots span{ width:10px;height:10px;border-radius:50%; }
+  .code-dots span:nth-child(1){ background:#ff5f56;} .code-dots span:nth-child(2){ background:#ffbd2e;} .code-dots span:nth-child(3){ background:#27c93f;}
+  .copy-btn{ background:#2a2e38; color:#c7ccd8; border:none; border-radius:6px; padding:4px 10px; font-size:11.5px; cursor:pointer; font-family:inherit; }
+  .copy-btn:hover{ background:#363b48; }
+  pre.code-body{ margin:0; padding:18px 20px; overflow-x:auto; font-size:13.3px; line-height:1.75; }
+  pre.code-body code{ font-family:'IBM Plex Mono', monospace; background:none; }
+  .code-output{ background:#14161b; border-top:1px dashed #2a2e38; padding:12px 20px; font-size:12.5px; color:#7ee8a0; font-family:'IBM Plex Mono', monospace; white-space:pre-wrap; }
+  .code-output .lbl{ color:#7c8494; font-size:10.5px; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:6px; }
+
+  .flow{ display:flex; flex-direction:column; align-items:center; margin:28px 0; }
+  .flow-node{
+    background:var(--panel); border:1.5px solid var(--line); border-radius:12px; padding:12px 24px; font-weight:600; font-size:14px;
+    text-align:center; min-width:200px; box-shadow:var(--shadow);
+  }
+  .flow-node.accent-teal{ border-color:var(--teal); color:var(--teal); }
+  .flow-node.accent-amber{ border-color:var(--amber); color:var(--amber); }
+  .flow-node.accent-violet{ border-color:var(--violet); color:var(--violet); }
+  .flow-node.accent-green{ border-color:var(--green); color:var(--green); }
+  .flow-node.accent-coral{ border-color:var(--coral); color:var(--coral); }
+  .flow-arrow{ color:var(--slate); font-size:20px; margin:4px 0; }
+  .flow-caption{ text-align:center; font-size:12.5px; color:var(--slate); margin-top:6px; font-style:italic; max-width:600px; }
+
+  /* series visual - labeled vertical list */
+  .series-wrap{ display:flex; justify-content:center; margin:20px 0 28px; }
+  table.series-table{ border-collapse:collapse; font-family:'IBM Plex Mono'; font-size:13.5px; }
+  table.series-table th{ background:var(--violet-soft); color:var(--violet); padding:8px 20px; font-size:11px; text-transform:uppercase; }
+  table.series-table td{ border:1px solid var(--line); padding:9px 22px; text-align:center; }
+  table.series-table td.idx-cell{ background:var(--amber-soft); color:var(--amber); font-weight:700; }
+  table.series-table td.val-cell{ background:var(--panel); color:var(--teal); font-weight:700; }
+  table.series-table tr.hl td{ background:var(--teal-soft); }
+
+  /* dataframe table visual */
+  .df-wrap{ display:flex; justify-content:center; margin:20px 0; overflow-x:auto; }
+  table.df-table{ border-collapse:collapse; font-family:'IBM Plex Mono'; font-size:12.8px; }
+  table.df-table th, table.df-table td{ border:1px solid var(--line); padding:8px 16px; text-align:center; white-space:nowrap; }
+  table.df-table th{ background:var(--green-soft); color:var(--green); font-weight:700; font-size:11px; text-transform:uppercase; }
+  table.df-table td.idxcol{ background:var(--amber-soft); color:var(--amber); font-weight:700; }
+  table.df-table th.newcol, table.df-table td.newcol{ background:var(--teal-soft); color:var(--teal); font-weight:700; }
+  table.df-table th.rmcol, table.df-table td.rmcol{ background:var(--coral-soft); color:var(--coral); text-decoration:line-through; }
+  table.df-table td.updcell{ background:var(--violet-soft); color:var(--violet); font-weight:700; }
+  table.df-table th.renamecol{ background:var(--violet-soft); color:var(--violet); }
+
+  .divider-label{ font-size:11px; text-transform:uppercase; letter-spacing:1.2px; color:var(--slate); margin:28px 0 10px; font-weight:700; }
+
+  footer{ text-align:center; padding:36px 20px; color:var(--slate); font-size:12.5px; border-top:1px solid var(--line); }
+
+  .scrolltop{
+    position:fixed; bottom:22px; right:22px; z-index:60; width:44px;height:44px;border-radius:50%;
+    background:linear-gradient(135deg,var(--teal),var(--violet)); display:flex; align-items:center; justify-content:center;
+    color:#fff; font-weight:900; cursor:pointer; box-shadow:var(--shadow); opacity:0; pointer-events:none; transition:.2s;
+  }
+  .scrolltop.show{ opacity:1; pointer-events:auto; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand"><div class="logo">N</div> Data Manipulation Training</div>
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+</div>
+
+<div class="shell">
+  <nav class="toc" id="toc">
+    <h5>On this page</h5>
+    <a href="#s41">4.1 What is a Series?</a>
+    <a href="#s42">4.2 What is a DataFrame?</a>
+    <a href="#s43">4.3 Add &amp; Update Columns</a>
+    <a href="#s44">4.4 Update Values &amp; Remove Columns</a>
+    <a href="#s45">4.5 Rename Columns</a>
+    <a href="#exercise">Student Exercise</a>
+  </nav>
+
+  <main>
+    <div class="hero">
+      <span class="eyebrow">🐼 IT Training &middot; Data Manipulation Track &middot; Hour 16</span>
+      <h1>Series and DataFrames</h1>
+      <p class="sub">The two structures you'll touch in every single Pandas script from here on — a labeled one-dimensional Series, and the two-dimensional DataFrame built from several Series side by side. This hour is about shaping both of them.</p>
+      <div class="hero-meta">
+        <div class="meta-chip"><b>60 minutes</b>Session length</div>
+        <div class="meta-chip"><b>Beginner</b>Level</div>
+        <div class="meta-chip"><b>Structures &amp; Modification</b>Focus</div>
+        <div class="meta-chip"><b>5</b>Code walkthroughs</div>
+      </div>
+    </div>
+
+    <!-- 4.1 -->
+    <section class="sec" id="s41">
+      <div class="sec-head">
+        <div class="sec-num">4.1</div>
+        <div><h2>What is a Series?</h2><p>A one-dimensional array with labels attached to every value</p></div>
+      </div>
+
+      <div class="card">
+        <h3>📘 Definition</h3>
+        <p>A Pandas <b>Series</b> is a one-dimensional labeled array. It stores values with an associated <b>index</b> — so every value has both a position <i>and</i> a name you can use to reach it.</p>
+
+        <div class="code-panel">
+          <div class="code-head"><span>series_basics.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python">import pandas as pd
+
+salaries = pd.Series(
+    [45000, 50000, 55000],
+    index=["Rahul", "Priya", "Amit"],
+    name="salary"
+)
+
+print(salaries)
+print("Rahul's salary:", salaries["Rahul"])
+print("Average salary:", salaries.mean())</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>Rahul    45000
+Priya    50000
+Amit     55000
+Name: salary, dtype: int64
+Rahul's salary: 45000
+Average salary: 50000.0</div>
+        </div>
+
+        <div class="series-wrap">
+          <table class="series-table">
+            <tr><th>index</th><th>salary</th></tr>
+            <tr class="hl"><td class="idx-cell">Rahul</td><td class="val-cell">45000</td></tr>
+            <tr><td class="idx-cell">Priya</td><td class="val-cell">50000</td></tr>
+            <tr><td class="idx-cell">Amit</td><td class="val-cell">55000</td></tr>
+          </table>
+        </div>
+        <p class="flow-caption">The amber column is the <b>index</b> — a label for every row. <code>salaries["Rahul"]</code> looks up a value by that label, the highlighted row above, not by counting positions.</p>
+
+        <div class="callout tip">
+          <div class="ico">💡</div>
+          <div><b>Why labels matter:</b> a plain Python list only lets you access <code>list[0]</code>, <code>list[1]</code>, and so on. A Series lets you access <code>salaries["Rahul"]</code> directly — labels let you reach a value <i>by name</i>, not just by remembering its numerical position.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4.2 -->
+    <section class="sec" id="s42">
+      <div class="sec-head">
+        <div class="sec-num">4.2</div>
+        <div><h2>What is a DataFrame?</h2><p>Several Series, sharing one index, arranged side by side</p></div>
+      </div>
+
+      <div class="card">
+        <h3>📘 Definition</h3>
+        <p>A <b>DataFrame</b> is a two-dimensional labeled structure containing rows and columns. Unlike a NumPy array, <b>different columns can hold different data types</b> — text in one, whole numbers in another, decimals in a third.</p>
+
+        <div class="code-panel">
+          <div class="code-head"><span>dataframe_basics.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python">import pandas as pd
+
+employees = pd.DataFrame({
+    "employee_id": [101, 102, 103],
+    "name": ["Rahul", "Priya", "Amit"],
+    "department": ["IT", "HR", "IT"],
+    "salary": [45000, 50000, 55000]
+})
+
+print(employees)</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>   employee_id   name department  salary
+0          101  Rahul         IT   45000
+1          102  Priya         HR   50000
+2          103   Amit         IT   55000</div>
+        </div>
+
+        <div class="df-wrap">
+          <table class="df-table">
+            <tr><th></th><th>employee_id</th><th>name</th><th>department</th><th>salary</th></tr>
+            <tr><td class="idxcol">0</td><td>101</td><td>Rahul</td><td>IT</td><td>45000</td></tr>
+            <tr><td class="idxcol">1</td><td>102</td><td>Priya</td><td>HR</td><td>50000</td></tr>
+            <tr><td class="idxcol">2</td><td>103</td><td>Amit</td><td>IT</td><td>55000</td></tr>
+          </table>
+        </div>
+        <p class="flow-caption">Each column here — <code>employee_id</code> (integers), <code>name</code>/<code>department</code> (text), <code>salary</code> (integers) — is really its own Series. The DataFrame is what holds them all together, sharing the same row index on the left.</p>
+      </div>
+    </section>
+
+    <!-- 4.3 -->
+    <section class="sec" id="s43">
+      <div class="sec-head">
+        <div class="sec-num">4.3</div>
+        <div><h2>Add and Update Columns</h2><p>Deriving new columns from existing ones — with ordinary arithmetic</p></div>
+      </div>
+
+      <div class="card">
+        <h3>➕ Calculating Annual Salary and Bonus</h3>
+        <p>Suppose the company wants to calculate an <b>annual salary</b> and give each employee a <b>5% bonus</b> — both derived directly from the existing <code>salary</code> column.</p>
+
+        <div class="code-panel">
+          <div class="code-head"><span>add_columns.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python">import pandas as pd
+
+employees = pd.DataFrame({
+    "name": ["Rahul", "Priya", "Amit"],
+    "salary": [45000, 50000, 55000]
+})
+
+employees["annual_salary"] = employees["salary"] * 12
+employees["bonus"] = employees["salary"] * 0.05
+
+print(employees)</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>    name  salary  annual_salary   bonus
+0  Rahul   45000         540000  2250.0
+1  Priya   50000         600000  2500.0
+2   Amit   55000         660000  2750.0</div>
+        </div>
+
+        <div class="df-wrap">
+          <table class="df-table">
+            <tr><th></th><th>name</th><th>salary</th><th class="newcol">annual_salary</th><th class="newcol">bonus</th></tr>
+            <tr><td class="idxcol">0</td><td>Rahul</td><td>45000</td><td class="newcol">540000</td><td class="newcol">2250.0</td></tr>
+            <tr><td class="idxcol">1</td><td>Priya</td><td>50000</td><td class="newcol">600000</td><td class="newcol">2500.0</td></tr>
+            <tr><td class="idxcol">2</td><td>Amit</td><td>55000</td><td class="newcol">660000</td><td class="newcol">2750.0</td></tr>
+          </table>
+        </div>
+        <p class="flow-caption">The two new teal columns didn't exist before this script ran — assigning to <code>employees["new_name"]</code> creates the column automatically if it isn't there yet.</p>
+
+        <div class="callout note">
+          <div class="ico">📝</div>
+          <div><b>The pattern to remember:</b> <code>df["new_column"] = df["existing_column"] * some_value</code> — an entire new column, calculated in one line, with no loop. This is the same element-wise thinking from NumPy arithmetic, applied to DataFrame columns.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4.4 -->
+    <section class="sec" id="s44">
+      <div class="sec-head">
+        <div class="sec-num">4.4</div>
+        <div><h2>Update Values and Remove Columns</h2><p>Changing one specific cell by condition, and dropping a column entirely</p></div>
+      </div>
+
+      <div class="card">
+        <h3>✏️ Conditional Update with <code>.loc[]</code></h3>
+        <div class="code-panel">
+          <div class="code-head"><span>update_remove.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python"># Update a specific employee's salary using a condition
+employees.loc[employees["name"] == "Rahul", "salary"] = 47000
+
+# Remove the bonus column from the DataFrame
+employees = employees.drop(columns=["bonus"])
+
+print(employees)</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>    name  salary  annual_salary
+0  Rahul   47000         540000
+1  Priya   50000         600000
+2   Amit   55000         660000</div>
+        </div>
+
+        <div class="df-wrap">
+          <table class="df-table">
+            <tr><th></th><th>name</th><th>salary</th><th>annual_salary</th><th class="rmcol">bonus</th></tr>
+            <tr><td class="idxcol">0</td><td>Rahul</td><td class="updcell">47000</td><td>540000</td><td class="rmcol">2250.0</td></tr>
+            <tr><td class="idxcol">1</td><td>Priya</td><td>50000</td><td>600000</td><td class="rmcol">2500.0</td></tr>
+            <tr><td class="idxcol">2</td><td>Amit</td><td>55000</td><td>660000</td><td class="rmcol">2750.0</td></tr>
+          </table>
+        </div>
+        <p class="flow-caption">The violet cell shows the targeted update — only Rahul's row changed. The coral column shows <code>bonus</code> being dropped entirely from the DataFrame.</p>
+
+        <div class="callout tip">
+          <div class="ico">💡</div>
+          <div><b>Read <code>.loc[row_condition, "column"]</code> as a sentence:</b> "find the rows where <code>name == 'Rahul'</code>, and in the <code>salary</code> column for those rows, set this value." It updates in place, by condition, instead of needing to know a row's numerical position.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4.5 -->
+    <section class="sec" id="s45">
+      <div class="sec-head">
+        <div class="sec-num">4.5</div>
+        <div><h2>Rename Columns</h2><p>Giving columns clearer, more descriptive names</p></div>
+      </div>
+
+      <div class="card">
+        <h3>🏷️ Using <code>.rename()</code></h3>
+        <div class="code-panel">
+          <div class="code-head"><span>rename_columns.py</span><div class="code-dots"><span></span><span></span><span></span></div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre class="code-body"><code class="language-python">employees = employees.rename(columns={
+    "name": "employee_name",
+    "salary": "monthly_salary"
+})
+
+print(employees)</code></pre>
+          <div class="code-output"><span class="lbl">Output</span>  employee_name  monthly_salary  annual_salary
+0         Rahul           47000         540000
+1         Priya           50000         600000
+2          Amit           55000         660000</div>
+        </div>
+
+        <div class="flow">
+          <div class="flow-node accent-amber">"name" → "employee_name"</div>
+          <div class="flow-arrow">↓ .rename(columns={...})</div>
+          <div class="flow-node accent-amber">"salary" → "monthly_salary"</div>
+        </div>
+
+        <div class="df-wrap">
+          <table class="df-table">
+            <tr><th></th><th class="renamecol">employee_name</th><th class="renamecol">monthly_salary</th><th>annual_salary</th></tr>
+            <tr><td class="idxcol">0</td><td>Rahul</td><td>47000</td><td>540000</td></tr>
+            <tr><td class="idxcol">1</td><td>Priya</td><td>50000</td><td>600000</td></tr>
+            <tr><td class="idxcol">2</td><td>Amit</td><td>55000</td><td>660000</td></tr>
+          </table>
+        </div>
+
+        <div class="callout note">
+          <div class="ico">📝</div>
+          <div><b>The dictionary maps old → new:</b> each key in <code>columns={...}</code> is the <i>current</i> column name, and its value is what you want it renamed to. Only the columns you list are renamed — everything else, like <code>annual_salary</code> here, is left untouched.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- EXERCISE -->
+    <section class="sec" id="exercise">
+      <div class="sec-head">
+        <div class="sec-num">✎</div>
+        <div><h2>Student Exercise</h2><p>Combine a new column with conditional logic</p></div>
+      </div>
+
+      <div class="card">
+        <h3>🎓 The Task</h3>
+        <p>Create a DataFrame containing <b>five students</b> with their <code>name</code>, <code>marks</code>, and <code>department</code>. Then add a <code>result</code> column that contains <code>"Pass"</code> for marks of at least 40, and <code>"Fail"</code> otherwise.</p>
+        <div class="code-panel">
+          <div class="code-head"><span>hint</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+          <pre class="code-body"><code class="language-python">df["result"] = ...</code></pre>
+        </div>
+      </div>
+
+      <div class="callout exercise">
+        <div class="ico">🎯</div>
+        <div><b>Think conditionally, not with a manual loop:</b> you've already built new columns from arithmetic in Section 4.3 — this time, the new column's value depends on a <i>condition</i> per row instead of a calculation. Look into <code>numpy.where(condition, value_if_true, value_if_false)</code>, which can sit directly on the right-hand side of a column assignment, exactly like <code>employees["annual_salary"] = ...</code> did earlier.</div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer>Data Manipulation Training — Hour 16: Series and DataFrames &middot; Prepared for IT Training Cohort &middot; Confidential Training Material</footer>
+
+<div class="scrolltop" id="scrollTop">↑</div>
+
+<script>
+  hljs.highlightAll();
+
+  const progressFill = document.getElementById('progressFill');
+  const scrollTopBtn = document.getElementById('scrollTop');
+  const sections = document.querySelectorAll('section.sec');
+  const navLinks = document.querySelectorAll('#toc a');
+
+  window.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const scrolled = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+    progressFill.style.width = scrolled + '%';
+    scrollTopBtn.classList.toggle('show', h.scrollTop > 500);
+
+    let current = '';
+    sections.forEach(sec => {
+      const rect = sec.getBoundingClientRect();
+      if (rect.top <= 140 && rect.bottom >= 140) current = sec.id;
+    });
+    navLinks.forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+    });
+  });
+
+  scrollTopBtn.addEventListener('click', () => window.scrollTo({top:0, behavior:'smooth'}));
+
+  function copyCode(btn){
+    const pre = btn.closest('.code-panel').querySelector('pre.code-body');
+    navigator.clipboard.writeText(pre.innerText).then(() => {
+      const orig = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = orig, 1400);
+    });
+  }
+</script>
+
+</body>
+</html>
